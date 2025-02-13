@@ -9,6 +9,13 @@ import CustomerReviews from "./pages/CustomerReviews";
 import Gallery from "./pages/Gallery";
 import BlogAndTips from "./pages/BlogTips";
 import Footer from "./components/Footer";
+import BookingSystem from "./pages/OnlineBooking";
+import OnlineBooking from "./pages/OnlineBooking";
+import SafariReservation from "./components/SafariReservation";
+import Dashboard from "./pages/Dasboard";
+import "./index.css";
+import ServicesList from "./components/Services";
+
 
 function App() {
   // const backgroundImageStyle = {
@@ -23,13 +30,16 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/about-us" element={<AboutUs />} />
-          <Route path="/destinations" element={<Destinations />} />
+          <Route path="/About-Us" element={<AboutUs />} />
+          <Route path="/Destinations" element={<Destinations />} />
           <Route path="/safari-packages" element={<SafariPackages />} />
           <Route path="/blog-and-trips" element={<BlogAndTips />} />
           <Route path="/customer-reviews" element={<CustomerReviews />} />
           <Route path="/gallery" element={<Gallery />} />
+          <Route path="/online-booking" element={<BookingSystem />} />
+          <Route path="/Dashboard" element={<Dashboard />} />
         </Routes>
+
         <Footer />
       </div>
     </Router>

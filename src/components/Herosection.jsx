@@ -1,35 +1,47 @@
 import React from "react";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import yala from "../assets/yaala.png";
+import h1 from "../assets/h1.jpg";
+import h2 from "../assets/h2.jpg"; // Add more images if needed
+import ab11 from "../assets/ab11.jpg";
 
 const HeroSection = () => {
-  return (
-    <div className="relative text-black">
-      {/* Background Image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${yala})` }}
-      ></div>
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+  };
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center h-screen px-6 text-center">
+  return (
+    <div className="relative text-black w-full" style={{ height: "50vh" }}>
+      <Slider {...settings} className="w-full h-full">
+        {[yala, h1, ab11].map((image, index) => (
+          <div key={index} className="w-full h-[50vh]">
+            <img
+              src={image}
+              alt={`slide-${index}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
+      </Slider>
+
+      {/* Content Overlay */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white bg-black bg-opacity-40">
         <h1 className="text-4xl font-bold md:text-5xl">
-          Preserving the “Wild" for the future�
+          Preserving the “Wild" for the future
         </h1>
-        <p className="mt-4 font-semibold text-amber-800 text-lg max-w-3xl">
+        <p className="mt-4 font-semibold text-lg max-w-3xl">
           The mission statement of the Department of Wildlife Conservation (DWC)
           is, "To conserve wildlife and nature by the sustainable utilization of
-          men, material and land through participatory management, research,
-          education and law enforcement and ensure the maintenance of
-          biodiversity and forest cover as exist today"
+          resources."
         </p>
-        <div className="mt-6 flex gap-4">
-          <button className="px-6 py-3 text-lg font-medium text-blue-700 bg-white rounded hover:bg-gray-100">
-            Book Now
-          </button>
-          <button className="px-6 py-3 text-lg font-medium text-white bg-yellow-500 rounded hover:bg-yellow-600">
-            Explore Tours
-          </button>
-        </div>
       </div>
     </div>
   );

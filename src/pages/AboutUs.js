@@ -3,6 +3,9 @@ import { motion } from "framer-motion";
 import Ab1 from "../assets/ab11.jpg";
 import Ce1 from "../assets/ce1.png";
 import Team1 from "../assets/team1.jpg";
+import yaala from "../assets/yaala.png";
+import history from "../assets/history.jpg";
+import tour from "../assets/tour.jpg";
 
 const AboutUs = () => {
   // Team Members Data
@@ -62,6 +65,12 @@ const AboutUs = () => {
               To protect and conserve wildlife through sustainable tourism and
               education.
             </p>
+            <div
+              className="h-40 bg-cover bg-center rounded-lg mt-4"
+              style={{
+                backgroundImage: `url(${yaala})`,
+              }}
+            ></div>
           </motion.div>
 
           {/* History */}
@@ -74,6 +83,12 @@ const AboutUs = () => {
               Founded in 1995, our sanctuary has rescued over 5,000 endangered
               animals.
             </p>
+            <div
+              className="h-40 bg-cover bg-center rounded-lg mt-4"
+              style={{
+                backgroundImage: `url(${history})`,
+              }}
+            ></div>
           </motion.div>
 
           {/* Values */}
@@ -86,6 +101,12 @@ const AboutUs = () => {
               Conservation, education, and ethical tourism guide our every
               action.
             </p>
+            <div
+              className="h-40 bg-cover bg-center rounded-lg mt-4"
+              style={{
+                backgroundImage: `url(${tour})`,
+              }}
+            ></div>
           </motion.div>
         </div>
       </section>
