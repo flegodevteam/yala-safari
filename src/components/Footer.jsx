@@ -1,30 +1,27 @@
 import React from "react";
+import { NavLink } from "react-router-dom";
 import Logo from "../assets/logo.jpg";
 
 const Footer = () => {
   return (
     <footer className="from-blue-400 to-black bg-gradient-to-r text-white py-8 px-4 md:px-12 lg:px-24">
-      {" "}
       {/* Dark background, padding */}
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-start">
-        {" "}
         {/* Flexbox for layout */}
         {/* Left Section (Logo and Description) */}
         <div className="mb-6 md:mb-0">
-          {" "}
           {/* Margin bottom for stacking on smaller screens */}
           <div className="flex items-center mb-4">
-            {" "}
             {/* Logo and text side by side */}
             <img
               src={Logo}
               alt="Personal Tour Drivers"
               className="h-12 w-auto mr-2"
-            />{" "}
+            />
             {/* Adjust height as needed, add margin right */}
             <span className="text-lg font-bold">
               Personal Tour Drivers <br /> In Sri Lanka
-            </span>{" "}
+            </span>
             {/* Smaller font size, line break */}
           </div>
           <p className="text-sm text-gray-400">
@@ -69,23 +66,23 @@ const Footer = () => {
           <ul className="text-sm">
             <li className="mb-2">
               <a href="#" className="hover:text-gray-300">
-                Home
+                Top Packages
               </a>
             </li>
             <li className="mb-2">
-              <a href="#" className="hover:text-gray-300">
-                About Us
-              </a>
+              <NavLink to="/customer-reviews" className="hover:text-gray-300">
+                Customer Testimonial
+              </NavLink>
             </li>
             <li className="mb-2">
               <a href="#" className="hover:text-gray-300">
-                Itineraries
+                Offers
               </a>
             </li>
             <li className="mb-2">
-              <a href="#" className="hover:text-gray-300">
+              <NavLink to="/gallery" className="hover:text-gray-300">
                 Gallery
-              </a>
+              </NavLink>
             </li>
             <li>
               <a href="#" className="hover:text-gray-300">
@@ -128,7 +125,6 @@ const Footer = () => {
       </div>
       {/* Bottom Bar (Copyright) */}
       <div className="text-center text-sm text-gray-400 mt-8 pt-4 border-t border-gray-600">
-        {" "}
         {/* Added top border and padding */}
         <p>
           &copy; {new Date().getFullYear()} Wildlife Sanctuary | All Rights
