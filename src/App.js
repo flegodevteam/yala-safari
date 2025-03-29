@@ -1,45 +1,30 @@
-import React from "react";
-import Navbar from "./components/Navbar";
-import AboutUs from "./pages/AboutUs";
-import Home from "./pages/Home";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Destinations from "./pages/Destinations";
-import SafariPackages from "./pages/SafariPackages";
-import CustomerReviews from "./pages/CustomerReviews";
-import Gallery from "./pages/Gallery";
-import BlogAndTips from "./pages/BlogTips";
-import Footer from "./components/Footer";
-import BookingSystem from "./pages/OnlineBooking";
-import OnlineBooking from "./pages/OnlineBooking";
-import SafariReservation from "./components/SafariReservation";
-import Dashboard from "./pages/Dasboard";
-import "./index.css";
-import ServicesList from "./components/Services";
-
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import Packages from './pages/Packages';
+import About from './pages/About';
+import Blog from './pages/Blog';
+import Contact from './pages/Contact';
+import Booking from './pages/Booking';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Dashboard from './pages/Dashboard';
 
 function App() {
-  // const backgroundImageStyle = {
-  //   backgroundImage: `url(${yala})`,
-  //   backgroundSize: "cover",
-  //   backgroundPosition: "center",
-  //   height: "100vh",
-  // };
   return (
     <Router>
-      <div>
+      <div className="min-h-screen flex flex-col bg-gray-50">
         <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/About-Us" element={<AboutUs />} />
-          <Route path="/Destinations" element={<Destinations />} />
-          <Route path="/safari-packages" element={<SafariPackages />} />
-          <Route path="/blog-and-trips" element={<BlogAndTips />} />
-          <Route path="/customer-reviews" element={<CustomerReviews />} />
-          <Route path="/gallery" element={<Gallery />} />
-          <Route path="/online-booking" element={<BookingSystem />} />
-          <Route path="/Dashboard" element={<Dashboard />} />
-        </Routes>
-
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/packages" element={<Packages />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/booking" element={<Booking />} />
+            <Route path="/Dashboard" element={<Dashboard />} />
+          </Routes>
+        </main>
         <Footer />
       </div>
     </Router>
