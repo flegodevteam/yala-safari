@@ -76,6 +76,7 @@ const PackagesManager = () => {
     })
       .then((res) => res.json())
       .then((data) => {
+        fetchPackages(); 
         if (currentPackage) {
           setPackages((prev) =>
             prev.map((pkg) => (pkg._id === data._id ? data : pkg))
@@ -99,6 +100,7 @@ const PackagesManager = () => {
       method: 'DELETE',
     })
       .then(() => {
+        fetchPackages();
         setPackages((prev) =>
           prev.filter((pkg) => pkg._id !== packageToDelete)
         );

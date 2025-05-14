@@ -7,6 +7,7 @@ const connectDB = require('./config/db');
 const bookingRoutes = require('./routes/BookingRoutes');
 const { default: mongoose } = require('mongoose');
 const packageRoutes = require('./routes/PackageRoutes');
+const blogRoutes = require('./routes/BlogRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -22,6 +23,7 @@ app.use(bodyParser.json());
 // Routes
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/packages', packageRoutes);
+app.use('/api/blogs', blogRoutes);
 
 // Default route for testing
 app.get('/', (req, res) => {
@@ -29,9 +31,7 @@ app.get('/', (req, res) => {
 });
 
 // Get all packages
-app.get('/api/packages', (req, res) => {
-  res.json(packages);
-});
+
 
 
 // Start the server
