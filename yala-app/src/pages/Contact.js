@@ -16,10 +16,28 @@ export default function Contact() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would typically send the form data to your backend
-    console.log('Form submitted:', formData);
-    setSubmitted(true);
-    setFormData({ name: '', email: '', phone: '', message: '' });
+  
+    console.log('Submitting form data:', formData);
+  
+    fetch('http://localhost:5000/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log('Form submitted successfully:', data);
+        setSubmitted(true);
+        setFormData({ name: '', email: '', phone: '', message: '' });
+      })
+      .catch((error) => {
+        console.error('Error submitting form:', error);
+      });
   };
 
   return (
@@ -47,7 +65,7 @@ export default function Contact() {
                 </div>
                 <div className="ml-3">
                   <p className="text-lg font-medium">Phone</p>
-                  <p className="mt-1">+94 76 123 4567</p>
+                  <p className="mt-1">+94 75 350 6471</p>
                 </div>
               </div>
 
@@ -59,7 +77,7 @@ export default function Contact() {
                 </div>
                 <div className="ml-3">
                   <p className="text-lg font-medium">Email</p>
-                  <p className="mt-1">info@yalasafari.com</p>
+                  <p className="mt-1">imrannah0610@gmail.com</p>
                 </div>
               </div>
 
