@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { FiFileText, FiEdit, FiTrash2 } from 'react-icons/fi';
 import { format } from 'date-fns';
 
@@ -22,10 +22,14 @@ const BlogContentManager = () => {
         featuredImage: 'https://example.com/blog2.jpg'
       },
     ]);
+
+    const [isLoading, setIsLoading] = useState(true);
     
     const [currentPost, setCurrentPost] = useState(null);
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [postContent, setPostContent] = useState('<p>Write your blog post content here...</p>');
+    const [packages, setPackages] = useState([]); // For storing fetched packages
+    
   
     const handleEdit = (post) => {
       setCurrentPost(post);
@@ -39,28 +43,67 @@ const BlogContentManager = () => {
     };
   
     const handleDelete = (id) => {
-      setPosts(posts.filter(post => post.id !== id));
+      fetch(`http://localhost:5000/api/blogs/${id}`, {
+        method: 'DELETE',
+      })
+        .then(() => {
+          setPosts((prev) => prev.filter((post) => post._id !== id));
+        })
+        .catch((error) => console.error('Error deleting blog post:', error));
     };
   
     const handleSavePost = () => {
-      if (currentPost) {
-        setPosts(posts.map(post => 
-          post.id === currentPost.id ? { ...post, content: postContent } : post
-        ));
-      } else {
-        const newPost = {
-          id: posts.length + 1,
-          title: 'New Blog Post',
-          author: 'Admin',
-          date: new Date().toISOString().split('T')[0],
-          status: 'draft',
-          content: postContent
-        };
-        setPosts([...posts, newPost]);
-      }
-      setIsEditorOpen(false);
-      setCurrentPost(null);
+      const method = currentPost ? 'PATCH' : 'POST';
+      const url = currentPost
+        ? `http://localhost:5000/api/blogs/${currentPost._id}`
+        : 'http://localhost:5000/api/blogs';
+    
+      const blogData = {
+        title: currentPost?.title || 'New Blog Post',
+        author: 'Admin',
+        date: new Date().toISOString().split('T')[0],
+        status: currentPost?.status || 'draft',
+        content: postContent,
+        featuredImage: currentPost?.featuredImage || '',
+      };
+    
+      fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(blogData),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (currentPost) {
+            setPosts((prev) =>
+              prev.map((post) => (post._id === data._id ? data : post))
+            );
+          } else {
+            setPosts((prev) => [data, ...prev]);
+          }
+          setIsEditorOpen(false);
+          setCurrentPost(null);
+        })
+        .catch((error) => console.error('Error saving blog post:', error));
     };
+
+    useEffect(() => {
+      fetch('http://localhost:5000/api/packages')
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((data) => {
+          setPosts(data);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error('Error fetching packages:', error);
+          setIsLoading(false);
+        });
+    }, []);
   
     return (
       <div>

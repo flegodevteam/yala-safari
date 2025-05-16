@@ -6,6 +6,9 @@ dotenv.config();
 const connectDB = require('./config/db');
 const bookingRoutes = require('./routes/BookingRoutes');
 const { default: mongoose } = require('mongoose');
+const packageRoutes = require('./routes/PackageRoutes');
+const blogRoutes = require('./routes/BlogRoutes');
+const contactRoutes = require('./routes/ContactRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -16,13 +19,22 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+
+
 // Routes
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/packages', packageRoutes);
+app.use('/api/blogs', blogRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Default route for testing
 app.get('/', (req, res) => {
   res.send('Server is running!');
 });
+
+// Get all packages
+
+
 
 // Start the server
 const PORT = process.env.PORT || 5000;
