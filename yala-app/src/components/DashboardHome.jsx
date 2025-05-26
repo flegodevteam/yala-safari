@@ -1,25 +1,28 @@
+import { useEffect, useState } from 'react';
 import { FiPackage, FiCalendar, FiFileText } from 'react-icons/fi';
+import axios from 'axios';
 
 const DashboardHome = () => {
-  const stats = [
-    { name: 'Total Bookings', value: '124', change: '+12%', changeType: 'positive' },
-    { name: 'Revenue', value: '$18,450', change: '+8.2%', changeType: 'positive' },
-    { name: 'Pending Bookings', value: '8', change: '-2.5%', changeType: 'negative' },
-    { name: 'Website Visitors', value: '2,345', change: '+24%', changeType: 'positive' },
-  ];
+  const [stats, setStats] = useState([]);
+  const [recentBookings, setRecentBookings] = useState([]);
 
-  const recentBookings = [
-    { id: 1, name: 'John Smith', package: 'Morning Safari', date: '2023-06-15', status: 'confirmed' },
-    { id: 2, name: 'Sarah Johnson', package: 'Full Day Safari', date: '2023-06-16', status: 'confirmed' },
-    { id: 3, name: 'Robert Chen', package: 'Private Safari', date: '2023-06-17', status: 'pending' },
-    { id: 4, name: 'Emma Wilson', package: 'Morning Safari', date: '2023-06-18', status: 'cancelled' },
-  ];
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/dashboard/overview')
+      .then(res => {
+        const s = [
+          { name: 'Total Bookings', value: res.data.stats.totalBookings, change: '+12%', changeType: 'positive' },
+          { name: 'Revenue', value: `$${res.data.stats.revenue}`, change: '+8.2%', changeType: 'positive' },
+          { name: 'Pending Bookings', value: res.data.stats.pendingBookings, change: '-2.5%', changeType: 'negative' },
+          { name: 'Website Visitors', value: res.data.stats.websiteVisitors, change: '+24%', changeType: 'positive' },
+        ];
+        setStats(s);
+        setRecentBookings(res.data.recentBookings);
+      });
+  }, []);
 
   return (
     <div>
       <h3 className="text-2xl font-semibold text-gray-800 mb-6">Dashboard Overview</h3>
-      
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat) => (
           <div key={stat.name} className="bg-white p-6 rounded-lg shadow">
@@ -35,8 +38,7 @@ const DashboardHome = () => {
           </div>
         ))}
       </div>
-      
-      {/* Rest of the component code... */}
+      {/* You can also render recentBookings here */}
     </div>
   );
 };

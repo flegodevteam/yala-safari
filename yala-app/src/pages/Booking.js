@@ -1,9 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useLocation } from "react-router-dom";
 
 export default function Booking() {
   const navigate = useNavigate();
+
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const selectedPark = params.get("park");
+  const selectedPackage = params.get("package");
+
   const [bookingData, setBookingData] = useState({
     name: "",
     email: "",
@@ -11,11 +18,20 @@ export default function Booking() {
     participants: 1,
     date: "",
     timeSlot: "",
+    selectedPark: selectedPark || "",
+    selectedPackage: selectedPackage || "",
+    jeepType: "basic",
+    visitingTime: "morning",
+    visitorType: "foreign",
+    mealOption: "without-meals",
+    mealType: "none",
+    reservationType: "shared",
     addOns: {
       lunch: false,
       binoculars: false,
       guide: false,
     },
+
     paymentMethod: "credit-card",
     cardNumber: "",
     cardExpiry: "",
@@ -63,26 +79,51 @@ export default function Booking() {
   const prevStep = () => setCurrentStep((prev) => prev - 1);
 
   const calculateTotal = () => {
-    const basePrice = 50 * bookingData.participants;
-    let addOnsTotal = 0;
+    const ticketPrice = 2; // Ticket price per person
+    const participants = bookingData.participants;
 
-    if (bookingData.addOns.lunch) addOnsTotal += 15 * bookingData.participants;
-    if (bookingData.addOns.binoculars)
-      addOnsTotal += 5 * bookingData.participants;
+    // Jeep price based on participants
+    let jeepPrice = 0;
+    if (participants === 1) jeepPrice = 10;
+    else if (participants === 2) jeepPrice = 8;
+    else if (participants === 4) jeepPrice = 5;
+    else if (participants >= 5) jeepPrice = 5;
+
+    // Adjust jeep price based on jeep type
+    if (bookingData.jeepType === "luxury") jeepPrice += 5;
+    else if (bookingData.jeepType === "super-luxury") jeepPrice += 10;
+
+    // Visiting time cost
+    let visitingTimeCost = 0;
+    if (bookingData.visitingTime === "morning") visitingTimeCost = 5;
+    else if (bookingData.visitingTime === "extended-morning")
+      visitingTimeCost = 7;
+    else if (bookingData.visitingTime === "afternoon") visitingTimeCost = 5;
+    else if (bookingData.visitingTime === "full-day") visitingTimeCost = 10;
+
+    // Add-ons cost
+    let addOnsTotal = 0;
+    if (bookingData.addOns.lunch) addOnsTotal += 15 * participants;
+    if (bookingData.addOns.binoculars) addOnsTotal += 5 * participants;
     if (bookingData.addOns.guide) addOnsTotal += 20;
 
-    return basePrice + addOnsTotal;
+    // Total cost
+    return (
+      ticketPrice * participants + jeepPrice + visitingTimeCost + addOnsTotal
+    );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    console.log(bookingData);
+
     try {
       // Call the POST API
       const response = await axios.post("http://localhost:5000/api/bookings/", {
         ...bookingData,
-        total: calculateTotal(),
+        totalAmount: calculateTotal(),
       });
 
       // Handle success
@@ -348,7 +389,258 @@ export default function Booking() {
                 Enhance Your Experience
               </h3>
 
+              {/* Jeep Type Selection */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Jeep Type <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {["basic", "luxury", "super-luxury"].map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() =>
+                        setBookingData((prev) => ({
+                          ...prev,
+                          jeepType: type,
+                        }))
+                      }
+                      className={`p-3 border rounded-lg flex items-center justify-center ${
+                        bookingData.jeepType === type
+                          ? "border-green-500 bg-green-50"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {type === "basic" && "Basic G"}
+                      {type === "luxury" && "Luxury"}
+                      {type === "super-luxury" && "Super Luxury"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Visiting Time Selection */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Visiting Time <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {[
+                    {
+                      value: "morning",
+                      label: "Morning (3-4 hours)",
+                      price: "$5",
+                    },
+                    {
+                      value: "extended-morning",
+                      label: "Extended Morning",
+                      price: "$7",
+                    },
+                    {
+                      value: "afternoon",
+                      label: "Afternoon (3-4 hours)",
+                      price: "$5",
+                    },
+                    { value: "full-day", label: "Full Day", price: "$10" },
+                  ].map((time) => (
+                    <button
+                      key={time.value}
+                      type="button"
+                      onClick={() =>
+                        setBookingData((prev) => ({
+                          ...prev,
+                          visitingTime: time.value,
+                        }))
+                      }
+                      className={`p-3 border rounded-lg flex items-center justify-between ${
+                        bookingData.visitingTime === time.value
+                          ? "border-green-500 bg-green-50"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <span>{time.label}</span>
+                      <span className="text-gray-600">{time.price}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Visitor Type Selection */}
               <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Visitor Type <span className="text-red-500">*</span>
+                </label>
+                <div className="space-y-3">
+                  {/* Foreign Visitors Option */}
+                  <div className="flex items-start">
+                    <div className="flex items-center h-5">
+                      <input
+                        id="foreign-visitor"
+                        name="visitorType"
+                        type="radio"
+                        checked={bookingData.visitorType === "foreign"}
+                        onChange={() =>
+                          setBookingData((prev) => ({
+                            ...prev,
+                            visitorType: "foreign",
+                            mealOption:
+                              prev.mealOption === "none"
+                                ? "without-meals"
+                                : prev.mealOption,
+                            mealType:
+                              prev.mealType === "none" ? "none" : prev.mealType,
+                          }))
+                        }
+                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                      />
+                    </div>
+                    <div className="ml-3">
+                      <label
+                        htmlFor="foreign-visitor"
+                        className="font-medium text-gray-700"
+                      >
+                        Foreign Visitors
+                      </label>
+                      {/* Meal Options for Foreign Visitors */}
+                      {bookingData.visitorType === "foreign" && (
+                        <div className="mt-2 space-y-2 pl-4">
+                          <div className="flex items-center">
+                            <input
+                              id="with-meals"
+                              name="mealOption"
+                              type="radio"
+                              checked={bookingData.mealOption === "with-meals"}
+                              onChange={() =>
+                                setBookingData((prev) => ({
+                                  ...prev,
+                                  mealOption: "with-meals",
+                                  mealType:
+                                    prev.mealType === "none"
+                                      ? "non-veg"
+                                      : prev.mealType,
+                                }))
+                              }
+                              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                            />
+                            <label
+                              htmlFor="with-meals"
+                              className="ml-2 text-gray-700"
+                            >
+                              With Meals (Breakfast)
+                            </label>
+                          </div>
+                          {bookingData.mealOption === "with-meals" && (
+                            <div className="pl-4 space-y-2">
+                              <div className="flex items-center">
+                                <input
+                                  id="non-veg"
+                                  name="mealType"
+                                  type="radio"
+                                  checked={bookingData.mealType === "non-veg"}
+                                  onChange={() =>
+                                    setBookingData((prev) => ({
+                                      ...prev,
+                                      mealType: "non-veg",
+                                    }))
+                                  }
+                                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                                />
+                                <label
+                                  htmlFor="non-veg"
+                                  className="ml-2 text-gray-700"
+                                >
+                                  Non-Vegetarian
+                                </label>
+                              </div>
+                              <div className="flex items-center">
+                                <input
+                                  id="veg"
+                                  name="mealType"
+                                  type="radio"
+                                  checked={bookingData.mealType === "veg"}
+                                  onChange={() =>
+                                    setBookingData((prev) => ({
+                                      ...prev,
+                                      mealType: "veg",
+                                    }))
+                                  }
+                                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                                />
+                                <label
+                                  htmlFor="veg"
+                                  className="ml-2 text-gray-700"
+                                >
+                                  Vegetarian
+                                </label>
+                              </div>
+                            </div>
+                          )}
+                          <div className="flex items-center">
+                            <input
+                              id="without-meals"
+                              name="mealOption"
+                              type="radio"
+                              checked={
+                                bookingData.mealOption === "without-meals"
+                              }
+                              onChange={() =>
+                                setBookingData((prev) => ({
+                                  ...prev,
+                                  mealOption: "without-meals",
+                                  mealType: "none",
+                                }))
+                              }
+                              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                            />
+                            <label
+                              htmlFor="without-meals"
+                              className="ml-2 text-gray-700"
+                            >
+                              Without Meals
+                            </label>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Local Visitors Option */}
+                  <div className="flex items-start">
+                    <div className="flex items-center h-5">
+                      <input
+                        id="local-visitor"
+                        name="visitorType"
+                        type="radio"
+                        checked={bookingData.visitorType === "local"}
+                        onChange={() =>
+                          setBookingData((prev) => ({
+                            ...prev,
+                            visitorType: "local",
+                            mealOption: "none",
+                            mealType: "none",
+                          }))
+                        }
+                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                      />
+                    </div>
+                    <div className="ml-3">
+                      <label
+                        htmlFor="local-visitor"
+                        className="font-medium text-gray-700"
+                      >
+                        Local Visitors
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Existing Add-ons */}
+              <div className="space-y-4">
+                <h4 className="text-md font-semibold text-gray-800">
+                  Additional Options
+                </h4>
+
                 <div className="flex items-start">
                   <div className="flex items-center h-5">
                     <input
@@ -428,6 +720,39 @@ export default function Booking() {
                 </h4>
                 <div className="space-y-2">
                   <div className="flex justify-between">
+                    <span className="text-gray-600">Jeep Type</span>
+                    <span className="capitalize">
+                      {bookingData.jeepType === "basic" && "Basic G"}
+                      {bookingData.jeepType === "luxury" && "Luxury"}
+                      {bookingData.jeepType === "super-luxury" &&
+                        "Super Luxury"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Visiting Time</span>
+                    <span>
+                      {bookingData.visitingTime === "morning" &&
+                        "Morning (3-4 hours)"}
+                      {bookingData.visitingTime === "extended-morning" &&
+                        "Extended Morning"}
+                      {bookingData.visitingTime === "afternoon" &&
+                        "Afternoon (3-4 hours)"}
+                      {bookingData.visitingTime === "full-day" && "Full Day"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Visitor Type</span>
+                    <span className="capitalize">
+                      {bookingData.visitorType === "foreign"
+                        ? "Foreign Visitor"
+                        : "Local Visitor"}
+                      {bookingData.mealOption === "with-meals" &&
+                        " (With Meals)"}
+                      {bookingData.mealOption === "without-meals" &&
+                        " (Without Meals)"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-gray-600">
                       Base Price ({bookingData.participants}{" "}
                       {bookingData.participants === 1 ? "person" : "people"})
@@ -477,7 +802,6 @@ export default function Booking() {
               </div>
             </div>
           )}
-
           {/* Step 3: Payment */}
           {currentStep === 3 && (
             <div className="space-y-6">
