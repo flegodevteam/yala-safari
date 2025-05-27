@@ -1,1111 +1,714 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import {
+  FiChevronDown,
+  FiInfo,
+  FiUser,
+  FiCalendar,
+  FiClock,
+  FiMapPin,
+  FiPhone,
+  FiDollarSign,
+  FiCreditCard,
+} from "react-icons/fi";
 
-export default function Booking() {
-  const navigate = useNavigate();
+const Booking = () => {
+  // Form state
+  const [reservationType, setReservationType] = useState("private");
+  const [location, setLocation] = useState("yala");
+  const [block, setBlock] = useState("block1");
+  const [visitorType, setVisitorType] = useState("foreign");
+  const [packageType, setPackageType] = useState("basic");
+  const [duration, setDuration] = useState("morning");
+  const [mealOption, setMealOption] = useState("non-veg");
+  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [numPersons, setNumPersons] = useState(1);
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [hotelContact, setHotelContact] = useState("");
+  const [accommodation, setAccommodation] = useState("");
+  const [showSummary, setShowSummary] = useState(false);
 
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const selectedPark = params.get("park");
-  const selectedPackage = params.get("package");
 
-  const [bookingData, setBookingData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    participants: 1,
-    date: "",
-    timeSlot: "",
-    selectedPark: selectedPark || "",
-    selectedPackage: selectedPackage || "",
-    jeepType: "basic",
-    visitingTime: "morning",
-    visitorType: "foreign",
-    mealOption: "without-meals",
-    mealType: "none",
-    reservationType: "shared",
-    addOns: {
-      lunch: false,
-      binoculars: false,
-      guide: false,
+  // Pricing data
+  const pricing = {
+    private: {
+      basic: { morning: 50, extendedMorning: 70, afternoon: 50, fullDay: 100 },
+      luxury: {
+        morning: 80,
+        extendedMorning: 100,
+        afternoon: 80,
+        fullDay: 150,
+      },
+      superLuxury: {
+        morning: 120,
+        extendedMorning: 150,
+        afternoon: 120,
+        fullDay: 200,
+      },
     },
-
-    paymentMethod: "credit-card",
-    cardNumber: "",
-    cardExpiry: "",
-    cardCvc: "",
-  });
-
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-
-  const availableDates = generateAvailableDates();
-  const timeSlots = ["08:00 AM", "11:00 AM", "02:00 PM", "04:00 PM"];
-
-  function generateAvailableDates() {
-    const dates = [];
-    const today = new Date();
-    for (let i = 1; i <= 14; i++) {
-      const date = new Date();
-      date.setDate(today.getDate() + i);
-      dates.push(date.toISOString().split("T")[0]);
-    }
-    return dates;
-  }
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    if (name.startsWith("addOns.")) {
-      const addOnName = name.split(".")[1];
-      setBookingData((prev) => ({
-        ...prev,
-        addOns: {
-          ...prev.addOns,
-          [addOnName]: checked,
-        },
-      }));
-    } else {
-      setBookingData((prev) => ({
-        ...prev,
-        [name]: type === "checkbox" ? checked : value,
-      }));
-    }
+    shared: {
+      1: 10,
+      2: 9,
+      3: 8,
+      4: 7,
+      5: 5,
+    },
+    meals: {
+      "non-veg": 15,
+      veg: 10,
+      none: 0,
+    },
   };
 
-  const nextStep = () => setCurrentStep((prev) => prev + 1);
-  const prevStep = () => setCurrentStep((prev) => prev - 1);
-
+  // Calculate total cost
   const calculateTotal = () => {
-    const ticketPrice = 2; // Ticket price per person
-    const participants = bookingData.participants;
+    let basePrice = 0;
 
-    // Jeep price based on participants
-    let jeepPrice = 0;
-    if (participants === 1) jeepPrice = 10;
-    else if (participants === 2) jeepPrice = 8;
-    else if (participants === 4) jeepPrice = 5;
-    else if (participants >= 5) jeepPrice = 5;
-
-    // Adjust jeep price based on jeep type
-    if (bookingData.jeepType === "luxury") jeepPrice += 5;
-    else if (bookingData.jeepType === "super-luxury") jeepPrice += 10;
-
-    // Visiting time cost
-    let visitingTimeCost = 0;
-    if (bookingData.visitingTime === "morning") visitingTimeCost = 5;
-    else if (bookingData.visitingTime === "extended-morning")
-      visitingTimeCost = 7;
-    else if (bookingData.visitingTime === "afternoon") visitingTimeCost = 5;
-    else if (bookingData.visitingTime === "full-day") visitingTimeCost = 10;
-
-    // Add-ons cost
-    let addOnsTotal = 0;
-    if (bookingData.addOns.lunch) addOnsTotal += 15 * participants;
-    if (bookingData.addOns.binoculars) addOnsTotal += 5 * participants;
-    if (bookingData.addOns.guide) addOnsTotal += 20;
-
-    // Total cost
-    return (
-      ticketPrice * participants + jeepPrice + visitingTimeCost + addOnsTotal
-    );
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    console.log(bookingData);
-
-    try {
-      // Call the POST API
-      const response = await axios.post("http://localhost:5000/api/bookings/", {
-        ...bookingData,
-        totalAmount: calculateTotal(),
-      });
-
-      // Handle success
-      console.log("Booking submitted:", response.data);
-      setIsSubmitting(false);
-      setIsSuccess(true);
-
-      // Redirect to confirmation page after 2 seconds
-      setTimeout(() => {
-        navigate("/booking-confirmation", {
-          state: { bookingData, total: calculateTotal() },
-        });
-      }, 2000);
-    } catch (error) {
-      // Handle error
-      console.error("Error submitting booking:", error);
-      setIsSubmitting(false);
-      alert("Failed to submit booking. Please try again.");
+    if (reservationType === "private") {
+      basePrice = pricing.private[packageType][duration];
+      // Jeep cost is divided by number of persons
+      basePrice +=
+        (packageType === "basic" ? 50 : packageType === "luxury" ? 80 : 120) /
+        numPersons;
+    } else {
+      basePrice =
+        numPersons >= 5 ? pricing.shared[5] : pricing.shared[numPersons];
     }
+
+    // Add meal cost for foreign visitors
+    if (visitorType === "foreign" && reservationType === "private") {
+      basePrice += pricing.meals[mealOption];
+    }
+
+    return basePrice * numPersons;
   };
+
+  // ...existing code...
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const bookingData = {
+    reservationType,
+    location,
+    block,
+    packageType,
+    duration,
+    visitorType,
+    mealOption,
+    paymentMethod,
+    numPersons,
+    pickupLocation,
+    whatsappNumber,
+    hotelContact,
+    accommodation,
+    totalAmount: calculateTotal(),
+    // status is optional, backend defaults to "pending"
+  };
+
+  try {
+    const response = await fetch("http://localhost:5000/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bookingData),
+    });
+
+    if (response.ok) {
+      setShowSummary(true);
+    } else {
+      const error = await response.json();
+      alert("Booking failed: " + error.error);
+    }
+  } catch (err) {
+    alert("Network error: " + err.message);
+  }
+};
+
+
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-6 bg-white rounded-xl shadow-md">
-      {/* Progress Steps */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-          Complete Your Booking
-        </h2>
-        <div className="flex items-center justify-between mb-6">
-          {[1, 2, 3].map((step) => (
-            <div key={step} className="flex flex-col items-center">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center 
-                ${
-                  currentStep >= step
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-200 text-gray-600"
-                }`}
-              >
-                {step}
-              </div>
-              <span
-                className={`text-xs mt-2 ${
-                  currentStep >= step
-                    ? "text-green-600 font-medium"
-                    : "text-gray-500"
-                }`}
-              >
-                {step === 1 && "Details"}
-                {step === 2 && "Extras"}
-                {step === 3 && "Payment"}
-              </span>
-            </div>
-          ))}
-          <div className="flex-1 h-1 mx-2 bg-gray-200">
-            <div
-              className="h-1 bg-green-600 transition-all duration-300"
-              style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
-            ></div>
-          </div>
-        </div>
-      </div>
-
-      {isSuccess ? (
-        <div className="text-center py-8">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
-            <svg
-              className="h-8 w-8 text-green-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-          <h3 className="text-xl font-medium text-gray-900 mb-2">
-            Booking Confirmed!
-          </h3>
-          <p className="text-gray-600">
-            Redirecting to your booking details...
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-amber-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-bold text-green-800">
+            Yala Safari Booking
+          </h1>
+          <p className="mt-2 text-green-600">
+            Experience the wild like never before
           </p>
         </div>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          {/* Step 1: Personal Details */}
-          {currentStep === 1 && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Personal Information
-              </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Full Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={bookingData.name}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Email <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={bookingData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="phone"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Phone Number <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={bookingData.phone}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="participants"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Number of Participants{" "}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="participants"
-                    name="participants"
-                    value={bookingData.participants}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  >
-                    {[1, 2, 3, 4, 5, 6].map((num) => (
-                      <option key={num} value={num}>
-                        {num} {num === 1 ? "person" : "people"}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="date"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Select Date <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="date"
-                    name="date"
-                    value={bookingData.date}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  >
-                    <option value="">Choose a date</option>
-                    {availableDates.map((date) => (
-                      <option key={date} value={date}>
-                        {new Date(date).toLocaleDateString("en-US", {
-                          weekday: "short",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="timeSlot"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Time Slot <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="timeSlot"
-                    name="timeSlot"
-                    value={bookingData.timeSlot}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  >
-                    <option value="">Select a time</option>
-                    {timeSlots.map((time) => (
-                      <option key={time} value={time}>
-                        {time}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-4">
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  disabled={
-                    !bookingData.name ||
-                    !bookingData.email ||
-                    !bookingData.phone ||
-                    !bookingData.date ||
-                    !bookingData.timeSlot
-                  }
-                  className={`px-6 py-2 rounded-lg font-medium ${
-                    !bookingData.name ||
-                    !bookingData.email ||
-                    !bookingData.phone ||
-                    !bookingData.date ||
-                    !bookingData.timeSlot
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-green-600 text-white hover:bg-green-700"
-                  }`}
-                >
-                  Next: Add Extras
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Add-ons */}
-          {currentStep === 2 && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Enhance Your Experience
-              </h3>
-
-              {/* Jeep Type Selection */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Jeep Type <span className="text-red-500">*</span>
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {["basic", "luxury", "super-luxury"].map((type) => (
+        {!showSummary ? (
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className="p-6 sm:p-8">
+              <form onSubmit={handleSubmit}>
+                {/* Reservation Type */}
+                <div className="mb-8">
+                  <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <FiUser className="mr-2" /> Reservation Type
+                  </h2>
+                  <div className="grid grid-cols-2 gap-4">
                     <button
-                      key={type}
                       type="button"
-                      onClick={() =>
-                        setBookingData((prev) => ({
-                          ...prev,
-                          jeepType: type,
-                        }))
-                      }
-                      className={`p-3 border rounded-lg flex items-center justify-center ${
-                        bookingData.jeepType === type
-                          ? "border-green-500 bg-green-50"
-                          : "border-gray-300"
+                      onClick={() => setReservationType("private")}
+                      className={`py-3 px-4 rounded-lg border-2 transition-all ${
+                        reservationType === "private"
+                          ? "border-green-500 bg-green-50 text-green-700"
+                          : "border-gray-200 hover:border-green-300"
                       }`}
                     >
-                      {type === "basic" && "Basic G"}
-                      {type === "luxury" && "Luxury"}
-                      {type === "super-luxury" && "Super Luxury"}
+                      <div className="font-medium">Private Safari</div>
+                      <div className="text-sm mt-1 text-gray-500">
+                        Exclusive jeep for your group
+                      </div>
                     </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Visiting Time Selection */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Visiting Time <span className="text-red-500">*</span>
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {[
-                    {
-                      value: "morning",
-                      label: "Morning (3-4 hours)",
-                      price: "$5",
-                    },
-                    {
-                      value: "extended-morning",
-                      label: "Extended Morning",
-                      price: "$7",
-                    },
-                    {
-                      value: "afternoon",
-                      label: "Afternoon (3-4 hours)",
-                      price: "$5",
-                    },
-                    { value: "full-day", label: "Full Day", price: "$10" },
-                  ].map((time) => (
                     <button
-                      key={time.value}
                       type="button"
-                      onClick={() =>
-                        setBookingData((prev) => ({
-                          ...prev,
-                          visitingTime: time.value,
-                        }))
-                      }
-                      className={`p-3 border rounded-lg flex items-center justify-between ${
-                        bookingData.visitingTime === time.value
-                          ? "border-green-500 bg-green-50"
-                          : "border-gray-300"
+                      onClick={() => setReservationType("shared")}
+                      className={`py-3 px-4 rounded-lg border-2 transition-all ${
+                        reservationType === "shared"
+                          ? "border-green-500 bg-green-50 text-green-700"
+                          : "border-gray-200 hover:border-green-300"
                       }`}
                     >
-                      <span>{time.label}</span>
-                      <span className="text-gray-600">{time.price}</span>
+                      <div className="font-medium">Shared Safari</div>
+                      <div className="text-sm mt-1 text-gray-500">
+                        Join other travelers
+                      </div>
                     </button>
-                  ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Visitor Type Selection */}
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Visitor Type <span className="text-red-500">*</span>
-                </label>
-                <div className="space-y-3">
-                  {/* Foreign Visitors Option */}
-                  <div className="flex items-start">
-                    <div className="flex items-center h-5">
-                      <input
-                        id="foreign-visitor"
-                        name="visitorType"
-                        type="radio"
-                        checked={bookingData.visitorType === "foreign"}
-                        onChange={() =>
-                          setBookingData((prev) => ({
-                            ...prev,
-                            visitorType: "foreign",
-                            mealOption:
-                              prev.mealOption === "none"
-                                ? "without-meals"
-                                : prev.mealOption,
-                            mealType:
-                              prev.mealType === "none" ? "none" : prev.mealType,
-                          }))
-                        }
-                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
-                      />
-                    </div>
-                    <div className="ml-3">
-                      <label
-                        htmlFor="foreign-visitor"
-                        className="font-medium text-gray-700"
+                {/* Location Selection */}
+                <div className="mb-8">
+                  <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <FiMapPin className="mr-2" /> Safari Location
+                  </h2>
+                  <div className="grid grid-cols-3 gap-4">
+                    {["yala", "bundala", "udawalawa"].map((loc) => (
+                      <button
+                        key={loc}
+                        type="button"
+                        onClick={() => setLocation(loc)}
+                        className={`py-3 px-4 rounded-lg border-2 transition-all ${
+                          location === loc
+                            ? "border-green-500 bg-green-50 text-green-700"
+                            : "border-gray-200 hover:border-green-300"
+                        }`}
                       >
-                        Foreign Visitors
-                      </label>
-                      {/* Meal Options for Foreign Visitors */}
-                      {bookingData.visitorType === "foreign" && (
-                        <div className="mt-2 space-y-2 pl-4">
-                          <div className="flex items-center">
-                            <input
-                              id="with-meals"
-                              name="mealOption"
-                              type="radio"
-                              checked={bookingData.mealOption === "with-meals"}
-                              onChange={() =>
-                                setBookingData((prev) => ({
-                                  ...prev,
-                                  mealOption: "with-meals",
-                                  mealType:
-                                    prev.mealType === "none"
-                                      ? "non-veg"
-                                      : prev.mealType,
-                                }))
-                              }
-                              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
-                            />
-                            <label
-                              htmlFor="with-meals"
-                              className="ml-2 text-gray-700"
-                            >
-                              With Meals (Breakfast)
-                            </label>
+                        <div className="font-medium capitalize">{loc}</div>
+                      </button>
+                    ))}
+                  </div>
+                  {location === "yala" && (
+                    <div className="mt-4 grid grid-cols-2 gap-4">
+                      {["block1", "block4"].map((blk) => (
+                        <button
+                          key={blk}
+                          type="button"
+                          onClick={() => setBlock(blk)}
+                          className={`py-2 px-4 rounded-lg border-2 transition-all ${
+                            block === blk
+                              ? "border-green-500 bg-green-50 text-green-700"
+                              : "border-gray-200 hover:border-green-300"
+                          }`}
+                        >
+                          <div className="font-medium">
+                            {blk === "block1" ? "Block I" : "Block IV"}
                           </div>
-                          {bookingData.mealOption === "with-meals" && (
-                            <div className="pl-4 space-y-2">
-                              <div className="flex items-center">
-                                <input
-                                  id="non-veg"
-                                  name="mealType"
-                                  type="radio"
-                                  checked={bookingData.mealType === "non-veg"}
-                                  onChange={() =>
-                                    setBookingData((prev) => ({
-                                      ...prev,
-                                      mealType: "non-veg",
-                                    }))
-                                  }
-                                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
-                                />
-                                <label
-                                  htmlFor="non-veg"
-                                  className="ml-2 text-gray-700"
-                                >
-                                  Non-Vegetarian
-                                </label>
-                              </div>
-                              <div className="flex items-center">
-                                <input
-                                  id="veg"
-                                  name="mealType"
-                                  type="radio"
-                                  checked={bookingData.mealType === "veg"}
-                                  onChange={() =>
-                                    setBookingData((prev) => ({
-                                      ...prev,
-                                      mealType: "veg",
-                                    }))
-                                  }
-                                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
-                                />
-                                <label
-                                  htmlFor="veg"
-                                  className="ml-2 text-gray-700"
-                                >
-                                  Vegetarian
-                                </label>
-                              </div>
-                            </div>
-                          )}
-                          <div className="flex items-center">
-                            <input
-                              id="without-meals"
-                              name="mealOption"
-                              type="radio"
-                              checked={
-                                bookingData.mealOption === "without-meals"
-                              }
-                              onChange={() =>
-                                setBookingData((prev) => ({
-                                  ...prev,
-                                  mealOption: "without-meals",
-                                  mealType: "none",
-                                }))
-                              }
-                              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
-                            />
-                            <label
-                              htmlFor="without-meals"
-                              className="ml-2 text-gray-700"
-                            >
-                              Without Meals
-                            </label>
-                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Package and Duration */}
+                <div className="mb-8">
+                  <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <FiCalendar className="mr-2" /> Safari Package
+                  </h2>
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    {["basic", "luxury", "superLuxury"].map((pkg) => (
+                      <button
+                        key={pkg}
+                        type="button"
+                        onClick={() => setPackageType(pkg)}
+                        className={`py-3 px-4 rounded-lg border-2 transition-all ${
+                          packageType === pkg
+                            ? "border-green-500 bg-green-50 text-green-700"
+                            : "border-gray-200 hover:border-green-300"
+                        }`}
+                        disabled={reservationType === "shared"}
+                      >
+                        <div className="font-medium capitalize">
+                          {pkg === "basic"
+                            ? "Basic G"
+                            : pkg === "luxury"
+                            ? "Luxury"
+                            : "Super Luxury"}
                         </div>
-                      )}
-                    </div>
+                        {reservationType === "shared" && (
+                          <div className="text-xs mt-1 text-gray-500">
+                            Only for private
+                          </div>
+                        )}
+                      </button>
+                    ))}
                   </div>
 
-                  {/* Local Visitors Option */}
-                  <div className="flex items-start">
-                    <div className="flex items-center h-5">
-                      <input
-                        id="local-visitor"
-                        name="visitorType"
-                        type="radio"
-                        checked={bookingData.visitorType === "local"}
-                        onChange={() =>
-                          setBookingData((prev) => ({
-                            ...prev,
-                            visitorType: "local",
-                            mealOption: "none",
-                            mealType: "none",
-                          }))
-                        }
-                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
-                      />
-                    </div>
-                    <div className="ml-3">
-                      <label
-                        htmlFor="local-visitor"
-                        className="font-medium text-gray-700"
+                  <h3 className="text-lg font-medium text-gray-700 mb-3 flex items-center">
+                    <FiClock className="mr-2" /> Duration
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {[
+                      { value: "morning", label: "Morning (3-4hrs)" },
+                      { value: "extendedMorning", label: "Extended Morning" },
+                      { value: "afternoon", label: "Afternoon (3-4hrs)" },
+                      { value: "fullDay", label: "Full Day" },
+                    ].map((time) => (
+                      <button
+                        key={time.value}
+                        type="button"
+                        onClick={() => setDuration(time.value)}
+                        className={`py-2 px-3 rounded-lg border-2 transition-all ${
+                          duration === time.value
+                            ? "border-green-500 bg-green-50 text-green-700"
+                            : "border-gray-200 hover:border-green-300"
+                        }`}
+                        disabled={reservationType === "shared"}
                       >
-                        Local Visitors
+                        <div className="font-medium">{time.label}</div>
+                        {reservationType === "private" && (
+                          <div className="text-xs text-gray-500">
+                            ${pricing.private[packageType][time.value]}
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Visitor Details */}
+                <div className="mb-8">
+                  <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                    Visitor Information
+                  </h2>
+
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Visitor Type
                       </label>
+                      <div className="flex rounded-md shadow-sm">
+                        {["foreign", "local"].map((type) => (
+                          <button
+                            key={type}
+                            type="button"
+                            onClick={() => setVisitorType(type)}
+                            className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+                              visitorType === type
+                                ? "bg-green-600 text-white"
+                                : "bg-white text-gray-700 hover:bg-gray-50"
+                            }`}
+                          >
+                            {type === "foreign" ? "Foreign" : "Local"}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
 
-              {/* Existing Add-ons */}
-              <div className="space-y-4">
-                <h4 className="text-md font-semibold text-gray-800">
-                  Additional Options
-                </h4>
-
-                <div className="flex items-start">
-                  <div className="flex items-center h-5">
-                    <input
-                      id="lunch"
-                      name="addOns.lunch"
-                      type="checkbox"
-                      checked={bookingData.addOns.lunch}
-                      onChange={handleChange}
-                      className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                    />
-                  </div>
-                  <div className="ml-3">
-                    <label
-                      htmlFor="lunch"
-                      className="font-medium text-gray-700"
-                    >
-                      Lunch Package - $15 per person
-                    </label>
-                    <p className="text-sm text-gray-500">
-                      Delicious local meal with bottled water
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start">
-                  <div className="flex items-center h-5">
-                    <input
-                      id="binoculars"
-                      name="addOns.binoculars"
-                      type="checkbox"
-                      checked={bookingData.addOns.binoculars}
-                      onChange={handleChange}
-                      className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                    />
-                  </div>
-                  <div className="ml-3">
-                    <label
-                      htmlFor="binoculars"
-                      className="font-medium text-gray-700"
-                    >
-                      Binocular Rental - $5 per person
-                    </label>
-                    <p className="text-sm text-gray-500">
-                      High-quality binoculars for better wildlife viewing
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start">
-                  <div className="flex items-center h-5">
-                    <input
-                      id="guide"
-                      name="addOns.guide"
-                      type="checkbox"
-                      checked={bookingData.addOns.guide}
-                      onChange={handleChange}
-                      className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                    />
-                  </div>
-                  <div className="ml-3">
-                    <label
-                      htmlFor="guide"
-                      className="font-medium text-gray-700"
-                    >
-                      Expert Guide - $20 flat rate
-                    </label>
-                    <p className="text-sm text-gray-500">
-                      Private guide with specialized wildlife knowledge
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-medium text-gray-800 mb-2">
-                  Booking Summary
-                </h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Jeep Type</span>
-                    <span className="capitalize">
-                      {bookingData.jeepType === "basic" && "Basic G"}
-                      {bookingData.jeepType === "luxury" && "Luxury"}
-                      {bookingData.jeepType === "super-luxury" &&
-                        "Super Luxury"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Visiting Time</span>
-                    <span>
-                      {bookingData.visitingTime === "morning" &&
-                        "Morning (3-4 hours)"}
-                      {bookingData.visitingTime === "extended-morning" &&
-                        "Extended Morning"}
-                      {bookingData.visitingTime === "afternoon" &&
-                        "Afternoon (3-4 hours)"}
-                      {bookingData.visitingTime === "full-day" && "Full Day"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Visitor Type</span>
-                    <span className="capitalize">
-                      {bookingData.visitorType === "foreign"
-                        ? "Foreign Visitor"
-                        : "Local Visitor"}
-                      {bookingData.mealOption === "with-meals" &&
-                        " (With Meals)"}
-                      {bookingData.mealOption === "without-meals" &&
-                        " (Without Meals)"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">
-                      Base Price ({bookingData.participants}{" "}
-                      {bookingData.participants === 1 ? "person" : "people"})
-                    </span>
-                    <span>${50 * bookingData.participants}</span>
-                  </div>
-                  {bookingData.addOns.lunch && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Lunch Package</span>
-                      <span>${15 * bookingData.participants}</span>
-                    </div>
-                  )}
-                  {bookingData.addOns.binoculars && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Binocular Rental</span>
-                      <span>${5 * bookingData.participants}</span>
-                    </div>
-                  )}
-                  {bookingData.addOns.guide && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Expert Guide</span>
-                      <span>$20</span>
-                    </div>
-                  )}
-                  <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between font-medium">
-                    <span>Total</span>
-                    <span>${calculateTotal()}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-between pt-4">
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  className="px-6 py-2 rounded-lg font-medium bg-gray-200 text-gray-700 hover:bg-gray-300"
-                >
-                  Back
-                </button>
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  className="px-6 py-2 rounded-lg font-medium bg-green-600 text-white hover:bg-green-700"
-                >
-                  Next: Payment
-                </button>
-              </div>
-            </div>
-          )}
-          {/* Step 3: Payment */}
-          {currentStep === 3 && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Payment Information
-              </h3>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Payment Method
-                  </label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setBookingData((prev) => ({
-                          ...prev,
-                          paymentMethod: "credit-card",
-                        }))
-                      }
-                      className={`p-3 border rounded-lg flex items-center justify-center ${
-                        bookingData.paymentMethod === "credit-card"
-                          ? "border-green-500 bg-green-50"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      <svg
-                        className="h-6 w-6 mr-2 text-gray-700"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                    <div>
+                      <label
+                        htmlFor="numPersons"
+                        className="block text-sm font-medium text-gray-700 mb-1"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                        />
-                      </svg>
-                      Credit Card
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setBookingData((prev) => ({
-                          ...prev,
-                          paymentMethod: "paypal",
-                        }))
-                      }
-                      className={`p-3 border rounded-lg flex items-center justify-center ${
-                        bookingData.paymentMethod === "paypal"
-                          ? "border-green-500 bg-green-50"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      <svg
-                        className="h-6 w-6 mr-2 text-blue-500"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
+                        Number of Persons
+                      </label>
+                      <select
+                        id="numPersons"
+                        value={numPersons}
+                        onChange={(e) =>
+                          setNumPersons(parseInt(e.target.value))
+                        }
+                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md"
                       >
-                        <path d="M7.5 11.5c0 .833.667 1.5 1.5 1.5h3.5v-1.5H9v-1h2v-1.5H9v-1h2.5V6H9c-.833 0-1.5.667-1.5 1.5v4zm6 0c0 .833.667 1.5 1.5 1.5h1.5v-1.5H15v-1h1v-1.5h-1v-1h1.5V6H15c-.833 0-1.5.667-1.5 1.5v4zm6-6v12c0 1.104-.896 2-2 2H6c-1.104 0-2-.896-2-2V6c0-1.104.896-2 2-2h12c1.104 0 2 .896 2 2z" />
-                      </svg>
-                      PayPal
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setBookingData((prev) => ({
-                          ...prev,
-                          paymentMethod: "cash",
-                        }))
-                      }
-                      className={`p-3 border rounded-lg flex items-center justify-center ${
-                        bookingData.paymentMethod === "cash"
-                          ? "border-green-500 bg-green-50"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      <svg
-                        className="h-6 w-6 mr-2 text-gray-700"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      Cash on Arrival
-                    </button>
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                          <option key={num} value={num}>
+                            {num}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                </div>
 
-                {bookingData.paymentMethod === "credit-card" && (
+                  {visitorType === "foreign" &&
+                    reservationType === "private" && (
+                      <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Meal Option
+                        </label>
+                        <div className="grid grid-cols-3 gap-4">
+                          {["non-veg", "veg", "none"].map((meal) => (
+                            <button
+                              key={meal}
+                              type="button"
+                              onClick={() => setMealOption(meal)}
+                              className={`py-2 px-3 rounded-lg border-2 transition-all ${
+                                mealOption === meal
+                                  ? "border-green-500 bg-green-50 text-green-700"
+                                  : "border-gray-200 hover:border-green-300"
+                              }`}
+                            >
+                              <div className="font-medium capitalize">
+                                {meal === "non-veg"
+                                  ? "Non-Veg"
+                                  : meal === "veg"
+                                  ? "Vegetarian"
+                                  : "No Meal"}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {meal !== "none"
+                                  ? `+$${pricing.meals[meal]}`
+                                  : ""}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                   <div className="space-y-4">
                     <div>
                       <label
-                        htmlFor="cardNumber"
+                        htmlFor="accommodation"
                         className="block text-sm font-medium text-gray-700 mb-1"
                       >
-                        Card Number <span className="text-red-500">*</span>
+                        Accommodation Details
                       </label>
                       <input
                         type="text"
-                        id="cardNumber"
-                        name="cardNumber"
-                        value={bookingData.cardNumber}
-                        onChange={handleChange}
-                        placeholder="1234 5678 9012 3456"
+                        id="accommodation"
+                        value={accommodation}
+                        onChange={(e) => setAccommodation(e.target.value)}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2 border"
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="pickupLocation"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Pickup Location (GPS + Description)
+                      </label>
+                      <input
+                        type="text"
+                        id="pickupLocation"
+                        value={pickupLocation}
+                        onChange={(e) => setPickupLocation(e.target.value)}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2 border"
+                        required
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label
-                          htmlFor="cardExpiry"
+                          htmlFor="whatsappNumber"
                           className="block text-sm font-medium text-gray-700 mb-1"
                         >
-                          Expiry Date <span className="text-red-500">*</span>
+                          WhatsApp Number
                         </label>
                         <input
-                          type="text"
-                          id="cardExpiry"
-                          name="cardExpiry"
-                          value={bookingData.cardExpiry}
-                          onChange={handleChange}
-                          placeholder="MM/YY"
+                          type="tel"
+                          id="whatsappNumber"
+                          value={whatsappNumber}
+                          onChange={(e) => setWhatsappNumber(e.target.value)}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2 border"
                           required
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         />
                       </div>
 
                       <div>
                         <label
-                          htmlFor="cardCvc"
+                          htmlFor="hotelContact"
                           className="block text-sm font-medium text-gray-700 mb-1"
                         >
-                          CVC <span className="text-red-500">*</span>
+                          Hotel Contact Number
                         </label>
                         <input
-                          type="text"
-                          id="cardCvc"
-                          name="cardCvc"
-                          value={bookingData.cardCvc}
-                          onChange={handleChange}
-                          placeholder="123"
+                          type="tel"
+                          id="hotelContact"
+                          value={hotelContact}
+                          onChange={(e) => setHotelContact(e.target.value)}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2 border"
                           required
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         />
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
 
-                {bookingData.paymentMethod === "paypal" && (
-                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <svg
-                          className="h-5 w-5 text-yellow-400"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                {/* Payment Method */}
+                <div className="mb-8">
+                  <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <FiCreditCard className="mr-2" /> Payment Method
+                  </h2>
+                  <div className="grid grid-cols-3 gap-4">
+                    {reservationType === "private" ? (
+                      <>
+                        {["cash", "bankDeposit", "bankTransfer"].map(
+                          (method) => (
+                            <button
+                              key={method}
+                              type="button"
+                              onClick={() => setPaymentMethod(method)}
+                              className={`py-3 px-4 rounded-lg border-2 transition-all ${
+                                paymentMethod === method
+                                  ? "border-green-500 bg-green-50 text-green-700"
+                                  : "border-gray-200 hover:border-green-300"
+                              }`}
+                            >
+                              <div className="font-medium capitalize">
+                                {method === "bankDeposit"
+                                  ? "Bank Deposit"
+                                  : method === "bankTransfer"
+                                  ? "Bank Transfer"
+                                  : "Cash"}
+                              </div>
+                            </button>
+                          )
+                        )}
+                      </>
+                    ) : (
+                      <div className="col-span-3 py-3 px-4 rounded-lg border-2 border-green-500 bg-green-50 text-green-700">
+                        <div className="font-medium">
+                          Bank Transfer (Required for Shared Safaris)
+                        </div>
                       </div>
-                      <div className="ml-3">
-                        <p className="text-sm text-yellow-700">
-                          You will be redirected to PayPal to complete your
-                          payment after submitting this form.
-                        </p>
+                    )}
+                  </div>
+                  {paymentMethod === "bankDeposit" && (
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Upload Deposit Slip
+                      </label>
+                      <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                        <div className="space-y-1 text-center">
+                          <div className="flex text-sm text-gray-600">
+                            <label
+                              htmlFor="file-upload"
+                              className="relative cursor-pointer bg-white rounded-md font-medium text-green-600 hover:text-green-500 focus-within:outline-none"
+                            >
+                              <span>Upload a file</span>
+                              <input
+                                id="file-upload"
+                                name="file-upload"
+                                type="file"
+                                className="sr-only"
+                              />
+                            </label>
+                            <p className="pl-1">or drag and drop</p>
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            PNG, JPG, PDF up to 5MB
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
-                {bookingData.paymentMethod === "cash" && (
-                  <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
-                    <div className="flex">
-                      <div className="flex-shrink-0">
-                        <svg
-                          className="h-5 w-5 text-blue-400"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <div className="ml-3">
-                        <p className="text-sm text-blue-700">
-                          Please bring exact change for your payment on the day
-                          of your safari.
-                        </p>
-                      </div>
+                {/* Price Summary */}
+                <div className="bg-gray-50 p-4 rounded-lg mb-8">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium text-gray-800">
+                      Estimated Total
+                    </h3>
+                    <div className="text-2xl font-bold text-green-600">
+                      ${calculateTotal().toFixed(2)}
                     </div>
                   </div>
-                )}
+                  <div className="mt-2 text-sm text-gray-500">
+                    {reservationType === "private" ? (
+                      <p>
+                        Includes jeep and entry fees for {numPersons} person(s)
+                      </p>
+                    ) : (
+                      <p>Shared safari rate for {numPersons} person(s)</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                  >
+                    Confirm Booking
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className="p-6 sm:p-8">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-green-700">
+                  Booking Confirmation
+                </h2>
+                <p className="text-green-600 mt-2">
+                  Your safari adventure is booked!
+                </p>
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-medium text-gray-800 mb-2">
-                  Final Booking Summary
-                </h4>
-                <div className="space-y-2">
+              <div className="bg-green-50 rounded-lg p-6 mb-8">
+                <h3 className="text-lg font-semibold text-green-800 mb-4">
+                  Booking Summary
+                </h3>
+                <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Date</span>
-                    <span>
-                      {bookingData.date
-                        ? new Date(bookingData.date).toLocaleDateString(
-                            "en-US",
-                            { weekday: "short", month: "short", day: "numeric" }
-                          )
-                        : "Not selected"}
+                    <span className="text-gray-600">Reservation Type:</span>
+                    <span className="font-medium">
+                      {reservationType === "private"
+                        ? "Private Safari"
+                        : "Shared Safari"}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Time</span>
-                    <span>{bookingData.timeSlot || "Not selected"}</span>
+                    <span className="text-gray-600">Location:</span>
+                    <span className="font-medium capitalize">
+                      {location === "yala"
+                        ? `Yala (${
+                            block === "block1" ? "Block I" : "Block IV"
+                          })`
+                        : location}
+                    </span>
+                  </div>
+                  {reservationType === "private" && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Package:</span>
+                        <span className="font-medium capitalize">
+                          {packageType === "basic"
+                            ? "Basic G"
+                            : packageType === "luxury"
+                            ? "Luxury"
+                            : "Super Luxury"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Duration:</span>
+                        <span className="font-medium">
+                          {duration === "morning"
+                            ? "Morning (3-4hrs)"
+                            : duration === "extendedMorning"
+                            ? "Extended Morning"
+                            : duration === "afternoon"
+                            ? "Afternoon (3-4hrs)"
+                            : "Full Day"}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Visitor Type:</span>
+                    <span className="font-medium">
+                      {visitorType === "foreign" ? "Foreign" : "Local"}
+                    </span>
+                  </div>
+                  {visitorType === "foreign" &&
+                    reservationType === "private" && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Meal Option:</span>
+                        <span className="font-medium capitalize">
+                          {mealOption === "non-veg"
+                            ? "Non-Vegetarian"
+                            : mealOption === "veg"
+                            ? "Vegetarian"
+                            : "No Meal"}
+                        </span>
+                      </div>
+                    )}
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Number of Persons:</span>
+                    <span className="font-medium">{numPersons}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Participants</span>
-                    <span>{bookingData.participants}</span>
+                    <span className="text-gray-600">Payment Method:</span>
+                    <span className="font-medium capitalize">
+                      {paymentMethod === "bankDeposit"
+                        ? "Bank Deposit"
+                        : paymentMethod === "bankTransfer"
+                        ? "Bank Transfer"
+                        : "Cash"}
+                    </span>
                   </div>
-                  <div className="border-t border-gray-200 my-2 pt-2 flex justify-between font-medium">
-                    <span>Total Amount</span>
-                    <span>${calculateTotal()}</span>
+                  <div className="pt-3 mt-3 border-t border-gray-200 flex justify-between">
+                    <span className="text-lg font-semibold text-gray-800">
+                      Total Amount:
+                    </span>
+                    <span className="text-xl font-bold text-green-600">
+                      ${calculateTotal().toFixed(2)}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-between pt-4">
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  className="px-6 py-2 rounded-lg font-medium bg-gray-200 text-gray-700 hover:bg-gray-300"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={
-                    isSubmitting ||
-                    (bookingData.paymentMethod === "credit-card" &&
-                      (!bookingData.cardNumber ||
-                        !bookingData.cardExpiry ||
-                        !bookingData.cardCvc))
-                  }
-                  className={`px-6 py-2 rounded-lg font-medium ${
-                    isSubmitting ||
-                    (bookingData.paymentMethod === "credit-card" &&
-                      (!bookingData.cardNumber ||
-                        !bookingData.cardExpiry ||
-                        !bookingData.cardCvc))
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-green-600 text-white hover:bg-green-700"
-                  }`}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Processing...
-                    </>
-                  ) : (
-                    "Confirm Booking"
-                  )}
-                </button>
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                  Contact Information
+                </h3>
+                <div className="space-y-2">
+                  <p>
+                    <span className="font-medium">Accommodation:</span>{" "}
+                    {accommodation}
+                  </p>
+                  <p>
+                    <span className="font-medium">Pickup Location:</span>{" "}
+                    {pickupLocation}
+                  </p>
+                  <p>
+                    <span className="font-medium">WhatsApp:</span>{" "}
+                    {whatsappNumber}
+                  </p>
+                  <p>
+                    <span className="font-medium">Hotel Contact:</span>{" "}
+                    {hotelContact}
+                  </p>
+                </div>
               </div>
+
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <FiInfo className="h-5 w-5 text-yellow-400" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-700">
+                      We'll contact you via WhatsApp within 24 hours to confirm
+                      your booking details and provide payment instructions if
+                      needed.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowSummary(false)}
+                className="w-full inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+              >
+                Make Another Booking
+              </button>
             </div>
-          )}
-        </form>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
+
+export default Booking;

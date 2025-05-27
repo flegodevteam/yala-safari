@@ -1,83 +1,41 @@
-const express = require('express');
-const Booking = require('../models/Booking');
+const express = require("express");
 const router = express.Router();
+const Booking = require("../models/Booking");
 
 // Create a new booking
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    const {
-      name,
-      email,
-      phone,
-      participants,
-      date,
-      timeSlot,
-      jeepType,
-      reservationType,
-      visitingTime,
-      visitorType,
-      mealType,
-      Accomodation,
-      selectedPackage,
-      selectedPark,
-      addOns,
-      paymentMethod,
-      cardNumber,
-      cardExpiry,
-      cardCvc,
-    } = req.body;
-
-    // Calculate total amount
-    const basePrice = 50 * participants;
-    let addOnsTotal = 0;
-    if (addOns.lunch) addOnsTotal += 15 * participants;
-    if (addOns.binoculars) addOnsTotal += 5 * participants;
-    if (addOns.guide) addOnsTotal += 20;
-    const totalAmount = basePrice + addOnsTotal;
-
-    // Create booking
     const booking = new Booking({
-      name,
-      email,
-      phone,
-      participants,
-      jeepType,
-      reservationType,
-      visitingTime,
-      visitorType,
-      mealType,
-      selectedPark: req.body.selectedPark,
-      selectedPackage: req.body.selectedPackage,
-      Accomodation,
+      reservationType: req.body.reservationType,
+      location: req.body.location,
+      block: req.body.block,
+      packageType: req.body.packageType,
+      duration: req.body.duration,
+      visitorType: req.body.visitorType,
+      mealOption: req.body.mealOption,
+      paymentMethod: req.body.paymentMethod,
+      numPersons: req.body.numPersons,
       pickupLocation: req.body.pickupLocation,
-      pickupTime: req.body.pickupTime,
-      pickupAddress: req.body.pickupAddress,
-      date,
-      timeSlot,
-      addOns,
-      paymentMethod,
-      cardNumber: paymentMethod === 'credit-card' ? cardNumber : undefined,
-      cardExpiry: paymentMethod === 'credit-card' ? cardExpiry : undefined,
-      cardCvc: paymentMethod === 'credit-card' ? cardCvc : undefined,
-      totalAmount,
+      whatsappNumber: req.body.whatsappNumber,
+      hotelContact: req.body.hotelContact,
+      accommodation: req.body.accommodation,
+      totalAmount: req.body.totalAmount,
+      status: req.body.status || "pending"
     });
-
-    const savedBooking = await booking.save();
-    res.status(201).json(savedBooking);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    await booking.save();
+    res.status(201).json(booking);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
 // Get all bookings
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const bookings = await Booking.find();
-    res.status(200).json(bookings);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    const bookings = await Booking.find().sort({ createdAt: -1 });
+    res.json(bookings);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch bookings" });
   }
 });
 
