@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import {
   FiChevronDown,
   FiInfo,
@@ -27,6 +29,19 @@ const Booking = () => {
   const [hotelContact, setHotelContact] = useState("");
   const [accommodation, setAccommodation] = useState("");
   const [showSummary, setShowSummary] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTime, setSelectedTime] = useState("");
+  const [addOns, setAddOns] = useState({
+    lunch: false,
+    binoculars: false,
+  });
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvc, setCardCvc] = useState("");
+  
 
 
   // Pricing data
@@ -79,11 +94,25 @@ const Booking = () => {
     if (visitorType === "foreign" && reservationType === "private") {
       basePrice += pricing.meals[mealOption];
     }
-
+    if (addOns.lunch) basePrice += pricing.addOns.lunch;
+    if (addOns.binoculars) basePrice += pricing.addOns.binoculars;
     return basePrice * numPersons;
   };
 
-  // ...existing code...
+  const availableTimeSlots = [
+    "06:00 AM",
+    "07:00 AM",
+    "08:00 AM",
+    "01:00 PM",
+    "02:00 PM",
+  ];
+
+   const handleAddOnChange = (e) => {
+    setAddOns({ ...addOns, [e.target.name]: e.target.checked });
+  };
+
+
+
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -103,6 +132,15 @@ const handleSubmit = async (e) => {
     hotelContact,
     accommodation,
     totalAmount: calculateTotal(),
+    customerName,
+      customerEmail,
+      customerPhone,
+      selectedDate,
+      selectedTime,
+      addOns,
+      cardNumber: paymentMethod === "creditCard" ? cardNumber : undefined,
+      cardExpiry: paymentMethod === "creditCard" ? cardExpiry : undefined,
+      cardCvc: paymentMethod === "creditCard" ? cardCvc : undefined,
     // status is optional, backend defaults to "pending"
   };
 
@@ -131,7 +169,7 @@ const handleSubmit = async (e) => {
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-green-800">
-            Yala Safari Booking
+           Safari Booking
           </h1>
           <p className="mt-2 text-green-600">
             Experience the wild like never before
@@ -143,10 +181,71 @@ const handleSubmit = async (e) => {
             <div className="p-6 sm:p-8">
               <form onSubmit={handleSubmit}>
                 {/* Reservation Type */}
+                  <div className="mb-8">
+                  <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <FiUser className="mr-2" /> Customer Details
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Full Name"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      required
+                      className="p-2 border rounded"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      required
+                      className="p-2 border rounded"
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Phone"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      required
+                      className="p-2 border rounded"
+                    />
+                  </div>
+                </div>
+                <div className="mb-8">
+                  <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <FiCalendar className="mr-2" /> Select Date & Time
+                  </h2>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <DatePicker
+                      selected={selectedDate}
+                      onChange={(date) => setSelectedDate(date)}
+                      minDate={new Date()}
+                      placeholderText="Select a date"
+                      className="p-2 border rounded"
+                      required
+                    />
+                    <select
+                      value={selectedTime}
+                      onChange={(e) => setSelectedTime(e.target.value)}
+                      className="p-2 border rounded"
+                      required
+                    >
+                      <option value="">Select Time Slot</option>
+                      {availableTimeSlots.map((slot) => (
+                        <option key={slot} value={slot}>
+                          {slot}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
                 <div className="mb-8">
                   <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                     <FiUser className="mr-2" /> Reservation Type
                   </h2>
+                  
                   <div className="grid grid-cols-2 gap-4">
                     <button
                       type="button"
