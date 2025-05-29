@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import { FiImage, FiBookmark, FiTrash2 } from 'react-icons/fi';
 import { format } from 'date-fns';
+
+
 
 const MediaGallery = () => {
     const [images, setImages] = useState([
@@ -15,14 +17,28 @@ const MediaGallery = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [imageTitle, setImageTitle] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('wildlife');
+    
+    
   
     const handleFileChange = (e) => {
       setSelectedFile(e.target.files[0]);
     };
+
+    useEffect(() => {
+  fetch("http://localhost:5000/api/images")
+    .then(res => res.json())
+    .then(data => setImages(data))
+    .catch(err => alert("Failed to fetch images"));
+}, []);
   
-    const handleUpload = (e) => {
+    const handleUpload = async (e) => {
       e.preventDefault();
       if (!selectedFile) return;
+
+      const formData = new FormData();
+  formData.append("image", selectedFile);
+  formData.append("title", imageTitle);
+  formData.append("category", selectedCategory);
       
       // In a real app, you would upload to your server here
       const newImage = {
@@ -33,23 +49,58 @@ const MediaGallery = () => {
         featured: false
       };
       
+      try {
+    const response = await fetch("http://localhost:5000/api/images", {
+      method: "POST",
+      body: formData,
+    });
+    if (response.ok) {
+      const newImage = await response.json();
       setImages([...images, newImage]);
       setUploadModalOpen(false);
       setSelectedFile(null);
       setImageTitle('');
+    } else {
+      alert("Upload failed");
+    }
+  } catch (err) {
+    alert("Network error: " + err.message);
+  }
     };
   
-    const toggleFeatured = (id) => {
-      setImages(images.map(img => 
-        img.id === id 
-          ? { ...img, featured: !img.featured } 
-          : img.featured ? { ...img, featured: false } : img
+    const toggleFeatured = async (id) => {
+      if (!id) return;
+  try {
+    const response = await fetch(`http://localhost:5000/api/images/${id}/featured`, {
+      method: "PATCH",
+    });
+    if (response.ok) {
+      const updated = await response.json();
+      setImages(images.map(img =>
+        (img._id || img.id) === id ? updated : img.featured ? { ...img, featured: false } : img
       ));
-    };
+    } else {
+      alert("Failed to update featured status");
+    }
+  } catch (err) {
+    alert("Network error: " + err.message);
+  }
+};
   
-    const deleteImage = (id) => {
-      setImages(images.filter(img => img.id !== id));
-    };
+    const deleteImage = async (id) => {
+  try {
+    const response = await fetch(`http://localhost:5000/api/images/${id}`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+      setImages(images.filter(img => img.id !== id && img._id !== id));
+    } else {
+      alert("Delete failed");
+    }
+  } catch (err) {
+    alert("Network error: " + err.message);
+  }
+};
   
     const addCategory = () => {
       if (newCategory.trim() && !categories.includes(newCategory.trim())) {

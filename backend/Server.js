@@ -11,7 +11,8 @@ const blogRoutes = require('./routes/BlogRoutes');
 const contactRoutes = require('./routes/ContactRoutes');
 const adminRoutes = require('./routes/AdminRoutes');
 const dashboardRoutes = require('./routes/DashboardRoutes');
-
+const imageRoutes = require('./routes/imageRoutes');
+const path = require('path');
 // Connect to MongoDB
 connectDB();
 
@@ -20,6 +21,7 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 
 
@@ -30,6 +32,7 @@ app.use('/api/blogs', blogRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/images', imageRoutes);
 
 // Default route for testing
 app.get('/', (req, res) => {
