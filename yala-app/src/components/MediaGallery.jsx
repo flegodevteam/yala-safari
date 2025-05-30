@@ -3,7 +3,6 @@ import { FiImage, FiBookmark, FiTrash2 } from 'react-icons/fi';
 import { format } from 'date-fns';
 
 
-
 const MediaGallery = () => {
     const [images, setImages] = useState([
       { id: 1, url: 'https://example.com/image1.jpg', title: 'Leopard in Yala', category: 'wildlife', featured: true },

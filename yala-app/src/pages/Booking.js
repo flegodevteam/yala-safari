@@ -20,6 +20,7 @@ const Booking = () => {
   const [email, setEmail] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [step, setStep] = useState(1);
+  const [nicNo, setNicNo] = useState('');
 
   // Pricing structure
   const pricing = {
@@ -375,6 +376,20 @@ basePrice = pricing.shared[closestSize][visitorType] * numberOfPersons;
                   </div>
                 </div>
               </div>
+
+              {visitorType === 'local' && (
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">NIC No</label>
+        <input
+          type="text"
+          value={nicNo}
+          onChange={(e) => setNicNo(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+          placeholder="Enter your National ID Card number"
+          required
+        />
+      </div>
+    )}
 
               {/* Contact Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
