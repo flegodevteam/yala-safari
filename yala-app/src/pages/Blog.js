@@ -1,7 +1,21 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import { useEffect } from 'react';
+
+
 
 export default function Blog() {
+
+   const [images, setImages] = useState([]);
+   useEffect(() => {
+  fetch("http://localhost:5000/api/images")
+    .then((res) => res.json())
+    .then((data) => setImages(data))
+    .catch(() => setImages([]));
+}, []);
+
+
+
   const blogPosts = [
     {
       id: 1,
@@ -58,6 +72,27 @@ export default function Blog() {
       readTime: "9 min read"
     }
   ];
+
+  {images.length > 0 && (
+  <div className="my-12">
+    <h2 className="text-2xl font-bold mb-4">Safari Gallery</h2>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      {images.map((img) => (
+        <div key={img._id || img.id} className="bg-white rounded shadow p-2">
+          <img
+            src={img.url.startsWith('http') ? img.url : `http://localhost:5000${img.url}`}
+            alt={img.title}
+            className="object-cover w-full h-48 rounded"
+          />
+          <div className="mt-2">
+            <h4 className="font-semibold">{img.title}</h4>
+            <span className="text-xs text-gray-500">{img.category}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
 
   const categories = [
     { name: "All", count: blogPosts.length },

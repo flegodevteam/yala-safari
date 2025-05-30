@@ -138,56 +138,6 @@ export default function Packages() {
                         </ul>
                       </div>
                       
-                      {/* Added booking information section */}
-                      <div className="mt-6 space-y-4 bg-gray-50 p-4 rounded-lg">
-                        <h4 className="text-sm font-medium text-gray-900">Booking Information:</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">Accommodation</label>
-                            <input 
-                              type="text" 
-                              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                              placeholder="Your accommodation details"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">Pick Up Location</label>
-                            <div className="mt-1 flex space-x-2">
-                              <input 
-                                type="text" 
-                                className="flex-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                                placeholder="GPS or manual entry"
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">WhatsApp Number (Required)</label>
-                            <input 
-                              type="tel" 
-                              required
-                              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                              placeholder="+94 77 123 4567"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">Hotel Contact Number</label>
-                            <input 
-                              type="tel" 
-                              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                              placeholder="Hotel phone number"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">Special Requirements</label>
-                          <textarea 
-                            rows={3}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                            placeholder="Any special requests or requirements"
-                          />
-                        </div>
-                      </div>
-                      
                       <div className="mt-6">
                         <Link
                           to={`/booking?park=${park.id}&package=${pkg.name.toLowerCase().replace(' ', '-')}`}
