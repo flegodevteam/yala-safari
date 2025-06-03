@@ -1,669 +1,597 @@
-import { useState } from 'react';
-import { FiCalendar, FiUser, FiMapPin, FiClock, FiDollarSign, FiCreditCard, FiMail, FiPhone } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { Calendar, momentLocalizer } from 'react-big-calendar';
+import moment from 'moment';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 
-const Booking = () => {
-  // Form state
-  const [reservationType, setReservationType] = useState('private');
-  const [location, setLocation] = useState('yala');
-  const [block, setBlock] = useState('blockI');
-  const [experience, setExperience] = useState('basic');
-  const [duration, setDuration] = useState('morning');
-  const [mealOption, setMealOption] = useState('without');
-  const [visitorType, setVisitorType] = useState('local');
-  const [paymentMethod, setPaymentMethod] = useState('bankTransfer');
-  const [numberOfPersons, setNumberOfPersons] = useState(1);
-  const [pickupLocation, setPickupLocation] = useState('');
-  const [whatsappNumber, setWhatsappNumber] = useState('');
-  const [contactNumber, setContactNumber] = useState('');
-  const [specialRequirements, setSpecialRequirements] = useState('');
-  const [customerName, setCustomerName] = useState('');
-  const [email, setEmail] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
-  const [step, setStep] = useState(1);
-  const [nicNo, setNicNo] = useState('');
+const localizer = momentLocalizer(moment);
 
-  // Pricing structure
-  const pricing = {
-    private: {
-      ticket: {
-        local: 2000, // 2$ in local currency
-        foreign: 2   // 2$ in dollars
-      },
-      jeep: 10000 // 10$ equivalent
+const YalaSafariBooking = () => {
+  // State for form data
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    participants: 1,
+    date: null,
+    timeSlot: '',
+    addOns: {
+      lunch: false,
+      binoculars: false,
+      photographer: false
     },
-    shared: {
-      1: { local: 10000, foreign: 10 },   // 10$
-      2: { local: 8000, foreign: 8 },     // 8$
-      4: { local: 5000, foreign: 5 },     // 5$
-      5: { local: 5000, foreign: 5 },     // 5$ fixed
-      6: { local: 5000, foreign: 5 },     // 5$ fixed
-      7: { local: 5000, foreign: 5 }      // 5$ fixed
+    paymentMethod: 'creditCard',
+    cardDetails: {
+      number: '',
+      expiry: '',
+      cvv: ''
     }
-  };
+  });
 
-  // Experience multipliers
-  const experienceMultipliers = {
-    basic: 1,
-    cLuxury: 1.5,
-    superLuxury: 2
-  };
+  // State for available time slots
+  const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [bookingStep, setBookingStep] = useState(1);
+  const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
-  // Duration multipliers
-  const durationMultipliers = {
-    morning: 1,
-    extendedMorning: 1.5,
-    fullDay: 2.5
-  };
+  // Mock data for available dates (in a real app, this would come from an API)
+  const availableDates = [
+    new Date(2023, 10, 15),
+    new Date(2023, 10, 16),
+    new Date(2023, 10, 17),
+    new Date(2023, 10, 18),
+    new Date(2023, 10, 19),
+    new Date(2023, 10, 20),
+  ];
 
-  // Meal options pricing
-  const mealPrices = {
-    without: 0,
-    breakfast: { local: 500, foreign: 5 },
-    vegetarian: { local: 800, foreign: 8 },
-    nonVegetarian: { local: 1000, foreign: 10 }
-  };
+  // Mock time slots
+  const timeSlots = [
+    { id: 'morning', time: '05:30 AM - 09:30 AM', slots: 3 },
+    { id: 'afternoon', time: '02:30 PM - 06:30 PM', slots: 2 },
+    { id: 'fullday', time: '05:30 AM - 06:30 PM', slots: 1 }
+  ];
 
-  // Calculate total price
-  const calculatePrice = () => {
-    let basePrice;
+  // Handle date selection
+  const handleDateSelect = (date) => {
+    setSelectedDate(date);
+    setFormData({...formData, date: date});
+    setAvailableTimeSlots(timeSlots.filter(slot => slot.slots > 0));
     
-    if (reservationType === 'private') {
-      // Private safari calculation
-      const ticketPrice = pricing.private.ticket[visitorType];
-      const jeepPerPerson = pricing.private.jeep / Math.min(numberOfPersons, 4); // Max division by 4
-      basePrice = (ticketPrice + jeepPerPerson) * numberOfPersons;
+  };
+
+  // Handle time slot selection
+  const handleTimeSlotSelect = (timeSlot) => {
+    setFormData({...formData, timeSlot: timeSlot});
+    setBookingStep(3);
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    
+    if (name.includes('.')) {
+      const [parent, child] = name.split('.');
+      setFormData({
+        ...formData,
+        [parent]: {
+          ...formData[parent],
+          [child]: type === 'checkbox' ? checked : value
+        }
+      });
     } else {
-      // Shared safari calculation
-      // Find the closest available key in pricing.shared
-const sharedKeys = Object.keys(pricing.shared).map(Number).sort((a, b) => a - b);
-let closestSize = sharedKeys[0];
-for (let i = 0; i < sharedKeys.length; i++) {
-  if (numberOfPersons <= sharedKeys[i]) {
-    closestSize = sharedKeys[i];
-    break;
-  }
-}
-basePrice = pricing.shared[closestSize][visitorType] * numberOfPersons;
+      setFormData({
+        ...formData,
+        [name]: type === 'checkbox' ? checked : value
+      });
     }
-
-    // Apply experience multiplier
-    const experiencePrice = basePrice * experienceMultipliers[experience];
-    
-    // Apply duration multiplier
-    const durationPrice = experiencePrice * durationMultipliers[duration];
-    
-    // Add meal cost
-    const mealPrice = mealOption === 'without' ? 0 : 
-                     mealPrices[mealOption][visitorType] * numberOfPersons;
-    
-    return durationPrice + mealPrice;
   };
 
+  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (step < 3) {
-      setStep(step + 1);
-    } else {
-      // Submit booking
-      console.log({
-        reservationType,
-        location,
-        block,
-        experience,
-        duration,
-        mealOption,
-        visitorType,
-        paymentMethod,
-        numberOfPersons,
-        pickupLocation,
-        whatsappNumber,
-        contactNumber,
-        specialRequirements,
-        customerName,
-        email,
-        selectedDate,
-        totalPrice: calculatePrice()
-      });
-      alert('Booking confirmed! Check your email for details.');
-    }
+    // In a real app, you would send this data to your backend
+    console.log('Booking submitted:', formData);
+    setBookingConfirmed(true);
+    setBookingStep(5);
   };
 
-  const formatPrice = (price) => {
-    return visitorType === 'local' ? 
-      `LKR ${price.toLocaleString()}` : 
-      `$${price.toFixed(2)}`;
+  // Custom date cell wrapper for calendar
+  const DateCellWrapper = ({ children, value }) => {
+    const isAvailable = availableDates.some(date => 
+      moment(date).isSame(value, 'day')
+    );
+    
+    return (
+      <div 
+        className={`h-full w-full p-1 ${isAvailable ? 'bg-green-50 hover:bg-green-100 cursor-pointer' : 'bg-gray-100 opacity-50'}`}
+        onClick={isAvailable ? () => handleDateSelect(value) : null}
+      >
+        {children}
+      </div>
+    );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-green-800">Wildlife Safari Adventures</h1>
-          <p className="text-green-600 mt-2">Book your unforgettable safari experience</p>
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            Yala National Park Safari Booking
+          </h1>
+          <p className="mt-3 text-xl text-gray-500">
+            Reserve your unforgettable wildlife adventure
+          </p>
         </div>
 
-        {/* Progress Steps */}
-        <div className="flex justify-between mb-8 relative">
-          <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 -z-10"></div>
-          {[1, 2, 3].map((stepNumber) => (
-            <div key={stepNumber} className="flex flex-col items-center">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step >= stepNumber ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
-                {stepNumber}
-              </div>
-              <span className="text-sm mt-2 text-gray-600">
-                {stepNumber === 1 ? 'Details' : stepNumber === 2 ? 'Guest Info' : 'Payment'}
-              </span>
-            </div>
-          ))}
+        {/* Booking Steps */}
+        <div className="mb-8">
+          <nav className="flex items-center justify-center">
+            <ol className="flex items-center space-x-8">
+              {[1, 2, 3, 4, 5].map((step) => (
+                <li key={step} className="flex items-center">
+                  <span className={`flex items-center justify-center w-10 h-10 rounded-full ${bookingStep >= step ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'} font-medium`}>
+                    {step}
+                  </span>
+                  {step < 5 && (
+                    <span className={`h-1 w-8 ${bookingStep > step ? 'bg-green-600' : 'bg-gray-200'}`}></span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
         </div>
 
         {/* Booking Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg overflow-hidden">
-          {/* Step 1: Safari Details */}
-          {step === 1 && (
-            <div className="p-6 space-y-6">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-                <FiMapPin className="mr-2 text-green-600" />
-                Safari Details
-              </h2>
-
-              {/* Reservation Type */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Reservation Type</label>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setReservationType('private')}
-                    className={`py-3 px-4 rounded-lg border ${reservationType === 'private' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-300'}`}
-                  >
-                    <div className="font-medium">Private Safari</div>
-                    <div className="text-sm mt-1">Exclusive jeep for your group</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setReservationType('shared')}
-                    className={`py-3 px-4 rounded-lg border ${reservationType === 'shared' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-300'}`}
-                  >
-                    <div className="font-medium">Shared Safari</div>
-                    <div className="text-sm mt-1">Join other travelers</div>
-                  </button>
-                </div>
-              </div>
-
-              {/* Location & Block */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Location</label>
-                  <select
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                  >
-                    <option value="yala">Yala National Park</option>
-                    <option value="bandula">Bandula/Unduwatana</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Block</label>
-                  <select
-                    value={block}
-                    onChange={(e) => setBlock(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                  >
-                    <option value="blockI">Block I</option>
-                    <option value="blockIV">Block IV</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Experience & Duration */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Experience Tier</label>
-                  <select
-                    value={experience}
-                    onChange={(e) => setExperience(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                  >
-                    <option value="basic">Basic</option>
-                    <option value="cLuxury">C. Luxury</option>
-                    <option value="superLuxury">Super Luxury</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Duration</label>
-                  <select
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                  >
-                    <option value="morning">Morning (3h 45m)</option>
-                    <option value="extendedMorning">Extended Morning (5h)</option>
-                    <option value="fullDay">Full Day (10h)</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Meal Option */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Meal Option</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {['without', 'breakfast', 'vegetarian', 'nonVegetarian'].map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => setMealOption(option)}
-                      className={`py-2 px-3 rounded-md border ${mealOption === option ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-300'}`}
-                    >
-                      {option === 'without' ? 'Without Meals' : 
-                       option === 'breakfast' ? 'With Breakfast' : 
-                       option === 'vegetarian' ? 'Vegetarian' : 'Non-Vegetarian'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Date & Persons */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Date</label>
-                  <div className="relative">
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                      required
-                    />
-                    <FiCalendar className="absolute right-3 top-3 text-gray-400" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Number of Persons</label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      min="1"
-                      max={reservationType === 'private' ? 10 : 7}
-                      value={numberOfPersons}
-                      onChange={(e) => setNumberOfPersons(parseInt(e.target.value) )|| 1}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                      required
-                    />
-                    <FiUser className="absolute right-3 top-3 text-gray-400" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Price Preview */}
+        <div className="bg-white shadow-xl rounded-lg overflow-hidden">
+          {/* Step 1: Date Selection */}
+          {bookingStep === 1 && (
+            <div className="p-6 sm:p-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Select Your Safari Date</h2>
               <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-medium text-gray-800">Estimated Price</h3>
-                    <p className="text-sm text-gray-500">{numberOfPersons} person(s)</p>
-                  </div>
-                  <div className="text-xl font-bold text-green-600">
-                    {formatPrice(calculatePrice())}
-                  </div>
-                </div>
+                <Calendar
+                  localizer={localizer}
+                  defaultView="month"
+                  views={['month']}
+                  min={new Date()}
+                  max={moment().add(3, 'months').toDate()}
+                  components={{
+                    dateCellWrapper: DateCellWrapper
+                  }}
+                  className="h-96"
+                />
               </div>
-
-              {/* Navigation */}
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              <div className="mt-6 flex justify-between items-center">
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+                  <span className="text-sm text-gray-600">Available dates</span>
+                </div>
+                <button 
+                  disabled={!selectedDate}
+                  onClick={() => setBookingStep(2)}
+                  className={`px-6 py-2 rounded-md ${selectedDate ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'} font-medium`}
                 >
-                  Continue
+                  Next
                 </button>
               </div>
             </div>
           )}
-
-          {/* Step 2: Guest Information */}
-          {step === 2 && (
-            <div className="p-6 space-y-6">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-                <FiUser className="mr-2 text-green-600" />
-                Guest Information
+          {/* Step 2: Time Slot Selection */}
+          {bookingStep === 2 && (
+            <div className="p-6 sm:p-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                Available Time Slots for {selectedDate && moment(selectedDate).format('MMMM D, YYYY')}
               </h2>
-
-              {/* Visitor Type */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Visitor Type</label>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setVisitorType('local')}
-                    className={`py-3 px-4 rounded-lg border ${visitorType === 'local' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-300'}`}
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                {availableTimeSlots.map((slot) => (
+                  <div 
+                    key={slot.id}
+                    onClick={() => handleTimeSlotSelect(slot.id)}
+                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${formData.timeSlot === slot.id ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300'}`}
                   >
-                    Local Visitor
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setVisitorType('foreign')}
-                    className={`py-3 px-4 rounded-lg border ${visitorType === 'foreign' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-300'}`}
-                  >
-                    Foreign Visitor
-                  </button>
-                </div>
-              </div>
-
-              {/* Personal Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                  <input
-                    type="text"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Email Address</label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                      required
-                    />
-                    <FiMail className="absolute right-3 top-3 text-gray-400" />
+                    <h3 className="font-semibold text-lg capitalize">{slot.id.replace('-', ' ')}</h3>
+                    <p className="text-gray-600">{slot.time}</p>
+                    <p className="text-sm text-green-700 mt-2">{slot.slots} slots remaining</p>
                   </div>
-                </div>
+                ))}
               </div>
 
-              {visitorType === 'local' && (
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">NIC No</label>
-        <input
-          type="text"
-          value={nicNo}
-          onChange={(e) => setNicNo(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-          placeholder="Enter your National ID Card number"
-          required
-        />
-      </div>
-    )}
-
-              {/* Contact Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Contact Number</label>
-                  <div className="relative">
-                    <input
-                      type="tel"
-                      value={contactNumber}
-                      onChange={(e) => setContactNumber(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                      required
-                    />
-                    <FiPhone className="absolute right-3 top-3 text-gray-400" />
-                  </div>
-                </div>
-                {visitorType === 'foreign' && (
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">WhatsApp Number</label>
-                    <div className="relative">
-                      <input
-                        type="tel"
-                        value={whatsappNumber}
-                        onChange={(e) => setWhatsappNumber(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                        required
-                      />
-                      <FiPhone className="absolute right-3 top-3 text-gray-400" />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Pickup Location */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Pickup Location</label>
-                <input
-                  type="text"
-                  value={pickupLocation}
-                  onChange={(e) => setPickupLocation(e.target.value)}
-                  placeholder="Hotel address or GPS coordinates"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                  required
-                />
-              </div>
-
-              {/* Special Requirements */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Special Requirements</label>
-                <textarea
-                  value={specialRequirements}
-                  onChange={(e) => setSpecialRequirements(e.target.value)}
-                  rows="3"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                  placeholder="Any special needs or requests..."
-                />
-              </div>
-
-              {/* Navigation */}
               <div className="flex justify-between">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                <button 
+                  onClick={() => setBookingStep(1)}
+                  className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium"
                 >
                   Back
                 </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                <button 
+                  disabled={!formData.timeSlot}
+                  onClick={() => setBookingStep(3)}
+                  className={`px-6 py-2 rounded-md ${formData.timeSlot ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'} font-medium`}
                 >
-                  Continue to Payment
+                  Next
                 </button>
               </div>
             </div>
           )}
 
-          {/* Step 3: Payment */}
-          {step === 3 && (
-            <div className="p-6 space-y-6">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-                <FiCreditCard className="mr-2 text-green-600" />
-                Payment Details
-              </h2>
-
-              {/* Order Summary */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-medium text-gray-800 mb-3">Order Summary</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Safari Type:</span>
-                    <span className="font-medium">{reservationType === 'private' ? 'Private' : 'Shared'}</span>
+          {/* Step 3: Personal Details */}
+          {bookingStep === 3 && (
+            <div className="p-6 sm:p-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Your Information</h2>
+              
+              <form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                      required
+                    />
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Location:</span>
-                    <span className="font-medium">{location === 'yala' ? 'Yala' : 'Bandula'}, Block {block === 'blockI' ? 'I' : 'IV'}</span>
+                  
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                      required
+                    />
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Date:</span>
-                    <span className="font-medium">{selectedDate}</span>
+                  
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                      required
+                    />
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Duration:</span>
-                    <span className="font-medium">
-                      {duration === 'morning' ? 'Morning' : 
-                       duration === 'extendedMorning' ? 'Extended Morning' : 'Full Day'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Experience:</span>
-                    <span className="font-medium capitalize">{experience}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Meal Option:</span>
-                    <span className="font-medium capitalize">
-                      {mealOption === 'without' ? 'No Meals' : 
-                       mealOption === 'breakfast' ? 'With Breakfast' : 
-                       mealOption === 'vegetarian' ? 'Vegetarian' : 'Non-Vegetarian'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Persons:</span>
-                    <span className="font-medium">{numberOfPersons}</span>
-                  </div>
-                  <div className="pt-3 border-t border-gray-200">
-                    <div className="flex justify-between font-bold text-lg">
-                      <span>Total:</span>
-                      <span className="text-green-600">{formatPrice(calculatePrice())}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment Method */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-medium text-gray-700">Payment Method</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {['bankTransfer', 'bankDeposit', 'creditCard'].map((method) => (
-                    <button
-                      key={method}
-                      type="button"
-                      onClick={() => setPaymentMethod(method)}
-                      className={`py-3 px-4 rounded-lg border ${paymentMethod === method ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-300'}`}
+                  
+                  <div>
+                    <label htmlFor="participants" className="block text-sm font-medium text-gray-700 mb-1">
+                      Number of Participants
+                    </label>
+                    <select
+                      id="participants"
+                      name="participants"
+                      value={formData.participants}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
                     >
-                      {method === 'bankTransfer' ? 'Bank Transfer' : 
-                       method === 'bankDeposit' ? 'Bank Deposit' : 'Credit Card'}
-                    </button>
-                  ))}
+                      {[1, 2, 3, 4, 5, 6, 7].map(num => (
+                        <option key={num} value={num}>{num}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-3">Add-On Services</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="lunch"
+                        name="addOns.lunch"
+                        checked={formData.addOns.lunch}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="lunch" className="ml-2 block text-sm text-gray-700">
+                        Packed Lunch ($8 per person)
+                      </label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="binoculars"
+                        name="addOns.binoculars"
+                        checked={formData.addOns.binoculars}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="binoculars" className="ml-2 block text-sm text-gray-700">
+                        Binocular Rental ($5 per pair)
+                      </label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="photographer"
+                        name="addOns.photographer"
+                        checked={formData.addOns.photographer}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="photographer" className="ml-2 block text-sm text-gray-700">
+                        Professional Photographer ($50)
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between pt-4">
+                  <button 
+                    type="button"
+                    onClick={() => setBookingStep(2)}
+                    className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium"
+                  >
+                    Back
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setBookingStep(4)}
+                    className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium"
+                  >
+                    Continue to Payment
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* Step 4: Payment Information */}
+          {bookingStep === 4 && (
+            <div className="p-6 sm:p-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Payment Information</h2>
+              
+              <div className="mb-8">
+                <h3 className="text-lg font-medium text-gray-800 mb-3">Booking Summary</h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                      <p className="text-sm text-gray-500">Date</p>
+                      <p className="font-medium">{selectedDate && moment(selectedDate).format('MMMM D, YYYY')}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Time Slot</p>
+                      <p className="font-medium capitalize">{formData.timeSlot.replace('-', ' ')}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Participants</p>
+                      <p className="font-medium">{formData.participants}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Add-Ons</p>
+                      <p className="font-medium">
+                        {Object.entries(formData.addOns)
+                          .filter(([_, value]) => value)
+                          .map(([key]) => key)
+                          .join(', ') || 'None'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Payment Details */}
-              {paymentMethod === 'creditCard' && (
-                <div className="space-y-4">
-                  <h3 className="text-sm font-medium text-gray-700">Card Details</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="block text-sm text-gray-600">Card Number</label>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-3">Payment Method</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
                       <input
-                        type="text"
-                        placeholder="1234 5678 9012 3456"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                        type="radio"
+                        id="creditCard"
+                        name="paymentMethod"
+                        value="creditCard"
+                        checked={formData.paymentMethod === 'creditCard'}
+                        onChange={handleInputChange}
+                        className="hidden peer"
                       />
+                      <label 
+                        htmlFor="creditCard"
+                        className="block p-4 border border-gray-300 rounded-lg cursor-pointer peer-checked:border-green-500 peer-checked:bg-green-50"
+                      >
+                        <div className="flex items-center">
+                          <svg className="w-6 h-6 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                          </svg>
+                          <span>Credit Card</span>
+                        </div>
+                      </label>
                     </div>
-                    <div className="space-y-2">
-                      <label className="block text-sm text-gray-600">Card Holder</label>
+                    <div>
                       <input
-                        type="text"
-                        placeholder="John Doe"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                        type="radio"
+                        id="paypal"
+                        name="paymentMethod"
+                        value="paypal"
+                        checked={formData.paymentMethod === 'paypal'}
+                        onChange={handleInputChange}
+                        className="hidden peer"
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="block text-sm text-gray-600">Expiry Date</label>
-                      <input
-                        type="text"
-                        placeholder="MM/YY"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="block text-sm text-gray-600">CVV</label>
-                      <input
-                        type="text"
-                        placeholder="123"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                      />
+                      <label 
+                        htmlFor="paypal"
+                        className="block p-4 border border-gray-300 rounded-lg cursor-pointer peer-checked:border-green-500 peer-checked:bg-green-50"
+                      >
+                        <div className="flex items-center">
+                          <svg className="w-6 h-6 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M7.5 11.5h1.5v-4h-1.5v4zm3.5 0h1.5v-4h-1.5v4zm3.5 0h1.5v-4h-1.5v4zm-10.5-6c-1.104 0-2 .896-2 2v8c0 1.104.896 2 2 2h12c1.104 0 2-.896 2-2v-8c0-1.104-.896-2-2-2h-12zm12 1c.552 0 1 .448 1 1v8c0 .552-.448 1-1 1h-12c-.552 0-1-.448-1-1v-8c0-.552.448-1 1-1h12z"/>
+                          </svg>
+                          <span>PayPal</span>
+                        </div>
+                      </label>
                     </div>
                   </div>
-                </div>
-              )}
 
-              {/* Bank Transfer Instructions */}
-              {(paymentMethod === 'bankTransfer' || paymentMethod === 'bankDeposit') && (
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-medium text-blue-800 mb-2">
-                    {paymentMethod === 'bankTransfer' ? 'Bank Transfer Instructions' : 'Bank Deposit Instructions'}
-                  </h3>
-                  <p className="text-sm text-blue-700 mb-3">
-                    Please transfer the total amount to the following account. Your booking will be confirmed once payment is received.
-                  </p>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-600">Bank Name:</p>
-                      <p className="font-medium">Wildlife Safari Bank</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Account Name:</p>
-                      <p className="font-medium">Safari Adventures Ltd</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Account Number:</p>
-                      <p className="font-medium">1234567890</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Branch:</p>
-                      <p className="font-medium">Colombo Main</p>
-                    </div>
-                  </div>
-                  {paymentMethod === 'bankTransfer' && (
-                    <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Upload Payment Receipt</label>
-                      <div className="flex items-center justify-center w-full">
-                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                            </svg>
-                            <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                            <p className="text-xs text-gray-500">PNG, JPG, PDF (MAX. 5MB)</p>
-                          </div>
-                          <input type="file" className="hidden" />
+                  {formData.paymentMethod === 'creditCard' && (
+                    <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+                      <div>
+                        <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                          Card Number
                         </label>
+                        <input
+                          type="text"
+                          id="cardNumber"
+                          name="cardDetails.number"
+                          value={formData.cardDetails.number}
+                          onChange={handleInputChange}
+                          placeholder="1234 5678 9012 3456"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="cardExpiry" className="block text-sm font-medium text-gray-700 mb-1">
+                            Expiry Date
+                          </label>
+                          <input
+                            type="text"
+                            id="cardExpiry"
+                            name="cardDetails.expiry"
+                            value={formData.cardDetails.expiry}
+                            onChange={handleInputChange}
+                            placeholder="MM/YY"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="cardCvv" className="block text-sm font-medium text-gray-700 mb-1">
+                            CVV
+                          </label>
+                          <input
+                            type="text"
+                            id="cardCvv"
+                            name="cardDetails.cvv"
+                            value={formData.cardDetails.cvv}
+                            onChange={handleInputChange}
+                            placeholder="123"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                          />
+                        </div>
                       </div>
                     </div>
                   )}
                 </div>
-              )}
 
-              {/* Terms and Conditions */}
-              <div className="flex items-start">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  className="mt-1 mr-2 rounded text-green-600 focus:ring-green-500"
-                  required
-                />
-                <label htmlFor="terms" className="text-sm text-gray-600">
-                  I agree to the Terms & Conditions and Privacy Policy
-                </label>
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-yellow-800">Cancellation Policy</h3>
+                      <div className="mt-2 text-sm text-yellow-700">
+                        <ul className="list-disc pl-5 space-y-1">
+                          <li>Cancellation before 24 hours of the tour: 50% refund</li>
+                          <li>Last minute cancellations: No refund</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between">
+                  <button 
+                    type="button"
+                    onClick={() => setBookingStep(3)}
+                    className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium"
+                  >
+                    Back
+                  </button>
+                  <button 
+                    type="submit"
+                    className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium"
+                  >
+                    Confirm Booking
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* Step 5: Booking Confirmation */}
+          {bookingStep === 5 && bookingConfirmed && (
+            <div className="p-6 sm:p-8 text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
               </div>
-
-              {/* Navigation */}
-              <div className="flex justify-between">
+              <h2 className="mt-3 text-2xl font-bold text-gray-800">Booking Confirmed!</h2>
+              <p className="mt-2 text-gray-600">
+                Thank you for booking your Yala Safari adventure. A confirmation has been sent to {formData.email}.
+              </p>
+              <div className="mt-8 bg-gray-50 p-6 rounded-lg text-left max-w-md mx-auto">
+                <h3 className="font-medium text-lg text-gray-800 mb-3">Booking Details</h3>
+                <div className="space-y-2">
+                  <p><span className="text-gray-600">Reference:</span> YALA-{Math.floor(Math.random() * 10000)}</p>
+                  <p><span className="text-gray-600">Date:</span> {selectedDate && moment(selectedDate).format('MMMM D, YYYY')}</p>
+                  <p><span className="text-gray-600">Time:</span> {formData.timeSlot === 'morning' ? '05:30 AM - 09:30 AM' : 
+                    formData.timeSlot === 'afternoon' ? '02:30 PM - 06:30 PM' : '05:30 AM - 06:30 PM'}</p>
+                  <p><span className="text-gray-600">Participants:</span> {formData.participants}</p>
+                  {Object.entries(formData.addOns).some(([_, value]) => value) && (
+                    <p><span className="text-gray-600">Add-Ons:</span> {Object.entries(formData.addOns)
+                      .filter(([_, value]) => value)
+                      .map(([key]) => {
+                        switch(key) {
+                          case 'lunch': return 'Packed Lunch';
+                          case 'binoculars': return 'Binocular Rental';
+                          case 'photographer': return 'Professional Photographer';
+                          default: return key;
+                        }
+                      }).join(', ')}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="mt-8">
                 <button
-                  type="button"
-                  onClick={() => setStep(2)}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                  onClick={() => {
+                    setBookingStep(1);
+                    setBookingConfirmed(false);
+                    setFormData({
+                      name: '',
+                      email: '',
+                      phone: '',
+                      participants: 1,
+                      date: null,
+                      timeSlot: '',
+                      addOns: {
+                        lunch: false,
+                        binoculars: false,
+                        photographer: false
+                      },
+                      paymentMethod: 'creditCard',
+                      cardDetails: {
+                        number: '',
+                        expiry: '',
+                        cvv: ''
+                      }
+                    });
+                  }}
+                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium"
                 >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  Confirm Booking
+                  Make Another Booking
                 </button>
               </div>
             </div>
           )}
-        </form>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Booking;
+export default YalaSafariBooking;
