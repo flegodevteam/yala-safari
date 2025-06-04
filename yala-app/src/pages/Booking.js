@@ -5,7 +5,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const localizer = momentLocalizer(moment);
 
-const YalaSafariBooking = () => {
+const Booking = () => {
   // State for form data
   const [formData, setFormData] = useState({
     name: '',
@@ -55,7 +55,7 @@ const YalaSafariBooking = () => {
     setSelectedDate(date);
     setFormData({...formData, date: date});
     setAvailableTimeSlots(timeSlots.filter(slot => slot.slots > 0));
-    
+    setBookingStep(2);
   };
 
   // Handle time slot selection
@@ -152,11 +152,12 @@ const YalaSafariBooking = () => {
                   localizer={localizer}
                   defaultView="month"
                   views={['month']}
-                  min={new Date()}
-                  max={moment().add(3, 'months').toDate()}
+                  minDate={new Date()}
+                  maxDate={moment().add(3, 'months').toDate()}
                   components={{
                     dateCellWrapper: DateCellWrapper
                   }}
+                  tileDisabled={({ date }) => !availableDates.some(d => moment(d).isSame(date, 'day'))}
                   className="h-96"
                 />
               </div>
@@ -175,6 +176,7 @@ const YalaSafariBooking = () => {
               </div>
             </div>
           )}
+
           {/* Step 2: Time Slot Selection */}
           {bookingStep === 2 && (
             <div className="p-6 sm:p-8">
@@ -594,4 +596,4 @@ const YalaSafariBooking = () => {
   );
 };
 
-export default YalaSafariBooking;
+export default Booking;
