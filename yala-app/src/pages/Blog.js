@@ -6,74 +6,41 @@ import { useEffect } from 'react';
 
 export default function Blog() {
 
-   const [images, setImages] = useState([]);
-   useEffect(() => {
-  fetch("http://localhost:5000/api/images")
-    .then((res) => res.json())
-    .then((data) => setImages(data))
+   const [blogPosts, setBlogPosts] = useState([]);
+   const [images, setImages] = useState([]); 
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/blogs')
+      .then((res) => res.json())
+      .then((data) => {
+      // Map backend fields to frontend expected fields
+      const mapped = data.map(post => ({
+        id: post._id || post.id,
+        title: post.title,
+        excerpt: post.excerpt || post.content?.slice(0, 120) + '...',
+        date: post.date,
+        category: post.category || '',
+        image: post.featuredImage || post.image || '/default-blog.jpg',
+        readTime: post.readTime || '3 min read',
+      }));
+      setBlogPosts(mapped);
+    })
+      .catch(() => setBlogPosts([]));
+  }, []);
+  
+  useEffect(() => {
+  fetch('http://localhost:5000/api/images')
+    .then(res => res.json())
+    .then(data => setImages(data))
     .catch(() => setImages([]));
-}, []);
+},
+  []);
 
 
 
-  const blogPosts = [
-    {
-      id: 1,
-      title: "Best Time to Visit Yala National Park",
-      excerpt: "Learn about the optimal seasons for wildlife spotting in Yala and what you can expect to see during different times of the year.",
-      date: "May 15, 2023",
-      category: "Travel Tips",
-      image: "/blog1.jpg",
-      readTime: "4 min read"
-    },
-    {
-      id: 2,
-      title: "Leopard Spotting Guide for Yala",
-      excerpt: "Our expert guides share their top tips for spotting leopards during your safari adventure in Yala National Park.",
-      date: "April 28, 2023",
-      category: "Wildlife",
-      image: "/blog2.jpg",
-      readTime: "6 min read"
-    },
-    {
-      id: 3,
-      title: "Conservation Efforts in Sri Lanka's National Parks",
-      excerpt: "How Sri Lanka is working to protect its incredible biodiversity and what visitors can do to support these efforts.",
-      date: "March 10, 2023",
-      category: "Conservation",
-      image: "/blog3.jpg",
-      readTime: "8 min read"
-    },
-    {
-      id: 4,
-      title: "Photography Tips for Safari Enthusiasts",
-      excerpt: "Capture stunning wildlife photos with these professional tips on equipment, settings, and techniques for safari photography.",
-      date: "February 22, 2023",
-      category: "Photography",
-      image: "/blog4.jpg",
-      readTime: "5 min read"
-    },
-    {
-      id: 5,
-      title: "Family-Friendly Safari Tips",
-      excerpt: "Everything you need to know to plan a successful safari adventure with children of all ages.",
-      date: "January 15, 2023",
-      category: "Family Travel",
-      image: "/blog5.jpg",
-      readTime: "7 min read"
-    },
-    {
-      id: 6,
-      title: "Birdwatching in Bundala National Park",
-      excerpt: "A comprehensive guide to the incredible bird species you can spot in Bundala, one of Sri Lanka's premier birdwatching destinations.",
-      date: "December 5, 2022",
-      category: "Birdwatching",
-      image: "/blog6.jpg",
-      readTime: "9 min read"
-    }
-  ];
+  // (Removed redeclaration of blogPosts. If you want to use static data as fallback, you can do so in the fetch .catch handler.)
 
-  {images.length > 0 && (
+ /* {images.length > 0 && (
   <div className="my-12">
     <h2 className="text-2xl font-bold mb-4">Safari Gallery</h2>
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -93,6 +60,7 @@ export default function Blog() {
     </div>
   </div>
 )}
+  */
 
   const categories = [
     { name: "All", count: blogPosts.length },

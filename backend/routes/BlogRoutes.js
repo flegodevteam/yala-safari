@@ -1,78 +1,56 @@
 const express = require('express');
-const Blog = require('../models/Blog');
 const router = express.Router();
+const Blog = require('../models/Blog');
+const multer = require('multer');
 
-// Get all blog posts
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Make sure this folder exists
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+const upload = multer({ storage });
+
+// Get all blogs
 router.get('/', async (req, res) => {
   try {
-    const blogs = await Blog.find().sort({ createdAt: -1 });
+    const blogs = await Blog.find().sort({ date: -1 });
     res.json(blogs);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ error: 'Failed to fetch blogs' });
   }
 });
 
-// Get a single blog post by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const blog = await Blog.findById(req.params.id);
-    if (!blog) {
-      return res.status(404).json({ message: 'Blog post not found' });
-    }
-    res.json(blog);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// Create a new blog post
+// Create a new blog
 router.post('/', async (req, res) => {
-  const { title, author, date, status, content, featuredImage } = req.body;
-
-  const newBlog = new Blog({
-    title,
-    author,
-    date,
-    status,
-    content,
-    featuredImage,
-  });
-
   try {
-    const savedBlog = await newBlog.save();
-    res.status(201).json(savedBlog);
+    const blog = new Blog(req.body);
+    await blog.save();
+    res.status(201).json(blog);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ error: 'Failed to create blog post' });
   }
 });
 
-// Update a blog post
+// Update a blog
 router.patch('/:id', async (req, res) => {
   try {
-    const updatedBlog = await Blog.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true } // Return the updated document
-    );
-    if (!updatedBlog) {
-      return res.status(404).json({ message: 'Blog post not found' });
-    }
-    res.json(updatedBlog);
+    const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(blog);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ error: 'Failed to update blog post' });
   }
 });
 
-// Delete a blog post
+// Delete a blog
 router.delete('/:id', async (req, res) => {
   try {
-    const deletedBlog = await Blog.findByIdAndDelete(req.params.id);
-    if (!deletedBlog) {
-      return res.status(404).json({ message: 'Blog post not found' });
-    }
-    res.json({ message: 'Blog post deleted' });
+    await Blog.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ error: 'Failed to delete blog post' });
   }
 });
 

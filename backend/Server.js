@@ -33,13 +33,17 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/images', imageRoutes);
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+
+
+
 
 // Default route for testing
 app.get('/', (req, res) => {
   res.send('Server is running!');
 });
 
-// Get all packages
 
 
 
