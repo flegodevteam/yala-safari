@@ -13,6 +13,7 @@ const adminRoutes = require('./routes/AdminRoutes');
 const dashboardRoutes = require('./routes/DashboardRoutes');
 const imageRoutes = require('./routes/imageRoutes');
 const path = require('path');
+const availableDatesRoutes = require('./routes/availableDates');
 // Connect to MongoDB
 connectDB();
 
@@ -33,13 +34,18 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/images', imageRoutes);
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/api/available-dates', availableDatesRoutes);
+
+
+
+
 
 // Default route for testing
 app.get('/', (req, res) => {
   res.send('Server is running!');
 });
 
-// Get all packages
 
 
 
