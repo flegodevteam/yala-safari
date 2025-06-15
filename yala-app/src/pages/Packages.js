@@ -4,6 +4,8 @@ import bundalaImage from "../assets/bundala.jpg";
 import udawalaweImage from "../assets/bund.jpg";
 import jeepImage from "../assets/tour.jpg";
 import { useNavigate } from "react-router-dom";
+import moment from "moment";
+import { useEffect } from "react";
 
 const Packages = () => {
   // State management
@@ -29,6 +31,10 @@ const Packages = () => {
   const [nicNumber, setNicNumber] = useState("");
   const [localContact, setLocalContact] = useState("");
   const [localAccommodation, setLocalAccommodation] = useState("");
+  const [availableDates, setAvailableDates] = useState([]);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [availableSeats, setAvailableSeats] = useState([]);
+  const [selectedSeat, setSelectedSeat] = useState("");
 
   // Park images mapping
   const parkImages = {
@@ -63,6 +69,14 @@ const Packages = () => {
       separateGuide: 15,
     },
   };
+
+  useEffect(() => {
+    if (reservationType === "shared") {
+      fetch("http://localhost:5000/api/available-dates")
+        .then((res) => res.json())
+        .then((data) => setAvailableDates(data));
+    }
+  }, [reservationType]);
 
   // Calculate total price
   const calculateTotal = () => {
@@ -584,6 +598,44 @@ const Packages = () => {
 
                   <div>
                     <h3 className="font-medium mb-3">Number of People:</h3>
+
+                    {reservationType === "shared" && (
+                      <div className="mb-6">
+                        <h3 className="font-medium mb-2">
+                          Select Available Date:
+                        </h3>
+                        <select
+                          value={selectedDate}
+                          onChange={(e) => setSelectedDate(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-3 py-2 mb-4"
+                        >
+                          <option value="">Select a date</option>
+                          {availableDates.map((date) => (
+                            <option key={date} value={date}>
+                              {moment(date, "YYYY-MM-DD").format(
+                                "MMMM D, YYYY"
+                              )}
+                            </option>
+                          ))}
+                        </select>
+
+                        <h3 className="font-medium mb-2">
+                          Select Available Seat:
+                        </h3>
+                        <select
+                          value={selectedSeat}
+                          onChange={(e) => setSelectedSeat(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                        >
+                          <option value="">Select a seat</option>
+                          {[1, 2, 3, 4, 5, 6, 7].map((seat) => (
+                            <option key={seat} value={seat}>
+                              Seat {seat}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                     {/* Extra fields for foreign visitors */}
                     {visitorType === "foreign" && (
                       <div className="space-y-4 mt-6">

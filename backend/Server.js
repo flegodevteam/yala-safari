@@ -13,7 +13,7 @@ const adminRoutes = require('./routes/AdminRoutes');
 const dashboardRoutes = require('./routes/DashboardRoutes');
 const imageRoutes = require('./routes/imageRoutes');
 const path = require('path');
-const availableDatesRoutes = require('./routes/availableDates');
+const availableDatesRoutes = require('./routes/AvailableDatesRoutes');
 // Connect to MongoDB
 connectDB();
 
