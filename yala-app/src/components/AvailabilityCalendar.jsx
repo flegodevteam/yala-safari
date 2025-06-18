@@ -70,7 +70,7 @@ const AvailabilityCalendar = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ date: dateStr }),
     });
-  }
+  }};
 
   const eventStyleGetter = (event) => {
     let backgroundColor = event.available ? "#4f46e5" : "#ef4444";
@@ -204,6 +204,6 @@ const AvailabilityCalendar = () => {
       )}
     </div>
   );
-}};
+};
 
 export default AvailabilityCalendar;
