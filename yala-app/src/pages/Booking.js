@@ -13,7 +13,6 @@ const SafariBooking = () => {
     name: '',
     email: '',
     phone: '',
-    participants: 1,
     cardDetails: {
       nameOnCard: '',
       cardNumber: '',
@@ -131,20 +130,7 @@ const SafariBooking = () => {
                   </div>
                 )}
 
-                {/* Participant Count */}
-                <div className="mb-8">
-                  <h3 className="text-lg font-semibold mb-3">Number of Participants</h3>
-                  <select
-                    name="participants"
-                    value={formData.participants}
-                    onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  >
-                    {[1, 2, 3, 4, 5, 6].map(num => (
-                      <option key={num} value={num}>{num} {num === 1 ? 'person' : 'people'}</option>
-                    ))}
-                  </select>
-                </div>
+                
 
                 {/* Add-On Services */}
                 <div className="mb-8">
