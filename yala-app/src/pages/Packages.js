@@ -35,6 +35,7 @@ const Packages = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [availableSeats, setAvailableSeats] = useState([]);
   const [selectedSeat, setSelectedSeat] = useState("");
+  // const [pricing, setPricing] = useState(null);
 
   // Park images mapping
   const parkImages = {
