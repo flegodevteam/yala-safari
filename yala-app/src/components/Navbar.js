@@ -16,11 +16,6 @@ export default function Navbar() {
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
-      <header
-        className={`sticky top-0 z-50 transition-colors duration-300 ${
-          scrolled ? "bg-green-700 shadow-lg" : "bg-white shadow-sm"
-        }`}
-      ></header>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -35,7 +30,6 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            
             <Link
               to="/"
               className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium"
