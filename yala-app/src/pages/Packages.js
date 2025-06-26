@@ -1,13 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import yalaImage from "../assets/yaala.png"; // Replace with your image paths
 import bundalaImage from "../assets/bundala.jpg";
 import udawalaweImage from "../assets/bund.jpg";
 import jeepImage from "../assets/tour.jpg";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
-import { useEffect } from "react";
 import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
+
 
 const breakfastMenuItemsVeg = [
   { name: "Fresh tropical fruits", price: 2 },

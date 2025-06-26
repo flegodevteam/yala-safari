@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { Calendar } from "react-date-range";
-import "react-date-range/dist/styles.css";
-import "react-date-range/dist/theme/default.css";
-import { enUS } from "date-fns/locale";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 
 const SafariBooking = () => {
   // Form state
@@ -112,12 +110,10 @@ const SafariBooking = () => {
                   <h3 className="text-lg font-semibold mb-3">Select Date</h3>
                   <div className="border rounded-xl overflow-hidden">
                     <Calendar
-                      date={date}
+                      value={date}
                       onChange={setDate}
                       minDate={new Date()}
-                      maxDate={new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)} // 90 days in future
-                      color="#059669"
-                      locale={enUS}
+                      maxDate={new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)}
                     />
                   </div>
                 </div>
