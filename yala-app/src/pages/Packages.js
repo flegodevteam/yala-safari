@@ -75,6 +75,18 @@ const Packages = () => {
   const [selectedSeat, setSelectedSeat] = useState("");
   const [loading, setLoading] = useState(true);
   const [showBookingSection, setShowBookingSection] = useState(false);
+  const [privateAvailableDates, setPrivateAvailableDates] = useState([]);
+  useEffect(() => {
+    if (reservationType === "private") {
+      // Example: Replace with your real API endpoint for private safari availability
+      fetch(`http://localhost:5000/api/availability?type=private&park=${park}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setPrivateAvailableDates(data.dates || []);
+        })
+        .catch(() => setPrivateAvailableDates([]));
+    }
+  }, [reservationType, park]);
 
   const [selectedBreakfastItems, setSelectedBreakfastItems] = useState(
     (vegOption === "veg"
@@ -258,7 +270,6 @@ const Packages = () => {
           </div>
 
           <div className="p-6 md:p-8">
-            {/* 1. Reservation Type */}
             <section className="mb-10">
               <h2 className="text-2xl font-bold text-green-800 mb-6 flex items-center">
                 <span className="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
@@ -327,6 +338,35 @@ const Packages = () => {
                       </ul>
                     </div>
                   </div>
+                  {/* Show calendar for private safari */}
+                  {reservationType === "private" && (
+                    <div className="mt-6">
+                      <label className="block font-semibold mb-2">
+                        Select Date
+                      </label>
+                      <Calendar
+                        value={privateDate}
+                        onChange={setPrivateDate}
+                        minDate={new Date()}
+                        maxDate={
+                          new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+                        }
+                        tileDisabled={({ date, view }) =>
+                          view === "month" &&
+                          privateAvailableDates.length > 0 &&
+                          !privateAvailableDates.includes(
+                            date.toISOString().slice(0, 10)
+                          )
+                        }
+                      />
+                      <div className="mt-2 text-sm text-gray-600">
+                        Selected:{" "}
+                        {privateDate
+                          ? moment(privateDate).format("MMMM D, YYYY")
+                          : "None"}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div
@@ -1352,7 +1392,7 @@ const Packages = () => {
 
                     <button
                       className="w-full mt-6 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-all flex items-center justify-center"
-                      onClick={() => navigate("/booking")}
+                      onClick={() => setShowBookingSection(true)}
                     >
                       <svg
                         className="w-5 h-5 mr-2"
