@@ -159,24 +159,6 @@ const SafariBooking = () => {
                     <label className="flex items-start p-4 border border-gray-200 rounded-lg hover:border-green-300 cursor-pointer">
                       <input
                         type="checkbox"
-                        name="addOns.lunch"
-                        checked={formData.addOns.lunch}
-                        onChange={handleChange}
-                        className="mt-1 h-5 w-5 text-green-600 rounded border-gray-300 focus:ring-green-500"
-                      />
-                      <div className="ml-3 flex-1">
-                        <div className="flex justify-between">
-                          <span className="font-medium">Packed Lunch</span>
-                          <span className="text-green-600">+$8 per person</span>
-                        </div>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Delicious local cuisine packed for your safari
-                        </p>
-                      </div>
-                    </label>
-                    <label className="flex items-start p-4 border border-gray-200 rounded-lg hover:border-green-300 cursor-pointer">
-                      <input
-                        type="checkbox"
                         name="addOns.binoculars"
                         checked={formData.addOns.binoculars}
                         onChange={handleChange}
@@ -189,24 +171,6 @@ const SafariBooking = () => {
                         </div>
                         <p className="text-sm text-gray-500 mt-1">
                           High-quality binoculars for wildlife spotting
-                        </p>
-                      </div>
-                    </label>
-                    <label className="flex items-start p-4 border border-gray-200 rounded-lg hover:border-green-300 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        name="addOns.guide"
-                        checked={formData.addOns.guide}
-                        onChange={handleChange}
-                        className="mt-1 h-5 w-5 text-green-600 rounded border-gray-300 focus:ring-green-500"
-                      />
-                      <div className="ml-3 flex-1">
-                        <div className="flex justify-between">
-                          <span className="font-medium">Expert Guide</span>
-                          <span className="text-green-600">+$15</span>
-                        </div>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Professional wildlife guide for your group
                         </p>
                       </div>
                     </label>

@@ -6,6 +6,8 @@ import jeepImage from "../assets/tour.jpg";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import { useEffect } from "react";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 
 const breakfastMenuItemsVeg = [
   { name: "Fresh tropical fruits", price: 2 },
@@ -54,6 +56,7 @@ const Packages = () => {
   const [includeBreakfast, setIncludeBreakfast] = useState(false);
   const [people, setPeople] = useState(1);
   const navigate = useNavigate();
+  const [privateDate, setPrivateDate] = useState(new Date());
   // Add to your state declarations
   const [pickupLocation, setPickupLocation] = useState("");
   const [hotelWhatsapp, setHotelWhatsapp] = useState("");
@@ -71,6 +74,8 @@ const Packages = () => {
   const [availableSeats, setAvailableSeats] = useState([]);
   const [selectedSeat, setSelectedSeat] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showBookingSection, setShowBookingSection] = useState(false);
+
   const [selectedBreakfastItems, setSelectedBreakfastItems] = useState(
     (vegOption === "veg"
       ? breakfastMenuItemsVeg
@@ -161,9 +166,9 @@ const Packages = () => {
     if (reservationType === "private") {
       const jeepPrice = pricing.jeep[jeepType][timeSlot];
       const guidePrice = pricing.guide[guideOption];
-      total = (jeepPrice + guidePrice) / people;
+      total = jeepPrice * people + guidePrice;
     } else {
-      total = pricing.shared[Math.min(people, 7)];
+      total = pricing.shared[Math.min(people, 7)] * people;
     }
 
     // Add meal prices per person if meals are selected
@@ -577,6 +582,7 @@ const Packages = () => {
                   </div>
                 ))}
               </div>
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
                   {
@@ -1367,6 +1373,87 @@ const Packages = () => {
                 </div>
               </div>
             </section>
+            {showBookingSection && (
+              <section className="mt-12 bg-white rounded-xl shadow-lg p-8">
+                <h2 className="text-2xl font-bold text-green-800 mb-6 flex items-center">
+                  <span className="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
+                    7
+                  </span>
+                  Complete Your Booking
+                </h2>
+                {/* Example: Show calendar only for private safari */}
+                {reservationType === "private" && (
+                  <div className="mb-6">
+                    <h3 className="font-medium mb-2">Select Date</h3>
+                    <Calendar
+                      value={privateDate}
+                      onChange={setPrivateDate}
+                      minDate={new Date()}
+                      maxDate={new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)}
+                    />
+                  </div>
+                )}
+                {/* Add your booking form fields here, e.g. card details, payment, etc. */}
+                <div className="mb-4">
+                  <label
+                    className="block font-semibold mb-1"
+                    htmlFor="cardNumber"
+                  >
+                    Card Number
+                  </label>
+                  <input
+                    id="cardNumber"
+                    type="text"
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    placeholder="Enter your card number"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label
+                    className="block font-semibold mb-1"
+                    htmlFor="cardName"
+                  >
+                    Name on Card
+                  </label>
+                  <input
+                    id="cardName"
+                    type="text"
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    placeholder="Enter name on card"
+                  />
+                </div>
+                <div className="mb-4 flex gap-4">
+                  <div className="flex-1">
+                    <label
+                      className="block font-semibold mb-1"
+                      htmlFor="expiry"
+                    >
+                      Expiry
+                    </label>
+                    <input
+                      id="expiry"
+                      type="text"
+                      className="w-full border border-gray-300 rounded px-3 py-2"
+                      placeholder="MM/YY"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block font-semibold mb-1" htmlFor="cvc">
+                      CVC
+                    </label>
+                    <input
+                      id="cvc"
+                      type="text"
+                      className="w-full border border-gray-300 rounded px-3 py-2"
+                      placeholder="CVC"
+                    />
+                  </div>
+                </div>
+                <button className="w-full mt-6 py-4 bg-green-700 hover:bg-green-800 text-white font-bold rounded-lg shadow-md transition-all">
+                  Pay & Confirm Booking
+                </button>
+              </section>
+            )}
           </div>
         </div>
       </div>
