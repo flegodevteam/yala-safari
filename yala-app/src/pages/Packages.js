@@ -1,11 +1,43 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import yalaImage from "../assets/yaala.png"; // Replace with your image paths
 import bundalaImage from "../assets/bundala.jpg";
 import udawalaweImage from "../assets/bund.jpg";
 import jeepImage from "../assets/tour.jpg";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
-import { useEffect } from "react";
+import Calendar from "react-calendar";
+
+
+const breakfastMenuItemsVeg = [
+  { name: "Fresh tropical fruits", price: 2 },
+  { name: "Toast & butter/jam", price: 1 },
+  { name: "Local Sri Lankan pancakes", price: 1.5 },
+  { name: "Tea or coffee", price: 1 },
+  // Eggs will be handled by the "Include Eggs" checkbox
+];
+
+const breakfastMenuItemsNonVeg = [
+  { name: "Fresh tropical fruits", price: 2 },
+  { name: "Pasta (any style)", price: 1.5 },
+  { name: "Sandwiches", price: 1 },
+  { name: "Local Sri Lankan pancakes", price: 1.5 },
+  { name: "Tea or coffee", price: 1 },
+];
+
+const lunchMenuItemsVeg = [
+  { name: "Rice & curry (veg)", price: 3 },
+  { name: "Fresh salad", price: 1.5 },
+  { name: "Seasonal fruit dessert", price: 1.5 },
+  { name: "Bottled water & soft drink", price: 1 },
+];
+
+const lunchMenuItemsNonVeg = [
+  { name: "Rice & curry (non-veg)", price: 3 },
+  { name: "Grilled chicken or fish", price: 2.5 },
+  { name: "Fresh salad", price: 1.5 },
+  { name: "Seasonal fruit dessert", price: 1.5 },
+  { name: "Bottled water & soft drink", price: 1 },
+];
 
 const Packages = () => {
   // State management
@@ -20,13 +52,18 @@ const Packages = () => {
   const [vegOption, setVegOption] = useState("non-veg");
   const [includeEggs, setIncludeEggs] = useState(false);
   const [includeLunch, setIncludeLunch] = useState(false);
+  const [includeBreakfast, setIncludeBreakfast] = useState(false);
   const [people, setPeople] = useState(1);
   const navigate = useNavigate();
+  const [privateDate, setPrivateDate] = useState(new Date());
   // Add to your state declarations
   const [pickupLocation, setPickupLocation] = useState("");
   const [hotelWhatsapp, setHotelWhatsapp] = useState("");
   const [accommodation, setAccommodation] = useState("");
   const [passportNumber, setPassportNumber] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
   // Add to your state declarations
   const [nicNumber, setNicNumber] = useState("");
   const [localContact, setLocalContact] = useState("");
@@ -35,7 +72,46 @@ const Packages = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [availableSeats, setAvailableSeats] = useState([]);
   const [selectedSeat, setSelectedSeat] = useState("");
-  // const [pricing, setPricing] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showBookingSection, setShowBookingSection] = useState(false);
+  const [privateAvailableDates, setPrivateAvailableDates] = useState([]);
+  useEffect(() => {
+    if (reservationType === "private") {
+      // Example: Replace with your real API endpoint for private safari availability
+      fetch(`http://localhost:5000/api/availability?type=private&park=${park}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setPrivateAvailableDates(data.dates || []);
+        })
+        .catch(() => setPrivateAvailableDates([]));
+    }
+  }, [reservationType, park]);
+
+  const [selectedBreakfastItems, setSelectedBreakfastItems] = useState(
+    (vegOption === "veg"
+      ? breakfastMenuItemsVeg
+      : breakfastMenuItemsNonVeg
+    ).map((item) => item.name)
+  );
+  const [selectedLunchItems, setSelectedLunchItems] = useState(
+    (vegOption === "veg" ? lunchMenuItemsVeg : lunchMenuItemsNonVeg).map(
+      (item) => item.name
+    )
+  );
+
+  const getBreakfastMenu = () => {
+    return vegOption === "veg"
+      ? breakfastMenuItemsVeg
+      : breakfastMenuItemsNonVeg;
+  };
+  const getLunchMenu = () => {
+    return vegOption === "veg" ? lunchMenuItemsVeg : lunchMenuItemsNonVeg;
+  };
+
+  useEffect(() => {
+    setSelectedBreakfastItems(getBreakfastMenu().map((item) => item.name));
+    setSelectedLunchItems(getLunchMenu().map((item) => item.name));
+  }, [vegOption]);
 
   // Park images mapping
   const parkImages = {
@@ -45,7 +121,7 @@ const Packages = () => {
   };
 
   // Pricing data
-  const pricing = {
+  const defaultpricing = {
     jeep: {
       basic: { morning: 5, afternoon: 5, extended: 7, fullDay: 10 },
       luxury: { morning: 7, afternoon: 7, extended: 9, fullDay: 12 },
@@ -70,14 +146,29 @@ const Packages = () => {
       separateGuide: 15,
     },
   };
+  const [pricing, setPricing] = useState(defaultpricing);
 
   useEffect(() => {
-    if (reservationType === "shared") {
-      fetch("http://localhost:5000/api/available-dates")
-        .then((res) => res.json())
-        .then((data) => setAvailableDates(data));
-    }
-  }, [reservationType]);
+    fetch("http://localhost:5000/api/packages")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.jeep && data.shared && data.meals && data.guide)
+          setPricing(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (
+    loading ||
+    !pricing ||
+    !pricing.jeep ||
+    !pricing.shared ||
+    !pricing.meals ||
+    !pricing.guide
+  ) {
+    return <div className="p-8">Loading...</div>;
+  }
 
   // Calculate total price
   const calculateTotal = () => {
@@ -86,17 +177,57 @@ const Packages = () => {
     if (reservationType === "private") {
       const jeepPrice = pricing.jeep[jeepType][timeSlot];
       const guidePrice = pricing.guide[guideOption];
-      total = (jeepPrice + guidePrice) / people;
+      total = jeepPrice * people + guidePrice;
     } else {
-      total = pricing.shared[Math.min(people, 7)];
+      total = pricing.shared[Math.min(people, 7)] * people;
     }
 
+    // Add meal prices per person if meals are selected
     if (mealOption === "with") {
-      total += pricing.meals.breakfast;
-      if (includeLunch) total += pricing.meals.lunch;
+      if (includeBreakfast) {
+        total +=
+          getBreakfastMenu()
+            .filter((item) => selectedBreakfastItems.includes(item.name))
+            .reduce((sum, item) => sum + item.price, 0) * people;
+      }
+      if (includeLunch) {
+        total +=
+          getLunchMenu()
+            .filter((item) => selectedLunchItems.includes(item.name))
+            .reduce((sum, item) => sum + item.price, 0) * people;
+      }
     }
 
     return total.toFixed(2);
+  };
+
+  const handleBreakfastItemChange = (itemName) => {
+    setSelectedBreakfastItems((prev) =>
+      prev.includes(itemName)
+        ? prev.filter((i) => i !== itemName)
+        : [...prev, itemName]
+    );
+  };
+
+  // Handler for lunch menu selection
+  const handleLunchItemChange = (itemName) => {
+    setSelectedLunchItems((prev) =>
+      prev.includes(itemName)
+        ? prev.filter((i) => i !== itemName)
+        : [...prev, itemName]
+    );
+  };
+
+  const handleRefreshPricing = () => {
+    setLoading(true);
+    fetch("http://localhost:5000/api/packages")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.jeep && data.shared && data.meals && data.guide)
+          setPricing(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   };
 
   return (
@@ -138,7 +269,6 @@ const Packages = () => {
           </div>
 
           <div className="p-6 md:p-8">
-            {/* 1. Reservation Type */}
             <section className="mb-10">
               <h2 className="text-2xl font-bold text-green-800 mb-6 flex items-center">
                 <span className="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
@@ -207,6 +337,35 @@ const Packages = () => {
                       </ul>
                     </div>
                   </div>
+                  {/* Show calendar for private safari */}
+                  {reservationType === "private" && (
+                    <div className="mt-6">
+                      <label className="block font-semibold mb-2">
+                        Select Date
+                      </label>
+                      <Calendar
+                        value={privateDate}
+                        onChange={setPrivateDate}
+                        minDate={new Date()}
+                        maxDate={
+                          new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+                        }
+                        tileDisabled={({ date, view }) =>
+                          view === "month" &&
+                          privateAvailableDates.length > 0 &&
+                          !privateAvailableDates.includes(
+                            date.toISOString().slice(0, 10)
+                          )
+                        }
+                      />
+                      <div className="mt-2 text-sm text-gray-600">
+                        Selected:{" "}
+                        {privateDate
+                          ? moment(privateDate).format("MMMM D, YYYY")
+                          : "None"}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div
@@ -389,7 +548,6 @@ const Packages = () => {
                   {
                     id: "basic",
                     name: "Basic Jeep",
-                    price: "$5-10",
                     features: [
                       "Standard seating",
                       "Pop-up roof",
@@ -399,7 +557,6 @@ const Packages = () => {
                   {
                     id: "luxury",
                     name: "Luxury Jeep",
-                    price: "$7-12",
                     features: [
                       "Comfortable seats",
                       "Large viewing roof",
@@ -409,7 +566,6 @@ const Packages = () => {
                   {
                     id: "superLuxury",
                     name: "Super Luxury",
-                    price: "$10-15",
                     features: [
                       "Premium seats",
                       "360° viewing",
@@ -429,7 +585,12 @@ const Packages = () => {
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="text-xl font-semibold">{type.name}</h3>
                       <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
-                        {type.price}
+                        {/* Show dynamic price range */}$
+                        {pricing.jeep[type.id]
+                          ? `${pricing.jeep[type.id].morning}-${
+                              pricing.jeep[type.id].fullDay
+                            }`
+                          : "-"}
                       </span>
                     </div>
                     <img
@@ -461,52 +622,48 @@ const Packages = () => {
                 ))}
               </div>
 
-              <div>
-                <h3 className="font-medium mb-3">Select Time Slot:</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {[
-                    {
-                      id: "morning",
-                      name: "Morning",
-                      time: "5:30 AM - 9:30 AM",
-                      price: "$5",
-                    },
-                    {
-                      id: "afternoon",
-                      name: "Afternoon",
-                      time: "2:30 PM - 6:30 PM",
-                      price: "$5",
-                    },
-                    {
-                      id: "extended",
-                      name: "Extended",
-                      time: "5:30 AM - 12:00 PM",
-                      price: "$7",
-                    },
-                    {
-                      id: "fullDay",
-                      name: "Full Day",
-                      time: "5:30 AM - 6:30 PM",
-                      price: "$10",
-                    },
-                  ].map((slot) => (
-                    <div
-                      key={slot.id}
-                      onClick={() => setTimeSlot(slot.id)}
-                      className={`border rounded-lg p-3 cursor-pointer ${
-                        timeSlot === slot.id
-                          ? "bg-green-100 border-green-500"
-                          : "hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="font-medium">{slot.name}</div>
-                      <div className="text-sm text-gray-600">{slot.time}</div>
-                      <div className="text-green-700 font-medium mt-1">
-                        {slot.price}
-                      </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[
+                  {
+                    id: "morning",
+                    name: "Morning",
+                    time: "5:30 AM - 9:30 AM",
+                  },
+                  {
+                    id: "afternoon",
+                    name: "Afternoon",
+                    time: "2:30 PM - 6:30 PM",
+                  },
+                  {
+                    id: "extended",
+                    name: "Extended",
+                    time: "5:30 AM - 12:00 PM",
+                  },
+                  {
+                    id: "fullDay",
+                    name: "Full Day",
+                    time: "5:30 AM - 6:30 PM",
+                  },
+                ].map((slot) => (
+                  <div
+                    key={slot.id}
+                    onClick={() => setTimeSlot(slot.id)}
+                    className={`border rounded-lg p-3 cursor-pointer ${
+                      timeSlot === slot.id
+                        ? "bg-green-100 border-green-500"
+                        : "hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="font-medium">{slot.name}</div>
+                    <div className="text-sm text-gray-600">{slot.time}</div>
+                    <div className="text-green-700 font-medium mt-1">
+                      {/* Show dynamic price for selected jeep type and slot */}
+                      {pricing.jeep[jeepType] && pricing.jeep[jeepType][slot.id]
+                        ? `$${pricing.jeep[jeepType][slot.id]}`
+                        : "-"}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             </section>
 
@@ -524,21 +681,18 @@ const Packages = () => {
                   {
                     id: "driver",
                     name: "Driver Only",
-                    price: "+$0",
                     description:
                       "Basic transportation with a driver who knows the routes",
                   },
                   {
                     id: "driverGuide",
                     name: "Driver + Guide",
-                    price: "+$10",
                     description:
                       "Driver who also serves as your wildlife guide",
                   },
                   {
                     id: "separateGuide",
                     name: "Separate Guide",
-                    price: "+$15",
                     description:
                       "Dedicated driver and professional wildlife guide",
                   },
@@ -555,7 +709,7 @@ const Packages = () => {
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-lg font-semibold">{option.name}</h3>
                       <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
-                        {option.price}
+                        +${pricing.guide[option.id]}
                       </span>
                     </div>
                     <p className="text-sm text-gray-600">
@@ -643,6 +797,54 @@ const Packages = () => {
                         <div>
                           <label
                             className="block font-semibold mb-1"
+                            htmlFor="fullName"
+                          >
+                            Full Name
+                          </label>
+                          <input
+                            id="fullName"
+                            type="text"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            className="w-full border border-gray-300 rounded px-3 py-2"
+                            placeholder="Enter your full name"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            className="block font-semibold mb-1"
+                            htmlFor="phoneNumber"
+                          >
+                            Phone Number
+                          </label>
+                          <input
+                            id="phoneNumber"
+                            type="tel"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            className="w-full border border-gray-300 rounded px-3 py-2"
+                            placeholder="Enter your phone number"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            className="block font-semibold mb-1"
+                            htmlFor="email"
+                          >
+                            Email Address
+                          </label>
+                          <input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full border border-gray-300 rounded px-3 py-2"
+                            placeholder="Enter your email address"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            className="block font-semibold mb-1"
                             htmlFor="pickupLocation"
                           >
                             Pickup Location
@@ -710,6 +912,54 @@ const Packages = () => {
                     {/* Extra fields for local visitors */}
                     {visitorType === "local" && (
                       <div className="space-y-4 mt-6">
+                        <div>
+                          <label
+                            className="block font-semibold mb-1"
+                            htmlFor="fullName"
+                          >
+                            Full Name
+                          </label>
+                          <input
+                            id="fullName"
+                            type="text"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            className="w-full border border-gray-300 rounded px-3 py-2"
+                            placeholder="Enter your full name"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            className="block font-semibold mb-1"
+                            htmlFor="phoneNumber"
+                          >
+                            Phone Number
+                          </label>
+                          <input
+                            id="phoneNumber"
+                            type="tel"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            className="w-full border border-gray-300 rounded px-3 py-2"
+                            placeholder="Enter your phone number"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            className="block font-semibold mb-1"
+                            htmlFor="email"
+                          >
+                            Email Address
+                          </label>
+                          <input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full border border-gray-300 rounded px-3 py-2"
+                            placeholder="Enter your email address"
+                          />
+                        </div>
                         <div>
                           <label
                             className="block font-semibold mb-1"
@@ -878,16 +1128,76 @@ const Packages = () => {
                             <input
                               type="checkbox"
                               id="breakfast"
-                              checked={true}
-                              readOnly
+                              checked={includeBreakfast}
+                              onChange={() =>
+                                setIncludeBreakfast(!includeBreakfast)
+                              }
                               className="mr-2 h-5 w-5 text-green-600 rounded border-gray-300"
                             />
                             <label htmlFor="breakfast" className="font-medium">
                               Breakfast
                             </label>
                           </div>
-                          <span className="text-green-700">+$5</span>
                         </div>
+                        {includeBreakfast && (
+                          <div className="ml-8 mb-2 text-sm text-gray-600">
+                            <div className="font-semibold mb-1">
+                              Select your breakfast items:
+                            </div>
+                            <ul className="list-disc">
+                              {getBreakfastMenu().map((item) => (
+                                <li
+                                  key={item.name}
+                                  className="flex items-center mb-1"
+                                >
+                                  {/* For veg, handle eggs separately */}
+                                  {vegOption === "veg" &&
+                                  item.name === "Eggs (any style)" ? null : (
+                                    <>
+                                      <input
+                                        type="checkbox"
+                                        id={`breakfast-${item.name}`}
+                                        checked={selectedBreakfastItems.includes(
+                                          item.name
+                                        )}
+                                        onChange={() =>
+                                          handleBreakfastItemChange(item.name)
+                                        }
+                                        className="mr-2"
+                                      />
+                                      <label htmlFor={`breakfast-${item.name}`}>
+                                        {item.name}{" "}
+                                        <span className="text-green-700">
+                                          +${item.price}
+                                        </span>
+                                      </label>
+                                    </>
+                                  )}
+                                </li>
+                              ))}
+                              {/* Show eggs as a separate option for veg */}
+                              {vegOption === "veg" && (
+                                <li className="flex items-center mb-1">
+                                  <input
+                                    type="checkbox"
+                                    id="includeEggs"
+                                    checked={includeEggs}
+                                    onChange={() =>
+                                      setIncludeEggs(!includeEggs)
+                                    }
+                                    className="mr-2"
+                                  />
+                                  <label htmlFor="includeEggs">
+                                    Eggs (any style){" "}
+                                    <span className="text-green-700">
+                                      +${1.5}
+                                    </span>
+                                  </label>
+                                </li>
+                              )}
+                            </ul>
+                          </div>
+                        )}
                         <div className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
                           <div className="flex items-center">
                             <input
@@ -901,8 +1211,40 @@ const Packages = () => {
                               Lunch
                             </label>
                           </div>
-                          <span className="text-green-700">+$6</span>
                         </div>
+                        {includeLunch && (
+                          <div className="ml-8 mb-2 text-sm text-gray-600">
+                            <div className="font-semibold mb-1">
+                              Select your lunch items:
+                            </div>
+                            <ul className="list-disc">
+                              {getLunchMenu().map((item) => (
+                                <li
+                                  key={item.name}
+                                  className="flex items-center mb-1"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    id={`lunch-${item.name}`}
+                                    checked={selectedLunchItems.includes(
+                                      item.name
+                                    )}
+                                    onChange={() =>
+                                      handleLunchItemChange(item.name)
+                                    }
+                                    className="mr-2"
+                                  />
+                                  <label htmlFor={`lunch-${item.name}`}>
+                                    {item.name}{" "}
+                                    <span className="text-green-700">
+                                      +${item.price}
+                                    </span>
+                                  </label>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -1049,7 +1391,7 @@ const Packages = () => {
 
                     <button
                       className="w-full mt-6 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-all flex items-center justify-center"
-                      onClick={() => navigate("/booking")}
+                      onClick={() => setShowBookingSection(true)}
                     >
                       <svg
                         className="w-5 h-5 mr-2"
@@ -1070,6 +1412,87 @@ const Packages = () => {
                 </div>
               </div>
             </section>
+            {showBookingSection && (
+              <section className="mt-12 bg-white rounded-xl shadow-lg p-8">
+                <h2 className="text-2xl font-bold text-green-800 mb-6 flex items-center">
+                  <span className="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
+                    7
+                  </span>
+                  Complete Your Booking
+                </h2>
+                {/* Example: Show calendar only for private safari */}
+                {reservationType === "private" && (
+                  <div className="mb-6">
+                    <h3 className="font-medium mb-2">Select Date</h3>
+                    <Calendar
+                      value={privateDate}
+                      onChange={setPrivateDate}
+                      minDate={new Date()}
+                      maxDate={new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)}
+                    />
+                  </div>
+                )}
+                {/* Add your booking form fields here, e.g. card details, payment, etc. */}
+                <div className="mb-4">
+                  <label
+                    className="block font-semibold mb-1"
+                    htmlFor="cardNumber"
+                  >
+                    Card Number
+                  </label>
+                  <input
+                    id="cardNumber"
+                    type="text"
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    placeholder="Enter your card number"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label
+                    className="block font-semibold mb-1"
+                    htmlFor="cardName"
+                  >
+                    Name on Card
+                  </label>
+                  <input
+                    id="cardName"
+                    type="text"
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    placeholder="Enter name on card"
+                  />
+                </div>
+                <div className="mb-4 flex gap-4">
+                  <div className="flex-1">
+                    <label
+                      className="block font-semibold mb-1"
+                      htmlFor="expiry"
+                    >
+                      Expiry
+                    </label>
+                    <input
+                      id="expiry"
+                      type="text"
+                      className="w-full border border-gray-300 rounded px-3 py-2"
+                      placeholder="MM/YY"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block font-semibold mb-1" htmlFor="cvc">
+                      CVC
+                    </label>
+                    <input
+                      id="cvc"
+                      type="text"
+                      className="w-full border border-gray-300 rounded px-3 py-2"
+                      placeholder="CVC"
+                    />
+                  </div>
+                </div>
+                <button className="w-full mt-6 py-4 bg-green-700 hover:bg-green-800 text-white font-bold rounded-lg shadow-md transition-all">
+                  Pay & Confirm Booking
+                </button>
+              </section>
+            )}
           </div>
         </div>
       </div>

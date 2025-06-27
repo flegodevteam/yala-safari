@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import hero from '../assets/hero.jpg'; 
+import { Link } from "react-router-dom";
+import hero from "../assets/hero.jpg";
 
 export default function Home() {
   return (
@@ -18,21 +18,17 @@ export default function Home() {
             Discover the Wild Beauty of Yala
           </h1>
           <p className="mt-6 text-xl text-gray-300 max-w-3xl">
-            Experience unforgettable wildlife encounters with our expert-guided safari tours in Sri Lanka's most famous national parks.
+            Experience unforgettable wildlife encounters with our expert-guided
+            safari tours in Sri Lanka's most famous national parks.
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
             <Link
-              to="/booking"
+              to="/packages"
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700"
             >
               Book Your Safari
             </Link>
-            <Link
-              to="/packages"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-green-700 bg-white hover:bg-gray-50"
-            >
-              Explore Packages
-            </Link>
+            
           </div>
         </div>
       </div>
@@ -44,14 +40,16 @@ export default function Home() {
             Our Popular Safari Packages
           </h2>
           <p className="mt-4 max-w-xl mx-auto text-gray-500">
-            Choose from our carefully curated safari experiences designed for all types of adventurers.
+            Choose from our carefully curated safari experiences designed for
+            all types of adventurers.
           </p>
         </div>
         <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {[
             {
               name: "Yala Morning Safari",
-              description: "Spot leopards and other wildlife at their most active time",
+              description:
+                "Spot leopards and other wildlife at their most active time",
               price: "$50 per person",
               duration: "4 hours",
               link: "/booking?package=morning",
@@ -71,13 +69,22 @@ export default function Home() {
               link: "/booking?package=birdwatching",
             },
           ].map((pkg, index) => (
-            <div key={index} className="pt-6 pb-8 px-6 bg-white rounded-lg shadow-lg flex flex-col">
+            <div
+              key={index}
+              className="pt-6 pb-8 px-6 bg-white rounded-lg shadow-lg flex flex-col"
+            >
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-gray-900">{pkg.name}</h3>
-                <p className="mt-3 text-base text-gray-500">{pkg.description}</p>
+                <p className="mt-3 text-base text-gray-500">
+                  {pkg.description}
+                </p>
                 <div className="mt-4 flex items-center">
-                  <span className="text-green-600 font-medium">{pkg.price}</span>
-                  <span className="ml-4 text-sm text-gray-500">{pkg.duration}</span>
+                  <span className="text-green-600 font-medium">
+                    {pkg.price}
+                  </span>
+                  <span className="ml-4 text-sm text-gray-500">
+                    {pkg.duration}
+                  </span>
                 </div>
               </div>
               <div className="mt-6">
@@ -109,7 +116,9 @@ export default function Home() {
               About Yala Safari
             </h2>
             <p className="mt-5 max-w-xl text-lg text-green-100">
-              We are a team of passionate wildlife experts dedicated to providing authentic and responsible safari experiences in Sri Lanka's most beautiful national parks.
+              We are a team of passionate wildlife experts dedicated to
+              providing authentic and responsible safari experiences in Sri
+              Lanka's most beautiful national parks.
             </p>
             <div className="mt-8 sm:flex">
               <div className="rounded-md shadow">
@@ -142,22 +151,28 @@ export default function Home() {
           <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                quote: "The best wildlife experience of my life! Our guide spotted 3 leopards and countless other animals.",
+                quote:
+                  "The best wildlife experience of my life! Our guide spotted 3 leopards and countless other animals.",
                 author: "Sarah J.",
                 rating: 5,
               },
               {
-                quote: "Professional team with deep knowledge of the park and its wildlife. Highly recommended!",
+                quote:
+                  "Professional team with deep knowledge of the park and its wildlife. Highly recommended!",
                 author: "Mark T.",
                 rating: 5,
               },
               {
-                quote: "The morning safari was magical. We saw elephants, crocodiles, and so many birds.",
+                quote:
+                  "The morning safari was magical. We saw elephants, crocodiles, and so many birds.",
                 author: "Priya K.",
                 rating: 4,
               },
             ].map((testimonial, index) => (
-              <div key={index} className="pt-8 pb-10 px-6 bg-gray-50 rounded-lg">
+              <div
+                key={index}
+                className="pt-8 pb-10 px-6 bg-gray-50 rounded-lg"
+              >
                 <div className="flex items-center">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <svg
@@ -183,7 +198,9 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-900">{testimonial.author}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {testimonial.author}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -197,7 +214,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between">
           <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
             <span className="block">Ready to explore?</span>
-            <span className="block text-green-600">Book your safari adventure today.</span>
+            <span className="block text-green-600">
+              Book your safari adventure today.
+            </span>
           </h2>
           <div className="mt-8 flex lg:mt-0 lg:flex-shrink-0">
             <div className="inline-flex rounded-md shadow">
