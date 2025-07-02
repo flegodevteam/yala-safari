@@ -6,7 +6,7 @@ import jeepImage from "../assets/tour.jpg";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import Calendar from "react-calendar";
-
+import PaymentPage from "./Booking";
 
 const breakfastMenuItemsVeg = [
   { name: "Fresh tropical fruits", price: 2 },
@@ -64,6 +64,8 @@ const Packages = () => {
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
   // Add to your state declarations
   const [nicNumber, setNicNumber] = useState("");
   const [localContact, setLocalContact] = useState("");
@@ -71,8 +73,9 @@ const Packages = () => {
   const [availableDates, setAvailableDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [availableSeats, setAvailableSeats] = useState([]);
-  const [selectedSeat, setSelectedSeat] = useState("");
+  const [selectedSeats, setSelectedSeats] = useState("");
   const [loading, setLoading] = useState(true);
+
   const [showBookingSection, setShowBookingSection] = useState(false);
   const [privateAvailableDates, setPrivateAvailableDates] = useState([]);
   useEffect(() => {
@@ -158,6 +161,19 @@ const Packages = () => {
       })
       .catch(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (reservationType === "shared" && park === "yala") {
+      setAvailableDates([
+        "2025-07-05",
+        "2025-07-06",
+        "2025-07-08",
+        "2025-07-10",
+      ]);
+    } else {
+      setAvailableDates([]);
+    }
+  }, [reservationType, park]);
 
   if (
     loading ||
@@ -759,36 +775,62 @@ const Packages = () => {
                         <h3 className="font-medium mb-2">
                           Select Available Date:
                         </h3>
-                        <select
-                          value={selectedDate}
-                          onChange={(e) => setSelectedDate(e.target.value)}
-                          className="w-full border border-gray-300 rounded px-3 py-2 mb-4"
-                        >
-                          <option value="">Select a date</option>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {availableDates.length === 0 && (
+                            <span className="text-gray-500 text-sm">
+                              No dates available.
+                            </span>
+                          )}
                           {availableDates.map((date) => (
-                            <option key={date} value={date}>
-                              {moment(date, "YYYY-MM-DD").format(
-                                "MMMM D, YYYY"
-                              )}
-                            </option>
+                            <button
+                              key={date}
+                              type="button"
+                              onClick={() => setSelectedDate(date)}
+                              className={`px-3 py-2 rounded border text-sm ${
+                                selectedDate === date
+                                  ? "bg-green-600 text-white border-green-600"
+                                  : "bg-white text-green-700 border-green-300 hover:bg-green-50"
+                              }`}
+                            >
+                              {moment(date, "YYYY-MM-DD").format("MMM D, YYYY")}
+                            </button>
                           ))}
-                        </select>
-
-                        <h3 className="font-medium mb-2">
-                          Select Available Seat:
-                        </h3>
-                        <select
-                          value={selectedSeat}
-                          onChange={(e) => setSelectedSeat(e.target.value)}
-                          className="w-full border border-gray-300 rounded px-3 py-2"
-                        >
-                          <option value="">Select a seat</option>
-                          {[1, 2, 3, 4, 5, 6, 7].map((seat) => (
-                            <option key={seat} value={seat}>
-                              Seat {seat}
-                            </option>
-                          ))}
-                        </select>
+                        </div>
+                        {selectedDate && (
+                          <>
+                            <h3 className="font-medium mb-2">
+                              Select Available Seats:
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                              {[1, 2, 3, 4, 5, 6, 7].map((seat) => (
+                                <button
+                                  key={seat}
+                                  type="button"
+                                  onClick={() =>
+                                    setSelectedSeats((prev) =>
+                                      prev.includes(seat)
+                                        ? prev.filter((s) => s !== seat)
+                                        : [...prev, seat]
+                                    )
+                                  }
+                                  className={`px-3 py-2 rounded border text-sm ${
+                                    selectedSeats.includes(seat)
+                                      ? "bg-green-600 text-white border-green-600"
+                                      : "bg-white text-green-700 border-green-300 hover:bg-green-50"
+                                  }`}
+                                >
+                                  Seat {seat}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="mt-2 text-sm text-gray-600">
+                              Selected seats:{" "}
+                              {selectedSeats.length > 0
+                                ? selectedSeats.join(", ")
+                                : "None"}
+                            </div>
+                          </>
+                        )}
                       </div>
                     )}
                     {/* Extra fields for foreign visitors */}
@@ -1319,6 +1361,22 @@ const Packages = () => {
                         <span className="text-gray-600">Number of People:</span>
                         <span className="font-medium">{people}</span>
                       </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Card Holder:</span>
+                        <span className="font-medium">{fullName || "-"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Card Number:</span>
+                        <span className="font-medium">
+                          {cardNumber
+                            ? `**** **** **** ${cardNumber.slice(-4)}`
+                            : "-"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Expiry Date:</span>
+                        <span className="font-medium">{expiryDate || "-"}</span>
+                      </div>
                     </div>
                   </div>
 
@@ -1391,7 +1449,7 @@ const Packages = () => {
 
                     <button
                       className="w-full mt-6 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-all flex items-center justify-center"
-                      onClick={() => setShowBookingSection(true)}
+                      onClick={() => navigate("/booking")}
                     >
                       <svg
                         className="w-5 h-5 mr-2"
@@ -1412,87 +1470,6 @@ const Packages = () => {
                 </div>
               </div>
             </section>
-            {showBookingSection && (
-              <section className="mt-12 bg-white rounded-xl shadow-lg p-8">
-                <h2 className="text-2xl font-bold text-green-800 mb-6 flex items-center">
-                  <span className="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
-                    7
-                  </span>
-                  Complete Your Booking
-                </h2>
-                {/* Example: Show calendar only for private safari */}
-                {reservationType === "private" && (
-                  <div className="mb-6">
-                    <h3 className="font-medium mb-2">Select Date</h3>
-                    <Calendar
-                      value={privateDate}
-                      onChange={setPrivateDate}
-                      minDate={new Date()}
-                      maxDate={new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)}
-                    />
-                  </div>
-                )}
-                {/* Add your booking form fields here, e.g. card details, payment, etc. */}
-                <div className="mb-4">
-                  <label
-                    className="block font-semibold mb-1"
-                    htmlFor="cardNumber"
-                  >
-                    Card Number
-                  </label>
-                  <input
-                    id="cardNumber"
-                    type="text"
-                    className="w-full border border-gray-300 rounded px-3 py-2"
-                    placeholder="Enter your card number"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    className="block font-semibold mb-1"
-                    htmlFor="cardName"
-                  >
-                    Name on Card
-                  </label>
-                  <input
-                    id="cardName"
-                    type="text"
-                    className="w-full border border-gray-300 rounded px-3 py-2"
-                    placeholder="Enter name on card"
-                  />
-                </div>
-                <div className="mb-4 flex gap-4">
-                  <div className="flex-1">
-                    <label
-                      className="block font-semibold mb-1"
-                      htmlFor="expiry"
-                    >
-                      Expiry
-                    </label>
-                    <input
-                      id="expiry"
-                      type="text"
-                      className="w-full border border-gray-300 rounded px-3 py-2"
-                      placeholder="MM/YY"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label className="block font-semibold mb-1" htmlFor="cvc">
-                      CVC
-                    </label>
-                    <input
-                      id="cvc"
-                      type="text"
-                      className="w-full border border-gray-300 rounded px-3 py-2"
-                      placeholder="CVC"
-                    />
-                  </div>
-                </div>
-                <button className="w-full mt-6 py-4 bg-green-700 hover:bg-green-800 text-white font-bold rounded-lg shadow-md transition-all">
-                  Pay & Confirm Booking
-                </button>
-              </section>
-            )}
           </div>
         </div>
       </div>

@@ -10,6 +10,10 @@ const defaultPricing = {
   meals: { breakfast: 5, lunch: 6 },
   guide: { driver: 0, driverGuide: 10, separateGuide: 15 },
 };
+const defaultAvailability = {
+  shared: ["2025-07-02", "2025-07-03"],
+  private: ["2025-07-02", "2025-07-03", "2025-07-04"],
+};
 
 const AdminPackages = () => {
   const [pricing, setPricing] = useState(defaultPricing);
