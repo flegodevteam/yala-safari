@@ -6,39 +6,31 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleLogin = async(event) => {
+  const allowedAdmins = [
+    { email: "admin@yala.com", password: "12345" },
+    // Add more admin emails as needed
+  ];
+
+  const handleLogin = async (event) => {
     event.preventDefault();
     setIsLoading(true);
+    setErrorMsg("");
 
-    try {
-      const response = await fetch('http://localhost:5000/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-  
-      if (!response.ok) {
-        throw new Error('Invalid email or password');
-      }
-  
-      const data = await response.json();
-      console.log('Login successful:', data);
-      localStorage.setItem('token', data.token); // Store the token in localStorage
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Error during login:', error.message);
-      alert('Invalid email or password');
-    } finally {
-      setIsLoading(false);
-    }
-
-    // Simulate login validation with timeout
+    const foundAdmin = allowedAdmins.find(
+      (admin) =>
+        admin.email === email.trim().toLowerCase() &&
+        admin.password === password
+    );
     setTimeout(() => {
-      // Add your actual login validation logic here
       setIsLoading(false);
-      navigate("/dashboard");
-    }, 1500);
+      if (foundAdmin) {
+        navigate("/dashboard");
+      } else {
+        setErrorMsg("Invalid email or password");
+      }
+    }, 800);
   };
 
   return (
