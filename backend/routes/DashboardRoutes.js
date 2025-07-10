@@ -15,7 +15,7 @@ router.get('/overview', async (req, res) => {
     const pendingBookings = await Booking.countDocuments({ status: "pending" });
     const localVisitors = await Booking.countDocuments({ visitorType: "local" });
     const foreignVisitors = await Booking.countDocuments({ visitorType: "foreign" });
-    const websiteVisitors = 2345; // Replace with real analytics if available
+    const websiteVisitors = localVisitors + foreignVisitors;
 
     // Save snapshot to DashboardStat collection
     await DashboardStat.create({

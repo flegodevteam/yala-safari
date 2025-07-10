@@ -13,9 +13,8 @@ const adminRoutes = require("./routes/AdminRoutes");
 const dashboardRoutes = require("./routes/DashboardRoutes");
 const imageRoutes = require("./routes/imageRoutes");
 const path = require("path");
-const availableDatesRoutes = require("./routes/AvailableDatesRoutes");
-const dateRoutes = require("./routes/DateRoutes");
-const dashboardStatRoutes = require("./routes/DashboardStatRoutes");
+
+
 
 // Connect to MongoDB
 connectDB();
@@ -36,9 +35,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/images", imageRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
-app.use("/api/available-dates", availableDatesRoutes);
-app.use("/api", dateRoutes);
-app.use("/api/dashboard", dashboardRoutes);
+
 
 // Default route for testing
 app.get("/", (req, res) => {
