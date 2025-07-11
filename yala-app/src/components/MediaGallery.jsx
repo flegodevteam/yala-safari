@@ -161,7 +161,7 @@ const MediaGallery = () => {
               <div key={image.id} className="bg-white rounded-lg shadow overflow-hidden relative group">
                 <div className="aspect-w-16 aspect-h-9 bg-gray-100 overflow-hidden">
                   <img 
-                    src={image.url} 
+                    src={`http://localhost:5000${image.url}`} 
                     alt={image.title} 
                     className="object-cover w-full h-48"
                   />
@@ -181,14 +181,14 @@ const MediaGallery = () => {
                 {/* Hover actions */}
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100 space-x-2">
                   <button 
-                    onClick={() => toggleFeatured(image.id)}
+                    onClick={() => toggleFeatured(image._id)}
                     className={`p-2 rounded-full ${image.featured ? 'bg-yellow-500 text-white' : 'bg-white text-gray-800'}`}
                     title={image.featured ? 'Remove featured' : 'Set as featured'}
                   >
                     <FiBookmark />
                   </button>
                   <button 
-                    onClick={() => deleteImage(image.id)}
+                    onClick={() => deleteImage(image._id)}
                     className="p-2 rounded-full bg-white text-red-600"
                     title="Delete image"
                   >

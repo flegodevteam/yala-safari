@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import Calendar from "react-calendar";
 import PaymentPage from "./Booking";
+import Modal from "react-modal";
 
 const breakfastMenuItemsVeg = [
   { name: "Fresh tropical fruits", price: 2 },
@@ -75,6 +76,11 @@ const Packages = () => {
   const [availableSeats, setAvailableSeats] = useState([]);
   const [selectedSeats, setSelectedSeats] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showDatePopup, setShowDatePopup] = useState(false);
+  const [showSeatPopup, setShowSeatPopup] = useState(false);
+  const [sharedSelectedDate, setSharedSelectedDate] = useState(null);
+  const [sharedSelectedSeat, setSharedSelectedSeat] = useState(null);
+  const [sharedBookedSeats, setSharedBookedSeats] = useState([2, 5]);
 
   const [showBookingSection, setShowBookingSection] = useState(false);
   const [privateAvailableDates, setPrivateAvailableDates] = useState([]);
@@ -246,6 +252,21 @@ const Packages = () => {
       .catch(() => setLoading(false));
   };
 
+  const reservationDate =
+  reservationType === "shared" && sharedSelectedDate
+    ? moment(sharedSelectedDate).format("MMMM D, YYYY")
+    : reservationType === "private" && privateDate
+    ? moment(privateDate).format("MMMM D, YYYY")
+    : selectedDate
+    ? moment(selectedDate).format("MMMM D, YYYY")
+    : "-";
+  const reservationSeat =
+    reservationType === "shared" && sharedSelectedSeat
+      ? sharedSelectedSeat
+      : selectedSeats
+      ? selectedSeats
+      : "-";
+
   return (
     <div className="min-h-screen bg-green-50 py-8">
       <div className="max-w-5xl mx-auto px-4">
@@ -373,6 +394,13 @@ const Packages = () => {
                             date.toISOString().slice(0, 10)
                           )
                         }
+                        tileClassName={({ date, view }) =>
+                          view === "month" &&
+                          privateDate &&
+                          date.toDateString() === new Date(privateDate).toDateString()
+                            ? "react-calendar__tile--active bg-green-600 text-white rounded-full shadow font-bold"
+                            : "rounded-full"
+                        }
                       />
                       <div className="mt-2 text-sm text-gray-600">
                         Selected:{" "}
@@ -383,86 +411,143 @@ const Packages = () => {
                     </div>
                   )}
                 </div>
-
                 <div
-                  onClick={() => setReservationType("shared")}
-                  className={`border-2 rounded-xl p-6 cursor-pointer transition-all hover:shadow-md ${
-                    reservationType === "shared"
-                      ? "border-green-500 bg-green-50"
-                      : "border-gray-200"
-                  } ${park !== "yala" ? "opacity-50 cursor-not-allowed" : ""}`}
-                  disabled={park !== "yala"}
-                >
-                  <div className="flex items-start">
-                    <div
-                      className={`w-6 h-6 rounded-full border-2 mr-3 flex-shrink-0 ${
-                        reservationType === "shared"
-                          ? "bg-green-500 border-green-500"
-                          : "border-gray-300"
-                      }`}
-                    ></div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2">
-                        Shared Safari
-                      </h3>
-                      <p className="text-gray-600 mb-3">
-                        Join other travelers. Only available in Yala.
-                      </p>
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        <li className="flex items-center">
-                          <svg
-                            className="w-4 h-4 mr-2 text-green-500"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M5 13l4 4L19 7"
-                            ></path>
-                          </svg>
-                          Cost-effective
-                        </li>
-                        <li className="flex items-center">
-                          <svg
-                            className="w-4 h-4 mr-2 text-green-500"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M5 13l4 4L19 7"
-                            ></path>
-                          </svg>
-                          Fixed departure times
-                        </li>
-                      </ul>
-                      {park !== "yala" && (
-                        <div className="mt-3 text-sm text-red-500">
-                          <svg
-                            className="w-4 h-4 inline mr-1"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                            ></path>
-                          </svg>
-                          Only available for Yala National Park
-                        </div>
-                      )}
+    onClick={() => setReservationType("shared")}
+    className={`border-2 rounded-xl p-6 cursor-pointer transition-all hover:shadow-md ${
+      reservationType === "shared"
+        ? "border-green-500 bg-green-50"
+        : "border-gray-200"
+    }`}
+  >
+    <div className="flex items-start">
+      <div
+        className={`w-6 h-6 rounded-full border-2 mr-3 flex-shrink-0 ${
+          reservationType === "shared"
+            ? "bg-green-500 border-green-500"
+            : "border-gray-300"
+        }`}
+      ></div>
+      <div>
+        <h3 className="text-xl font-semibold mb-2">
+          Shared Safari
+        </h3>
+        <p className="text-gray-600 mb-3">
+          Join other guests for a cost-effective safari experience.
+        </p>
+        <ul className="text-sm text-gray-600 space-y-1">
+          <li className="flex items-center">
+            <svg className="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Fixed departure times
+          </li>
+          <li className="flex items-center">
+            <svg className="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Share the adventure with others
+          </li>
+        </ul>
+      </div>
+    </div>
+                  {reservationType === "shared" && (
+                    <div className="mt-6">
+                      <button
+                        className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700"
+                        onClick={() => setShowDatePopup(true)}
+                      >
+                        Select Date & Seat
+                      </button>
                     </div>
-                  </div>
+                  )}
                 </div>
+                {/* Date Selection Popup */}
+                <Modal
+                  isOpen={showDatePopup}
+                  onRequestClose={() => setShowDatePopup(false)}
+                  className="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto mt-32"
+                  overlayClassName="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
+                >
+                  <h2 className="text-xl font-bold mb-4">
+                    Select Your Safari Date
+                  </h2>
+                  <Calendar
+                    value={sharedSelectedDate}
+                    onChange={setSharedSelectedDate}
+                    minDate={new Date()}
+                    tileClassName={({ date, view }) =>
+                      view === "month" &&
+                      sharedSelectedDate &&
+                      date.toDateString() === sharedSelectedDate.toDateString()
+                        ? "react-calendar__tile--active bg-green-600 text-white rounded-full shadow font-bold"
+                        : "rounded-full"
+                    }
+                    className="border rounded-xl shadow mb-6 p-2"
+                  />
+                  <div className="flex justify-end gap-2 mt-6">
+                    <button
+                      className="px-4 py-2 rounded bg-gray-200"
+                      onClick={() => setShowDatePopup(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-4 py-2 rounded bg-green-600 text-white"
+                      disabled={!sharedSelectedDate}
+                      onClick={() => {
+                        setShowDatePopup(false);
+                        setShowSeatPopup(true);
+                      }}
+                    >
+                      OK
+                    </button>
+                  </div>
+                </Modal>
+
+                {/* Seat Selection Popup */}
+                <Modal
+                  isOpen={showSeatPopup}
+                  onRequestClose={() => setShowSeatPopup(false)}
+                  className="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto mt-32"
+                  overlayClassName="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
+                >
+                  <h2 className="text-xl font-bold mb-4">Select Your Seat</h2>
+                  <div className="flex gap-3 flex-wrap mb-6">
+                    {[1, 2, 3, 4, 5, 6, 7].map((seat) => (
+                      <button
+                        key={seat}
+                        disabled={sharedBookedSeats.includes(seat)}
+                        onClick={() => setSharedSelectedSeat(seat)}
+                        className={`w-12 h-12 rounded-full border-2 text-lg font-bold
+                ${
+                  sharedBookedSeats.includes(seat)
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : sharedSelectedSeat === seat
+                    ? "bg-green-600 text-white border-green-600"
+                    : "bg-white text-green-700 border-green-400 hover:bg-green-100"
+                }
+              `}
+                      >
+                        {seat}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      className="px-4 py-2 rounded bg-gray-200"
+                      onClick={() => setShowSeatPopup(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-4 py-2 rounded bg-green-600 text-white"
+                      disabled={!sharedSelectedSeat}
+                      onClick={() => setShowSeatPopup(false)}
+                    >
+                      OK
+                    </button>
+                  </div>
+                </Modal>
               </div>
             </section>
 
@@ -769,337 +854,273 @@ const Packages = () => {
 
                   <div>
                     <h3 className="font-medium mb-3">Number of People:</h3>
-
-                    {reservationType === "shared" && (
-                      <div className="mb-6">
-                        <h3 className="font-medium mb-2">
-                          Select Available Date:
-                        </h3>
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {availableDates.length === 0 && (
-                            <span className="text-gray-500 text-sm">
-                              No dates available.
-                            </span>
-                          )}
-                          {availableDates.map((date) => (
-                            <button
-                              key={date}
-                              type="button"
-                              onClick={() => setSelectedDate(date)}
-                              className={`px-3 py-2 rounded border text-sm ${
-                                selectedDate === date
-                                  ? "bg-green-600 text-white border-green-600"
-                                  : "bg-white text-green-700 border-green-300 hover:bg-green-50"
-                              }`}
-                            >
-                              {moment(date, "YYYY-MM-DD").format("MMM D, YYYY")}
-                            </button>
-                          ))}
-                        </div>
-                        {selectedDate && (
-                          <>
-                            <h3 className="font-medium mb-2">
-                              Select Available Seats:
-                            </h3>
-                            <div className="flex flex-wrap gap-2">
-                              {[1, 2, 3, 4, 5, 6, 7].map((seat) => (
-                                <button
-                                  key={seat}
-                                  type="button"
-                                  onClick={() =>
-                                    setSelectedSeats((prev) =>
-                                      prev.includes(seat)
-                                        ? prev.filter((s) => s !== seat)
-                                        : [...prev, seat]
-                                    )
-                                  }
-                                  className={`px-3 py-2 rounded border text-sm ${
-                                    selectedSeats.includes(seat)
-                                      ? "bg-green-600 text-white border-green-600"
-                                      : "bg-white text-green-700 border-green-300 hover:bg-green-50"
-                                  }`}
-                                >
-                                  Seat {seat}
-                                </button>
-                              ))}
-                            </div>
-                            <div className="mt-2 text-sm text-gray-600">
-                              Selected seats:{" "}
-                              {selectedSeats.length > 0
-                                ? selectedSeats.join(", ")
-                                : "None"}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )}
-                    {/* Extra fields for foreign visitors */}
-                    {visitorType === "foreign" && (
-                      <div className="space-y-4 mt-6">
-                        <div>
-                          <label
-                            className="block font-semibold mb-1"
-                            htmlFor="fullName"
-                          >
-                            Full Name
-                          </label>
-                          <input
-                            id="fullName"
-                            type="text"
-                            value={fullName}
-                            onChange={(e) => setFullName(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2"
-                            placeholder="Enter your full name"
-                          />
-                        </div>
-                        <div>
-                          <label
-                            className="block font-semibold mb-1"
-                            htmlFor="phoneNumber"
-                          >
-                            Phone Number
-                          </label>
-                          <input
-                            id="phoneNumber"
-                            type="tel"
-                            value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2"
-                            placeholder="Enter your phone number"
-                          />
-                        </div>
-                        <div>
-                          <label
-                            className="block font-semibold mb-1"
-                            htmlFor="email"
-                          >
-                            Email Address
-                          </label>
-                          <input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2"
-                            placeholder="Enter your email address"
-                          />
-                        </div>
-                        <div>
-                          <label
-                            className="block font-semibold mb-1"
-                            htmlFor="pickupLocation"
-                          >
-                            Pickup Location
-                          </label>
-                          <input
-                            id="pickupLocation"
-                            type="text"
-                            value={pickupLocation || ""}
-                            onChange={(e) => setPickupLocation(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2"
-                            placeholder="Enter pickup location"
-                          />
-                        </div>
-                        <div>
-                          <label
-                            className="block font-semibold mb-1"
-                            htmlFor="hotelWhatsapp"
-                          >
-                            Hotel WhatsApp Number
-                          </label>
-                          <input
-                            id="hotelWhatsapp"
-                            type="text"
-                            value={hotelWhatsapp || ""}
-                            onChange={(e) => setHotelWhatsapp(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2"
-                            placeholder="Enter WhatsApp number"
-                          />
-                        </div>
-                        <div>
-                          <label
-                            className="block font-semibold mb-1"
-                            htmlFor="accommodation"
-                          >
-                            Accommodation Details
-                          </label>
-                          <input
-                            id="accommodation"
-                            type="text"
-                            value={accommodation || ""}
-                            onChange={(e) => setAccommodation(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2"
-                            placeholder="Enter accommodation details"
-                          />
-                        </div>
-                        <div>
-                          <label
-                            className="block font-semibold mb-1"
-                            htmlFor="passportNumber"
-                          >
-                            Passport Number
-                          </label>
-                          <input
-                            id="passportNumber"
-                            type="text"
-                            value={passportNumber || ""}
-                            onChange={(e) => setPassportNumber(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2"
-                            placeholder="Enter passport number"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Extra fields for local visitors */}
-                    {visitorType === "local" && (
-                      <div className="space-y-4 mt-6">
-                        <div>
-                          <label
-                            className="block font-semibold mb-1"
-                            htmlFor="fullName"
-                          >
-                            Full Name
-                          </label>
-                          <input
-                            id="fullName"
-                            type="text"
-                            value={fullName}
-                            onChange={(e) => setFullName(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2"
-                            placeholder="Enter your full name"
-                          />
-                        </div>
-                        <div>
-                          <label
-                            className="block font-semibold mb-1"
-                            htmlFor="phoneNumber"
-                          >
-                            Phone Number
-                          </label>
-                          <input
-                            id="phoneNumber"
-                            type="tel"
-                            value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2"
-                            placeholder="Enter your phone number"
-                          />
-                        </div>
-                        <div>
-                          <label
-                            className="block font-semibold mb-1"
-                            htmlFor="email"
-                          >
-                            Email Address
-                          </label>
-                          <input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2"
-                            placeholder="Enter your email address"
-                          />
-                        </div>
-                        <div>
-                          <label
-                            className="block font-semibold mb-1"
-                            htmlFor="nicNumber"
-                          >
-                            NIC Number
-                          </label>
-                          <input
-                            id="nicNumber"
-                            type="text"
-                            value={nicNumber}
-                            onChange={(e) => setNicNumber(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2"
-                            placeholder="Enter NIC number"
-                          />
-                        </div>
-                        <div>
-                          <label
-                            className="block font-semibold mb-1"
-                            htmlFor="localContact"
-                          >
-                            Contact Number
-                          </label>
-                          <input
-                            id="localContact"
-                            type="text"
-                            value={localContact}
-                            onChange={(e) => setLocalContact(e.target.value)}
-                            className="w-full border border-gray-300 rounded px-3 py-2"
-                            placeholder="Enter contact number"
-                          />
-                        </div>
-                        <div>
-                          <label
-                            className="block font-semibold mb-1"
-                            htmlFor="localAccommodation"
-                          >
-                            Accommodation Details
-                          </label>
-                          <input
-                            id="localAccommodation"
-                            type="text"
-                            value={localAccommodation}
-                            onChange={(e) =>
-                              setLocalAccommodation(e.target.value)
-                            }
-                            className="w-full border border-gray-300 rounded px-3 py-2"
-                            placeholder="Enter accommodation details"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-4 mt-4">
-                      <button
-                        onClick={() => setPeople(Math.max(1, people - 1))}
-                        className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
-                      >
-                        <svg
-                          className="w-6 h-6"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M20 12H4"
-                          ></path>
-                        </svg>
-                      </button>
-                      <span className="text-2xl font-bold w-10 text-center">
-                        {people}
-                      </span>
-                      <button
-                        onClick={() => setPeople(Math.min(7, people + 1))}
-                        className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
-                      >
-                        <svg
-                          className="w-6 h-6"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                          ></path>
-                        </svg>
-                      </button>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-2">
-                      Max 7 people for shared safaris
-                    </p>
                   </div>
+                  {/* Foreign visitor fields */}
+                  {visitorType === "foreign" && (
+                    <div className="space-y-4 mt-6">
+                      <div>
+                        <label
+                          className="block font-semibold mb-1"
+                          htmlFor="fullName"
+                        >
+                          Full Name
+                        </label>
+                        <input
+                          id="fullName"
+                          type="text"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter your full name"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          className="block font-semibold mb-1"
+                          htmlFor="phoneNumber"
+                        >
+                          Phone Number
+                        </label>
+                        <input
+                          id="phoneNumber"
+                          type="tel"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter your phone number"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          className="block font-semibold mb-1"
+                          htmlFor="email"
+                        >
+                          Email Address
+                        </label>
+                        <input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter your email address"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          className="block font-semibold mb-1"
+                          htmlFor="pickupLocation"
+                        >
+                          Pickup Location
+                        </label>
+                        <input
+                          id="pickupLocation"
+                          type="text"
+                          value={pickupLocation || ""}
+                          onChange={(e) => setPickupLocation(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter pickup location"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          className="block font-semibold mb-1"
+                          htmlFor="hotelWhatsapp"
+                        >
+                          Hotel WhatsApp Number
+                        </label>
+                        <input
+                          id="hotelWhatsapp"
+                          type="text"
+                          value={hotelWhatsapp || ""}
+                          onChange={(e) => setHotelWhatsapp(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter WhatsApp number"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          className="block font-semibold mb-1"
+                          htmlFor="accommodation"
+                        >
+                          Accommodation Details
+                        </label>
+                        <input
+                          id="accommodation"
+                          type="text"
+                          value={accommodation || ""}
+                          onChange={(e) => setAccommodation(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter accommodation details"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          className="block font-semibold mb-1"
+                          htmlFor="passportNumber"
+                        >
+                          Passport Number
+                        </label>
+                        <input
+                          id="passportNumber"
+                          type="text"
+                          value={passportNumber || ""}
+                          onChange={(e) => setPassportNumber(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter passport number"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Extra fields for local visitors */}
+                  {visitorType === "local" && (
+                    <div className="space-y-4 mt-6">
+                      <div>
+                        <label
+                          className="block font-semibold mb-1"
+                          htmlFor="fullName"
+                        >
+                          Full Name
+                        </label>
+                        <input
+                          id="fullName"
+                          type="text"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter your full name"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          className="block font-semibold mb-1"
+                          htmlFor="phoneNumber"
+                        >
+                          Phone Number
+                        </label>
+                        <input
+                          id="phoneNumber"
+                          type="tel"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter your phone number"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          className="block font-semibold mb-1"
+                          htmlFor="email"
+                        >
+                          Email Address
+                        </label>
+                        <input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter your email address"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          className="block font-semibold mb-1"
+                          htmlFor="nicNumber"
+                        >
+                          NIC Number
+                        </label>
+                        <input
+                          id="nicNumber"
+                          type="text"
+                          value={nicNumber}
+                          onChange={(e) => setNicNumber(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter NIC number"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          className="block font-semibold mb-1"
+                          htmlFor="localContact"
+                        >
+                          Contact Number
+                        </label>
+                        <input
+                          id="localContact"
+                          type="text"
+                          value={localContact}
+                          onChange={(e) => setLocalContact(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter contact number"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          className="block font-semibold mb-1"
+                          htmlFor="localAccommodation"
+                        >
+                          Accommodation Details
+                        </label>
+                        <input
+                          id="localAccommodation"
+                          type="text"
+                          value={localAccommodation}
+                          onChange={(e) =>
+                            setLocalAccommodation(e.target.value)
+                          }
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter accommodation details"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-4 mt-4">
+                    <button
+                      onClick={() => setPeople(Math.max(1, people - 1))}
+                      className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M20 12H4"
+                        ></path>
+                      </svg>
+                    </button>
+                    <span className="text-2xl font-bold w-10 text-center">
+                      {people}
+                    </span>
+                    <button
+                      onClick={() => setPeople(Math.min(7, people + 1))}
+                      className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300"
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        ></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Max 7 people for shared safaris
+                  </p>
                 </div>
 
                 {/* Meal Options */}
@@ -1361,21 +1382,29 @@ const Packages = () => {
                         <span className="text-gray-600">Number of People:</span>
                         <span className="font-medium">{people}</span>
                       </div>
-                      <div className="flex justify-between">
+                      {/* <div className="flex justify-between">
                         <span className="text-gray-600">Card Holder:</span>
                         <span className="font-medium">{fullName || "-"}</span>
-                      </div>
-                      <div className="flex justify-between">
+                      </div> */}
+                      {/* <div className="flex justify-between">
                         <span className="text-gray-600">Card Number:</span>
                         <span className="font-medium">
                           {cardNumber
                             ? `**** **** **** ${cardNumber.slice(-4)}`
                             : "-"}
                         </span>
-                      </div>
-                      <div className="flex justify-between">
+                      </div> */}
+                      {/* <div className="flex justify-between">
                         <span className="text-gray-600">Expiry Date:</span>
                         <span className="font-medium">{expiryDate || "-"}</span>
+                      </div> */}
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Date:</span>
+                        <span className="font-medium">{reservationDate}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Seat Number:</span>
+                        <span className="font-medium">{reservationSeat}</span>
                       </div>
                     </div>
                   </div>
@@ -1449,7 +1478,7 @@ const Packages = () => {
 
                     <button
                       className="w-full mt-6 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-all flex items-center justify-center"
-                      onClick={() => navigate("/booking")}
+                      onClick={() => navigate("/booking", { state: { total: calculateTotal() } })}
                     >
                       <svg
                         className="w-5 h-5 mr-2"

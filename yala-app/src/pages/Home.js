@@ -50,21 +50,18 @@ export default function Home() {
               name: "Yala Morning Safari",
               description:
                 "Spot leopards and other wildlife at their most active time",
-              price: "$50 per person",
               duration: "4 hours",
               link: "/booking?package=morning",
             },
             {
               name: "Full Day Yala Experience",
               description: "Comprehensive exploration with lunch included",
-              price: "$120 per person",
               duration: "8 hours",
               link: "/booking?package=fullday",
             },
             {
               name: "Bundala Bird Watching",
               description: "Specialized tour for bird enthusiasts",
-              price: "$45 per person",
               duration: "5 hours",
               link: "/booking?package=birdwatching",
             },
@@ -89,7 +86,7 @@ export default function Home() {
               </div>
               <div className="mt-6">
                 <Link
-                  to={pkg.link}
+                  to="/packages"
                   className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
                 >
                   Book Now
@@ -221,7 +218,7 @@ export default function Home() {
           <div className="mt-8 flex lg:mt-0 lg:flex-shrink-0">
             <div className="inline-flex rounded-md shadow">
               <Link
-                to="/booking"
+                to="/packages"
                 className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
               >
                 Book Now

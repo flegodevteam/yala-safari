@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import { FiPackage, FiCalendar, FiFileText } from 'react-icons/fi';
 import axios from 'axios';
 
 const DashboardHome = () => {
   const [stats, setStats] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [recentBookings, setRecentBookings] = useState([]);
 
   useEffect(() => {
+    setLoading(true);
     axios.get('http://localhost:5000/api/dashboard/overview')
       .then(res => {
         const s = [
@@ -14,15 +15,27 @@ const DashboardHome = () => {
           { name: 'Revenue', value: `$${res.data.stats.revenue}`, change: '+8.2%', changeType: 'positive' },
           { name: 'Pending Bookings', value: res.data.stats.pendingBookings, change: '-2.5%', changeType: 'negative' },
           { name: 'Website Visitors', value: res.data.stats.websiteVisitors, change: '+24%', changeType: 'positive' },
+          { name: 'Local Visitors', value: res.data.stats.localVisitors, change: '+24%', changeType: 'positive' },
+          { name: 'Foreign Visitors', value: res.data.stats.foreignVisitors, change: '+24%', changeType: 'positive' },
         ];
         setStats(s);
         setRecentBookings(res.data.recentBookings);
+        setLoading(false);
       });
   }, []);
 
   return (
     <div>
       <h3 className="text-2xl font-semibold text-gray-800 mb-6">Dashboard Overview</h3>
+      {/* Loading State */}
+      {loading && (
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+          <span className="ml-2 text-gray-600">Loading ...</span>
+        </div>
+      )}
+
+      {!loading && (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat) => (
           <div key={stat.name} className="bg-white p-6 rounded-lg shadow">
@@ -38,7 +51,7 @@ const DashboardHome = () => {
           </div>
         ))}
       </div>
-      {/* You can also render recentBookings here */}
+      )}
     </div>
   );
 };
