@@ -5,15 +5,16 @@ export default function Home() {
   return (
     <div>
       {/* Hero Section */}
-      <div className="relative bg-gray-800">
+      <div className="relative bg-gray-800 min-h-screen flex items-center">
         <div className="absolute inset-0 overflow-hidden">
           <img
             className="w-full h-full object-cover opacity-50"
             src={hero}
             alt="Wildlife in Yala National Park"
+            style={{ minHeight: "100vh", maxHeight: "100vh" }}
           />
         </div>
-        <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto py-32 px-4 sm:py-48 sm:px-6 lg:px-8 w-full">
           <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
             Discover the Wild Beauty of Yala
           </h1>
@@ -28,7 +29,6 @@ export default function Home() {
             >
               Book Your Safari
             </Link>
-            
           </div>
         </div>
       </div>
@@ -50,21 +50,18 @@ export default function Home() {
               name: "Yala Morning Safari",
               description:
                 "Spot leopards and other wildlife at their most active time",
-              price: "$50 per person",
               duration: "4 hours",
               link: "/booking?package=morning",
             },
             {
               name: "Full Day Yala Experience",
               description: "Comprehensive exploration with lunch included",
-              price: "$120 per person",
               duration: "8 hours",
               link: "/booking?package=fullday",
             },
             {
               name: "Bundala Bird Watching",
               description: "Specialized tour for bird enthusiasts",
-              price: "$45 per person",
               duration: "5 hours",
               link: "/booking?package=birdwatching",
             },
@@ -89,7 +86,7 @@ export default function Home() {
               </div>
               <div className="mt-6">
                 <Link
-                  to={pkg.link}
+                  to="/packages"
                   className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
                 >
                   Book Now
@@ -109,35 +106,88 @@ export default function Home() {
       </div>
 
       {/* About Section */}
-      <div className="bg-green-700">
-        <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8 lg:flex lg:items-center">
-          <div className="lg:w-0 lg:flex-1">
-            <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              About Yala Safari
-            </h2>
-            <p className="mt-5 max-w-xl text-lg text-green-100">
-              We are a team of passionate wildlife experts dedicated to
-              providing authentic and responsible safari experiences in Sri
-              Lanka's most beautiful national parks.
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="flex flex-col lg:flex-row gap-12 items-center">
+          {/* Text Content */}
+          <div className="lg:w-1/2">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
+              ABOUT US
+            </h1>
+
+            <p className="text-xl text-gray-600 mb-8 italic">
+              Begin your amazing adventure.
             </p>
-            <div className="mt-8 sm:flex">
-              <div className="rounded-md shadow">
-                <Link
-                  to="/about"
-                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-green-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
-                >
-                  Learn More
-                </Link>
+
+            <div className="space-y-6 text-gray-700">
+              <p>
+                Our yala safari offers an exceptional blend of luxury, comfort,
+                and natural beauty, providing an idyllic escape into the heart
+                of Sri Lanka's wildlife. Nestled in a serene and picturesque
+                landscape, our bungalows immerse you in the soothing sights and
+                sounds of nature while keeping you conveniently close to local
+                restaurants, shops, and popular tourist attractions. Guests can
+                embark on thrilling Yala National Park safaris led by expert
+                guides passionate about the region's incredible biodiversity,
+                ideally located in Tissamaharama. we serve as a
+                perfect hub for exploring Yala, Bundala, and Udawalawa
+                national parks, making it a must-visit destination for nature
+                lovers.
+              </p>
+
+              <p>
+                Our accommodations are thoughtfully designed for your comfort,
+                featuring air conditioning, fans, mini fridges, and private
+                washrooms, along with additional conveniences like towels,
+                desks, and garden views that enhance your stay. Complimentary
+                Wi-Fi is available throughout the property, and we offer a
+                variety of extra services, including laundry, airport
+                transportation, bicycle rentals, and guided walking or cycling
+                tours. With an onsite restaurant serving delicious meals and a
+                commitment to exceptional service, Our Hotel
+                ensures your experience is as relaxing as it is unforgettable.
+              </p>
+            </div>
+
+            <Link
+              to="/about"
+              className="mt-8 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-md transition duration-300 flex items-center"
+            >
+              Explore More
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 ml-2"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </Link>
+          </div>
+
+          {/* Safari Jeep Image */}
+          <div className="lg:w-1/2 relative">
+            <div className="relative rounded-xl overflow-hidden shadow-xl">
+              <img
+                src="https://media.tacdn.com/media/attractions-splice-spp-674x446/10/48/03/3d.jpg"
+                alt="Safari Jeep in Yala National Park"
+                className="w-full h-auto object-cover rounded-xl transform hover:scale-105 transition duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent rounded-xl"></div>
+              <div className="absolute bottom-6 left-6 text-white">
+                <h3 className="text-2xl font-bold">Yala Safari Adventures</h3>
+                <p className="text-amber-200">
+                  Experience the wild like never before
+                </p>
               </div>
             </div>
-          </div>
-          <div className="mt-12 lg:mt-0 lg:ml-16">
-            <img
-              className="w-full rounded-lg shadow-xl"
-              src="/about-image.jpg"
-              alt="Safari team"
-              width={600}
-            />
+
+            {/* Decorative elements */}
+            <div className="hidden lg:block absolute -bottom-8 -right-8 w-32 h-32 border-4 border-amber-400 rounded-full"></div>
+            <div className="hidden lg:block absolute -top-8 -left-8 w-20 h-20 border-2 border-amber-300 rounded-full"></div>
           </div>
         </div>
       </div>
@@ -221,7 +271,7 @@ export default function Home() {
           <div className="mt-8 flex lg:mt-0 lg:flex-shrink-0">
             <div className="inline-flex rounded-md shadow">
               <Link
-                to="/booking"
+                to="/packages"
                 className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
               >
                 Book Now

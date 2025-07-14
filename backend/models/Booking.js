@@ -1,27 +1,37 @@
 const mongoose = require('mongoose');
 
 const bookingSchema = new mongoose.Schema({
-  name: String,
-  email: String,
-  phone: String,
-  participants: Number,
-  date: Date,
+  reservationType: String, // 'private' or 'shared'
+  park: String,
+  block: String,
+  jeepType: String,
   timeSlot: String,
-  addOns: {
-    lunch: Boolean,
-    binoculars: Boolean,
-    photographer: Boolean
-  },
-  paymentMethod: String,
-  cardDetails: {
-    number: String,
-    expiry: String,
-    cvv: String
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  guideOption: String,
+  visitorType: String, // 'foreign' or 'local'
+  mealOption: String, // 'with' or 'without'
+  vegOption: String,
+  includeEggs: Boolean,
+  includeLunch: Boolean,
+  includeBreakfast: Boolean,
+  selectedBreakfastItems: [String],
+  selectedLunchItems: [String],
+  people: Number,
+  privateDate: Date,
+  sharedSelectedDate: Date,
+  sharedSelectedSeat: Number,
+  pickupLocation: String,
+  hotelWhatsapp: String,
+  accommodation: String,
+  passportNumber: String,
+  fullName: String,
+  phoneNumber: String,
+  email: String,
+  nicNumber: String,
+  localContact: String,
+  localAccommodation: String,
+  totalAmount: Number,
+  status: { type: String, default: "pending" },
+  createdAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('Booking', bookingSchema);
