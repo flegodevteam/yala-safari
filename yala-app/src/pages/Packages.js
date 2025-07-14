@@ -8,6 +8,7 @@ import moment from "moment";
 import Calendar from "react-calendar";
 import PaymentPage from "./Booking";
 import Modal from "react-modal";
+import axios from "axios";
 
 const breakfastMenuItemsVeg = [
   { name: "Fresh tropical fruits", price: 2 },
@@ -251,6 +252,49 @@ const Packages = () => {
       })
       .catch(() => setLoading(false));
   };
+
+  const handleBooking = async () => {
+  const bookingData = {
+    reservationType,
+    park,
+    block,
+    jeepType,
+    timeSlot,
+    guideOption,
+    visitorType,
+    mealOption,
+    vegOption,
+    includeEggs,
+    includeLunch,
+    includeBreakfast,
+    selectedBreakfastItems,
+    selectedLunchItems,
+    people,
+    privateDate,
+    sharedSelectedDate,
+    sharedSelectedSeat,
+    pickupLocation,
+    hotelWhatsapp,
+    accommodation,
+    passportNumber,
+    fullName,
+    phoneNumber,
+    email,
+    nicNumber,
+    localContact,
+    localAccommodation,
+    totalAmount: calculateTotal(),
+  };
+
+  try {
+    const res = await axios.post('http://localhost:5000/api/bookings', bookingData);
+    if (res.data.success) {
+      // Show success message or redirect to payment
+    }
+  } catch (err) {
+    // Handle error
+  }
+};
 
   const reservationDate =
   reservationType === "shared" && sharedSelectedDate

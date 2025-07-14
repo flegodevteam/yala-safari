@@ -55,6 +55,12 @@ export default function Navbar() {
               Blog
             </Link>
             <Link
+              to="/rooms"
+              className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium"
+            >
+              Rooms
+            </Link>
+            <Link
               to="/contact"
               className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium"
             >
@@ -65,7 +71,7 @@ export default function Navbar() {
           {/* CTA and Mobile Menu Button */}
           <div className="flex items-center gap-3">
             <Link
-              to="/booking"
+              to="/packages"
               className="hidden md:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
             >
               Book Now
