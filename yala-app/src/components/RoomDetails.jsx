@@ -1,90 +1,258 @@
-// RoomDetail.js
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
-const RoomDetail = () => {
+const RoomDetails = ({ onBack }) => {
   const { roomType } = useParams();
   const navigate = useNavigate();
 
-  // Room data for all types
-  const allRoomDetails = {
+  // Enhanced room data with multiple images for each room type
+  const roomData = {
     triple: {
-      title: "Triple Room",
-      description: "Ideal for small families or groups, our triple room offers spacious comfort with three cozy beds, modern amenities, and stylish decor.",
-      amenities: ["Free WiFi", "Air Conditioning", "Hot Water"],
-      menu: ["Select Menu", "Select Menu"],
-      safety: ["0", "No allowance", "0", "No allowance"],
-      pricing: ["€40", "Discount", "€40", "Total", "€40"],
-      recommendations: ["Wellness - Yes Service...", "Wellness - Yes Service..."],
-      extras: ["Pitch Coupons", "Pitch Coupons", "Water Bottle", "Water Bottle"]
+      name: "Triple Room",
+      price: 40,
+      description: "Spacious room perfect for families or groups of three",
+      images: [
+        "https://a0.muscache.com/im/pictures/3cf78d22-1fbb-428d-9bd0-da9dcd36bc3e.jpg?im_w=720",
+        "https://images.trvl-media.com/lodging/20000000/19960000/19956900/19956828/195f94c6.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill",
+        "https://cf.bstatic.com/xdata/images/hotel/max1024x768/490714682.jpg?k=0014fe77b09d84339ccb5a604adf52665038651eee6241f7ad2a3212ece9c375&o=&hp=1",
+      ],
+      amenities: [
+        "3 Single Beds",
+        "Private Bathroom",
+        "Air Conditioning",
+        "Free WiFi",
+      ],
     },
     double: {
-      title: "Double Room",
-      description: "Perfect for couples, our double room features a comfortable queen-sized bed with premium linens and elegant decor.",
-      amenities: ["Free WiFi", "Air Conditioning", "Hot Water", "Mini Bar"],
-      menu: ["Select Menu", "Select Menu"],
-      safety: ["0", "No allowance", "0", "No allowance"],
-      pricing: ["€32", "Discount", "€32", "Total", "€32"],
-      recommendations: ["Wellness - Yes Service...", "Wellness - Yes Service..."],
-      extras: ["Pitch Coupons", "Water Bottle"]
+      name: "Double Room",
+      price: 32,
+      description: "Comfortable room with a queen-size bed",
+      images: [
+        "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1464983953574-0892a716854b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      ],
+      amenities: [
+        "Queen Bed",
+        "Private Bathroom",
+        "Air Conditioning",
+        "Free WiFi",
+      ],
     },
     hostel: {
-      title: "Hostel Room",
-      description: "Budget-friendly shared accommodation with comfortable bunk beds and communal facilities.",
-      amenities: ["Free WiFi", "Shared Bathroom", "Locker"],
-      menu: ["Select Menu"],
-      safety: ["0", "No allowance"],
-      pricing: ["€10", "Discount", "€10", "Total", "€10"],
-      recommendations: ["Basic Service..."],
-      extras: ["Water Bottle"]
-    }
+      name: "Hostel Bed",
+      price: 10,
+      description: "Budget-friendly shared accommodation",
+      images: [
+        "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      ],
+      amenities: ["Single Bed", "Shared Bathroom", "Lockers", "Free WiFi"],
+    },
   };
 
-  // Fallback to triple if roomType doesn't exist
-  const room = allRoomDetails[roomType] || allRoomDetails.triple;
+  const room = roomData[roomType?.toLowerCase()] || roomData.triple;
+  const [checkInDate, setCheckInDate] = useState("");
+  const [checkOutDate, setCheckOutDate] = useState("");
+  const [guestCount, setGuestCount] = useState(0);
+  const [roomCount, setRoomCount] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  if (!room) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-2xl font-bold">Room not found</h1>
-        <button 
-          onClick={() => navigate('/')}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-        >
-          Back to Rooms
-        </button>
-      </div>
+  const subtotal = roomCount * room.price;
+  const discount = 0; // You can calculate discounts here
+  const total = subtotal - discount;
+
+  const nextImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === room.images.length - 1 ? 0 : prevIndex + 1
     );
-  }
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === 0 ? room.images.length - 1 : prevIndex - 1
+    );
+  };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">{room.title}</h1>
-      
-      <div className="mb-8">
-        <p className="text-gray-600 mb-6">{room.description}</p>
-        
-        <h2 className="text-xl font-semibold mb-4">Amenities</h2>
-        <ul className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-6">
-          {room.amenities.map((item, index) => (
-            <li key={index} className="flex items-center">
-              <span className="mr-2">✓</span>
-              {item}
-            </li>
+    <div className="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+      {/* Header */}
+      <div className="bg-amber-600 p-4">
+        <h1 className="text-2xl font-bold text-white text-center">
+          {room.name}
+        </h1>
+      </div>
+
+      {/* Room Image Gallery */}
+      <div className="relative">
+        <img
+          src={room.images[currentImageIndex]}
+          alt={room.name}
+          className="w-full h-64 object-cover"
+        />
+        {room.images.length > 1 && (
+          <>
+            <button
+              onClick={prevImage}
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
+            >
+              &lt;
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full"
+            >
+              &gt;
+            </button>
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center space-x-2">
+              {room.images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`w-2 h-2 rounded-full ${
+                    currentImageIndex === index
+                      ? "bg-white"
+                      : "bg-white bg-opacity-50"
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Room Description */}
+      <div className="p-4 border-b">
+        <p className="text-gray-700 mb-2">{room.description}</p>
+        <div className="flex flex-wrap gap-2">
+          {room.amenities.map((amenity, index) => (
+            <span key={index} className="text-xs bg-gray-100 px-2 py-1 rounded">
+              {amenity}
+            </span>
           ))}
-        </ul>
-        
-        {/* Render other sections similarly */}
-        
-        <button 
-          onClick={() => navigate('/')}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-        >
-          Back to Rooms
-        </button>
+        </div>
+      </div>
+
+      {/* Booking Details */}
+      <div className="p-6">
+        {/* Dates */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold mb-2">Dates</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Check-in
+              </label>
+              <input
+                type="date"
+                value={checkInDate}
+                onChange={(e) => setCheckInDate(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Check-out
+              </label>
+              <input
+                type="date"
+                value={checkOutDate}
+                onChange={(e) => setCheckOutDate(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Guests and Rooms */}
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-700">
+                Total Guests
+              </h3>
+              <p className="text-2xl font-bold">{guestCount}</p>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setGuestCount(Math.max(0, guestCount - 1))}
+                className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center"
+              >
+                -
+              </button>
+              <button
+                onClick={() => setGuestCount(guestCount + 1)}
+                className="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-sm font-medium text-gray-700">
+                No. of Rooms
+              </h3>
+              <p className="text-2xl font-bold">{roomCount}</p>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setRoomCount(Math.max(0, roomCount - 1))}
+                className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center"
+              >
+                -
+              </button>
+              <button
+                onClick={() => setRoomCount(roomCount + 1)}
+                className="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Price Summary */}
+        <div className="border-t border-b border-gray-200 py-4 mb-6">
+          <div className="flex justify-between mb-2">
+            <span className="text-gray-600">SubTotal</span>
+            <span className="font-medium">€{subtotal.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between mb-2">
+            <span className="text-gray-600">Discount</span>
+            <span className="font-medium">€{discount.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between mt-4 pt-4 border-t border-gray-200">
+            <span className="font-bold">Total</span>
+            <span className="font-bold text-lg">€{total.toFixed(2)}</span>
+          </div>
+        </div>
+
+        {/* Free message */}
+        <div className="text-center text-green-600 font-bold mb-6">
+          FREE CANCELLATION
+          <div className="text-xs text-gray-500 mt-1">
+            Cancel up to 24 hours before check-in
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex space-x-4">
+          <button
+            onClick={onBack}
+            className="flex-1 py-2 px-4 border border-gray-300 rounded-md text-gray-700"
+          >
+            Back
+          </button>
+          <button className="flex-1 py-2 px-4 bg-amber-600 text-white rounded-md hover:bg-amber-700">
+            Book Now
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default RoomDetail;
+export default RoomDetails;
