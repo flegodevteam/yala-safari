@@ -1,4 +1,10 @@
 import { useState } from "react";
+import {
+  FaFacebook,
+  FaInstagram,
+  FaTwitter,
+  FaTripadvisor,
+} from "react-icons/fa";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -43,65 +49,108 @@ export default function Contact() {
   return (
     <div className="min-h-screen w-full bg-gray-100 flex flex-col">
       <div className="relative w-full h-screen overflow-hidden">
-      {/* Elephant Background Image */}
-      <div className="absolute inset-0 z-0">
-        <img 
-          src="https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80" 
-          alt="Elephant in the wild"
-          className="w-full h-full object-cover brightness-75"
-        />
-      </div>
-      
-      {/* Overlay Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">}
-        <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-4 tracking-wider">
-          WELCOME TO YALA SAFRI
-        </h1>
-        
-        {/* Subtitle */}
-        <p className="text-2xl md:text-3xl text-white font-light mb-8">
-          YALA SAFARI Contact
-        </p>
-        
-        {/* Decorative Elements */}
+        {/* Elephant Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80"
+            alt="Elephant in the wild"
+            className="w-full h-full object-cover brightness-75"
+          />
+        </div>
+
+        {/* Overlay Content */}
+        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-4 tracking-wider">
+            WELCOME TO YALA SAFRI
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-2xl md:text-3xl text-white font-light mb-8">
+            YALA SAFARI Contact
+          </p>
+
+          {/* Decorative Elements */}
           <div className="flex space-x-4">
             <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
             <div className="w-3 h-3 rounded-full bg-green-400"></div>
             <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
           </div>
-              </div>
-            </div>
+        </div>
+      </div>
+      <div className="font-sans text-gray-800 max-w-md mx-auto p-6">
+        {/* Main Heading */}
+        <h1 className="text-3xl font-bold mb-8">Contact.</h1>
 
-              <div className="flex-1 flex flex-col">
-          <div className="mt-12 bg-white shadow overflow-hidden rounded-lg w-full mx-auto">
-            <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                Find Us on the Map
-              </h2>
-              <div className="w-screen relative left-1/2 right-1/2 -mx-[50vw] px-0" style={{maxWidth: "100vw"}}>
-                <div className="aspect-w-16 aspect-h-9">
-            <iframe
-              src="https://www.google.com/maps?q=6.4281,81.5186&z=15&output=embed"
-              width="100%"
-              height="450"
-              style={{ border: 0 }}
-              allowFullScreen=""
-              loading="lazy"
-              title="Yala Safari Location"
-            ></iframe>
-                </div>
+        {/* Address Section */}
+      
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-2">Address</h2>
+          <p className="text-base">Tissamaharama, Yala, Sri Lanka</p>
+        </div>
+
+        {/* Contact Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-2">Contact</h2>
+          <p className="text-base">yalagihan@gmail.com</p>
+          <p className="text-base">+94 773 742 700</p>
+        </div>
+
+        {/* Follow Us Section */}
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Follow Us</h2>
+          <p className="text-base mb-3">Connect with me on</p>
+          <div className="flex space-x-4">
+            <a href="#" className="text-blue-600 hover:text-blue-800">
+              <FaFacebook size={24} />
+            </a>
+            <a href="#" className="text-pink-600 hover:text-pink-800">
+              <FaInstagram size={24} />
+            </a>
+            <a href="#" className="text-blue-400 hover:text-blue-600">
+              <FaTwitter size={24} />
+            </a>
+            <a href="#" className="text-green-600 hover:text-green-800">
+              <FaTripadvisor size={24} />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col">
+        <div className="mt-12 bg-white shadow overflow-hidden rounded-lg w-full mx-auto">
+          <div className="p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Find Us on the Map
+            </h2>
+            <div
+              className="w-screen relative left-1/2 right-1/2 -mx-[50vw] px-0"
+              style={{ maxWidth: "100vw" }}
+            >
+              <div className="aspect-w-16 aspect-h-9">
+                <iframe
+                  src="https://www.google.com/maps?q=6.4281,81.5186&z=15&output=embed"
+                  width="100%"
+                  height="450"
+                  style={{ border: 0 }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  title="Yala Safari Location"
+                ></iframe>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="flex flex-col md:flex-row items-stretch justify-center flex-1">
-            {/* Contact Form Section */}
+        <div className="flex flex-col md:flex-row items-stretch justify-center flex-1">
+          {/* Contact Form Section */}
           <div className="w-full md:w-1/2 max-w-2xl bg-white rounded-l-lg rounded-r-none shadow-md p-8 flex flex-col justify-center">
-            <h1 className="text-3xl font-bold mb-6 text-gray-800">Contact Us</h1>
+            <h1 className="text-3xl font-bold mb-6 text-gray-800">
+              Contact Us
+            </h1>
             <p className="text-lg mb-8 text-gray-600 italic">
               "Planning your dream safari or a serene escape at Wild Breeze?
-              Contact us today! Whether it's about our exclusive offers, bookings,
-              or any other inquiries, we're just a message away."
+              Contact us today! Whether it's about our exclusive offers,
+              bookings, or any other inquiries, we're just a message away."
             </p>
             <form className="space-y-6">
               <div>
@@ -172,8 +221,6 @@ export default function Contact() {
             />
           </div>
         </div>
-
-        
       </div>
     </div>
   );
