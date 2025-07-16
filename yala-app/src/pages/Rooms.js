@@ -7,30 +7,34 @@ const Rooms = () => {
   const rooms = [
     {
       name: "Triple",
-      roomType: "triple", // Added roomType identifier
-      price: "€40",
+      roomType: "triple",
+      price: "$40",
       description: "Night",
       image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
     },
     {
       name: "Double",
-      roomType: "double", // Added roomType identifier
-      price: "€32",
+      roomType: "double",
+      price: "$32",
       description: "Night",
       image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
     },
     {
-      name: "Single",
-      roomType: "single", // Added roomType identifier
-      price: "€10",
+      name: "Hostel",
+      roomType: "Hostel", 
+      price: "$10",
       description: "Night",
       image: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
     }
   ];
 
   const handleRoomClick = (roomType) => {
-    navigate(`/room/${roomType.toLowerCase()}`); // Ensure lowercase for consistency
+    navigate(`/room/${roomType.toLowerCase()}`); 
   }
+
+  const handleTaxiServiceClick = () => {
+    navigate('/taxi-service');
+  };
 
   return (
     <div className="font-sans">
@@ -63,7 +67,7 @@ const Rooms = () => {
             {rooms.map((room, index) => (
               <div 
                 key={index}
-                onClick={() => handleRoomClick(room.roomType)} // Pass roomType instead of room.roomType
+                onClick={() => handleRoomClick(room.roomType)}
                 className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer"
               >
                 <div className="h-64 overflow-hidden">
@@ -85,6 +89,39 @@ const Rooms = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Taxi Service Section */}
+      <section className="bg-yellow-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold text-yellow-800 mb-4">Taxi Service</h2>
+          <p className="text-lg text-yellow-900 mb-8">
+            Need a ride? We offer reliable taxi services for airport transfers, sightseeing, and more. Book your taxi with us for a comfortable and safe journey.
+          </p>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8">
+            <div className="flex-1">
+              <img
+                src="https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=600&q=80"
+                alt="Taxi Service"
+                className="rounded-lg shadow-md w-full h-56 object-cover"
+              />
+            </div>
+            <div className="flex-1 mt-6 md:mt-0">
+              <ul className="text-left text-yellow-900 space-y-2">
+                <li>✔ Airport Pickup & Drop</li>
+                <li>✔ Safari Park Transfers</li>
+                <li>✔ City Tours</li>
+                <li>✔ 24/7 Availability</li>
+              </ul>
+              <button
+                className="mt-6 px-6 py-3 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700 transition"
+                onClick={handleTaxiServiceClick}
+              >
+                Book a Taxi
+              </button>
+            </div>
           </div>
         </div>
       </section>
