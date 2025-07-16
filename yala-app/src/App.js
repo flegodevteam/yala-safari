@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import AdminLogin from "./pages/adminLogin";
 import Rooms from "./pages/Rooms";
 import RoomDetails from "./components/RoomDetails";
+import TaxiService from "./components/TaxiService";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/rooms" element={<Rooms />} />
             <Route path="/room/:roomType" element={<RoomDetails />} />
+            <Route path="/taxi-service" element={<TaxiService />} />
           </Routes>
         </main>
         <Footer />
