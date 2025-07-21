@@ -4,7 +4,6 @@ const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 dotenv.config();
 const connectDB = require("./config/db");
-const bookingRoutes = require("./routes/BookingRoutes");
 const { default: mongoose } = require("mongoose");
 const packageRoutes = require("./routes/PackageRoutes");
 const blogRoutes = require("./routes/BlogRoutes");
@@ -13,8 +12,11 @@ const adminRoutes = require("./routes/AdminRoutes");
 const dashboardRoutes = require("./routes/DashboardRoutes");
 const imageRoutes = require("./routes/imageRoutes");
 const path = require("path");
+const AvailableJeepsRoutes = require("./routes/routes/AvailableJeepsRoutes");
+const taxiBookingRoutes = require("./routes/taxiBookingRoutes");
 
-
+const safariRoutes = require("./routes/SafariRoutes");
+const bookingRoutes = require("./routes/BookingRoutes");
 
 // Connect to MongoDB
 connectDB();
@@ -27,7 +29,7 @@ app.use(bodyParser.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
-app.use("/api/bookings", bookingRoutes);
+// app.use("/api/bookings", bookingRoutes);
 app.use("/api/packages", packageRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/contact", contactRoutes);
@@ -35,7 +37,9 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/images", imageRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
-
+app.use("/api", AvailableJeepsRoutes);
+app.use("/api", bookingRoutes);
+app.use("/api/taxi-bookings", taxiBookingRoutes);
 
 // Default route for testing
 app.get("/", (req, res) => {
