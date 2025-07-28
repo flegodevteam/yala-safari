@@ -75,6 +75,10 @@ const RoomDetails = ({ onBack }) => {
     );
   };
 
+  const handleBookNow = () => {
+    navigate('/booking');
+  };
+
   return (
     <div className="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
       {/* Header */}
@@ -246,7 +250,12 @@ const RoomDetails = ({ onBack }) => {
           >
             Back
           </button>
-          <button className="flex-1 py-2 px-4 bg-amber-600 text-white rounded-md hover:bg-amber-700">
+          <button
+            onClick={() => {
+              handleBookNow();
+            }}
+            className="flex-1 py-2 px-4 bg-amber-600 text-white rounded-md hover:bg-amber-700"
+          >
             Book Now
           </button>
         </div>

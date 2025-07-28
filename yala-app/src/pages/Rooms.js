@@ -8,7 +8,7 @@ const Rooms = () => {
     {
       name: "Triple",
       roomType: "triple",
-      price: "$35",
+      price: "$40",
       description: "Night",
       image:
         "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
@@ -29,7 +29,7 @@ const Rooms = () => {
       image:
         "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
     },
-  ]
+  ];
 
   const handleRoomClick = (roomType) => {
     navigate(`/room/${roomType.toLowerCase()}`);
