@@ -779,58 +779,59 @@ const Packages = () => {
                           )}
                         </div>
                         {/* Shared Safari Ticket Price */}
-                        <div className="flex items-center gap-1">
-                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">
-                            Shared Safari
-                          </span>
-                          {reservationType === "shared" && (
-                            <span className="text-blue-700 font-bold text-sm">
-                              ${pricing.shared[Math.min(people, 7)]} /person
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                                    <div className="flex items-center gap-1">
+                                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">
+                                      Shared Safari
+                                      </span>
+                                      {reservationType === "shared" && (
+                                      <span className="text-blue-700 font-bold text-sm">
+                                        ${pricing.shared[Math.min(people, 7)]} /person
+                                      </span>
+                                      )}
+                                    </div>
+                                    </div>
+                                  </div>
+                                  </div>
+                                ))}
+                                </div>
 
-              {park === "yala" && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-medium mb-3">Select Safri Type:</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    {["Block I", "Block II", "Block III & IV", "Block V"].map(
-                      (blk) => (
-                        <button
-                          key={blk}
-                          onClick={() =>
-                            setBlock(
-                              blk
-                                .toLowerCase()
-                                .replace(" & ", "")
-                                .replace(" ", "")
-                            )
-                          }
-                          className={`py-2 px-3 rounded text-sm ${
-                            block ===
-                            blk
-                              .toLowerCase()
-                              .replace(" & ", "")
-                              .replace(" ", "")
-                              ? "bg-green-600 text-white"
-                              : "bg-white border border-gray-300 hover:bg-gray-100"
-                          }`}
-                        >
-                          {blk}
-                        </button>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-            </section>
+                                {park === "yala" && (
+                                <div className="bg-gray-50 p-4 rounded-lg">
+                                  <h3 className="font-medium mb-3">Select Safari Type:</h3>
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                  {(reservationType === "shared"
+                                    ? ["Block I", "Block V"]
+                                    : ["Block I", "Block II", "Block III & IV", "Block V"]
+                                  ).map((blk) => (
+                                    <button
+                                    key={blk}
+                                    onClick={() =>
+                                      setBlock(
+                                      blk
+                                        .toLowerCase()
+                                        .replace(" & ", "")
+                                        .replace(" ", "")
+                                      )
+                                    }
+                                    className={`py-2 px-3 rounded text-sm ${
+                                      block ===
+                                      blk
+                                      .toLowerCase()
+                                      .replace(" & ", "")
+                                      .replace(" ", "")
+                                      ? "bg-green-600 text-white"
+                                      : "bg-white border border-gray-300 hover:bg-gray-100"
+                                    }`}
+                                    >
+                                    {blk}
+                                    </button>
+                                  ))}
+                                  </div>
+                                </div>
+                                )}
+                              </section>
 
-            {/* 3. Jeep Options */}
+                              {/* 3. Jeep Options */}
             <section className="mb-10">
               <h2 className="text-2xl font-bold text-green-800 mb-6 flex items-center">
                 <span className="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
