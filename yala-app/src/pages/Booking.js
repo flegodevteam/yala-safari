@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 const PaymentPage = () => {
-  const [paymentMethod, setPaymentMethod] = useState("credit-card");
+  const [paymentMethod, setPaymentMethod] = useState("cash");
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [cvv, setCvv] = useState("");
@@ -14,6 +14,8 @@ const PaymentPage = () => {
   const total = location.state?.total || "0.00";
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentFailed, setPaymentFailed] = useState(false);
+  const [bankSlip, setBankSlip] = useState(null);
+  const [onlineRef, setOnlineRef] = useState("");
   const navigate = useNavigate();
 
   const validateCardNumber = (num) => /^\d{16}$/.test(num.replace(/\s/g, ""));
@@ -24,56 +26,73 @@ const PaymentPage = () => {
     e.preventDefault();
     setError("");
 
-    if (paymentMethod === "credit-card") {
-      if (!nameOnCard.trim()) {
-        setError("Name on card is required.");
-        return;
-      }
-      if (!validateCardNumber(cardNumber)) {
-        setError("Card number must be 16 digits.");
-        return;
-      }
-      if (!validateExpiry(expiryDate)) {
-        setError("Expiry date must be in MM/YY format.");
-        return;
-      }
-      if (!validateCVV(cvv)) {
-        setError("CVV must be 3 digits.");
-        return;
+    if (paymentMethod === "online") {
+      if (!onlineRef.trim()) {
+        setError("Online transfer reference is required.");
+        return false;
       }
     }
 
-    try {
-      const bookingEmail = location.state?.email;
-      if (!bookingEmail) {
-        setError("Booking email not found.");
-        return;
+    if (paymentMethod === "bank") {
+      if (!bankSlip) {
+        setError("Please upload your bank payment slip.");
+        return false;
       }
+    }
 
-      const res = await fetch(
-        "http://localhost:5000/api/bookings/update-payment",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: bookingEmail,
-            paymentStatus: "paid",
-          }),
-        }
-      );
+    if (paymentMethod === "card") {
+      if (!nameOnCard.trim()) {
+        setError("Name on card is required.");
+        return false;
+      }
+      if (!validateCardNumber(cardNumber)) {
+        setError("Card number must be 16 digits.");
+        return false;
+      }
+      if (!validateExpiry(expiryDate)) {
+        setError("Expiry date must be in MM/YY format.");
+        return false;
+      }
+      if (!validateCVV(cvv)) {
+        setError("CVV must be 3 digits.");
+        return false;
+      }
+    }
 
-      if (res.ok) {
+    // Prepare booking data
+    const bookingData = {
+      ...location.state, // All booking details from Packages.js
+      paymentMethod,
+      total,
+      onlineRef,
+      nameOnCard,
+      cardNumber,
+      expiryDate,
+      cvv,
+      // If you want to send bankSlip, handle file upload separately
+    };
+
+    // Backend API call
+    try {
+      const res = await fetch("http://localhost:5000/api/booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingData),
+      });
+      const data = await res.json();
+      if (data.success) {
         setPaymentSuccess(true);
         setPaymentFailed(false);
         setTimeout(() => {
-          navigate("/packages");
+          navigate("/package");
         }, 1500);
       } else {
         setPaymentFailed(true);
       }
-    } catch {
+    } catch (err) {
       setPaymentFailed(true);
     }
+    return true;
   };
 
   return (
@@ -88,30 +107,69 @@ const PaymentPage = () => {
           Payment Unsuccessful. Please try again.
         </div>
       ) : (
-        <form onSubmit={handlePay}>
+        <form
+          onSubmit={(e) => {
+            if (!handlePay(e)) return;
+            // Simulate payment processing
+            setTimeout(() => {
+              const isSuccess = Math.random() > 0.5;
+              if (isSuccess) {
+                setPaymentSuccess(true);
+                setPaymentFailed(false);
+                setTimeout(() => {
+                  navigate("/package");
+                }, 1500);
+              } else {
+                setPaymentFailed(true);
+              }
+            }, 1000);
+          }}
+        >
           {/* Payment Method Toggle */}
           <div className="flex mb-6 border-b">
             <button
               type="button"
               className={`pb-2 px-4 ${
-                paymentMethod === "credit-card"
+                paymentMethod === "cash"
                   ? "border-b-2 border-blue-500 font-medium"
                   : "text-gray-500"
               }`}
-              onClick={() => setPaymentMethod("credit-card")}
+              onClick={() => setPaymentMethod("cash")}
             >
-              Credit Card
+              Cash on Hand
             </button>
             <button
               type="button"
               className={`pb-2 px-4 ${
-                paymentMethod === "paypal"
+                paymentMethod === "online"
                   ? "border-b-2 border-blue-500 font-medium"
                   : "text-gray-500"
               }`}
-              onClick={() => setPaymentMethod("paypal")}
+              onClick={() => setPaymentMethod("online")}
             >
-              PayPal
+              Online Transfer
+            </button>
+            <button
+              type="button"
+              className={`pb-2 px-4 ${
+                paymentMethod === "bank"
+                  ? "border-b-2 border-blue-500 font-medium"
+                  : "text-gray-500"
+              }`}
+              onClick={() => setPaymentMethod("bank")}
+            >
+              Bank Payment
+            </button>
+            <button
+              type="button"
+              className={`pb-2 px-4 ${
+                paymentMethod === "card"
+                  ? "border-b-2 border-blue-500 font-medium"
+                  : "text-gray-500"
+              }`}
+              onClick={() => setPaymentMethod("card")}
+            >
+              Credit Card
             </button>
           </div>
 
@@ -120,7 +178,60 @@ const PaymentPage = () => {
             <div className="mb-4 text-red-600 text-sm">{error}</div>
           )}
 
-          {paymentMethod === "credit-card" && (
+          {paymentMethod === "cash" && (
+            <div className="py-8 text-center">
+              <p className="text-lg font-medium mb-2">
+                Pay with cash at the time of service.
+              </p>
+              <p className="text-sm text-gray-600">
+                No advance payment required.
+              </p>
+            </div>
+          )}
+
+          {paymentMethod === "online" && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Online Transfer Reference Number
+                </label>
+                <input
+                  type="text"
+                  value={onlineRef}
+                  onChange={(e) => setOnlineRef(e.target.value)}
+                  className="w-full p-2 border rounded-md"
+                  placeholder="Enter reference number"
+                  required
+                />
+              </div>
+              <div className="text-sm text-gray-600">
+                Please transfer the total amount to our account and enter the
+                reference number above.
+              </div>
+            </div>
+          )}
+
+          {paymentMethod === "bank" && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Upload Bank Payment Slip
+                </label>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => setBankSlip(e.target.files[0])}
+                  className="w-full p-2 border rounded-md"
+                  required
+                />
+              </div>
+              <div className="text-sm text-gray-600">
+                Please upload a clear image or PDF of your bank payment slip.
+              </div>
+            </div>
+          )}
+
+          {paymentMethod === "card" && (
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -196,12 +307,6 @@ const PaymentPage = () => {
                   Save card for future bookings
                 </label>
               </div>
-            </div>
-          )}
-
-          {paymentMethod === "paypal" && (
-            <div className="py-8 text-center">
-              <p>You will be redirected to PayPal to complete your payment</p>
             </div>
           )}
 

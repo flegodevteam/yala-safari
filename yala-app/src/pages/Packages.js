@@ -1,25 +1,21 @@
 import { useState, useEffect } from "react";
-import yalaImage from "../assets/yaala.png";
+import yalaImage from "../assets/yaala.png"; // Replace with your image paths
 import bundalaImage from "../assets/bundala.jpg";
 import udawalaweImage from "../assets/bund.jpg";
 import jeepImage from "../assets/tour.jpg";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import Calendar from "react-calendar";
+import PaymentPage from "./Booking";
 import Modal from "react-modal";
-import jeep1 from "../assets/a1.jpeg";
-import jeep2 from "../assets/a2.jpeg";
-import jeep3 from "../assets/a3.jpeg";
-import jeep4 from "../assets/a4.jpeg";
-import jeep5 from "../assets/a5.jpeg";
-import jeep6 from "../assets/a6.jpeg";
-import jeep7 from "../assets/a7.jpeg";
+import lunugamweheraImage from "../assets/lunu.jpg";
 
 const breakfastMenuItemsVeg = [
   { name: "Fresh tropical fruits", price: 2 },
   { name: "Toast & butter/jam", price: 1 },
   { name: "Local Sri Lankan pancakes", price: 1.5 },
   { name: "Tea or coffee", price: 1 },
+  // Eggs will be handled by the "Include Eggs" checkbox
 ];
 
 const breakfastMenuItemsNonVeg = [
@@ -45,8 +41,6 @@ const lunchMenuItemsNonVeg = [
   { name: "Bottled water & soft drink", price: 1 },
 ];
 
-const jeepImages = [jeep1, jeep2, jeep3, jeep4, jeep5, jeep6, jeep7];
-
 const Packages = () => {
   // State management
   const [reservationType, setReservationType] = useState("private");
@@ -64,6 +58,7 @@ const Packages = () => {
   const [people, setPeople] = useState(1);
   const navigate = useNavigate();
   const [privateDate, setPrivateDate] = useState(new Date());
+  // Add to your state declarations
   const [pickupLocation, setPickupLocation] = useState("");
   const [hotelWhatsapp, setHotelWhatsapp] = useState("");
   const [accommodation, setAccommodation] = useState("");
@@ -73,6 +68,7 @@ const Packages = () => {
   const [email, setEmail] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
+  // Add to your state declarations
   const [nicNumber, setNicNumber] = useState("");
   const [localContact, setLocalContact] = useState("");
   const [localAccommodation, setLocalAccommodation] = useState("");
@@ -82,32 +78,19 @@ const Packages = () => {
   const [selectedSeats, setSelectedSeats] = useState("");
   const [loading, setLoading] = useState(true);
   const [showDatePopup, setShowDatePopup] = useState(false);
+  const [showSeatPopup, setShowSeatPopup] = useState(false);
   const [sharedSelectedDate, setSharedSelectedDate] = useState(null);
   const [sharedSelectedSeat, setSharedSelectedSeat] = useState(null);
   const [sharedBookedSeats, setSharedBookedSeats] = useState([2, 5]);
   const [availableJeeps, setAvailableJeeps] = useState([]);
+  const [showJeepPopup, setShowJeepPopup] = useState(false);
   const [selectedJeep, setSelectedJeep] = useState(null);
+
   const [showBookingSection, setShowBookingSection] = useState(false);
   const [privateAvailableDates, setPrivateAvailableDates] = useState([]);
-  const [showJeepPopup, setShowJeepPopup] = useState(false);
-  const [showSeatPopup, setShowSeatPopup] = useState(false);
-  const [selectedJeepIndex, setSelectedJeepIndex] = useState(null);
-  const [selectedSeat, setSelectedSeat] = useState(null);
-  const [formError, setFormError] = useState(""); // Validation error state
-
-  // Example: already booked seats for each jeep (array of arrays)
-  const [bookedSeats, setBookedSeats] = useState([
-    [2, 5], // jeep 0
-    [1], // jeep 1
-    [], // jeep 2
-    [3, 4], // jeep 3
-    [6], // jeep 4
-    [1, 2, 3, 4, 5, 6], // jeep 5 (fully booked)
-    [], // jeep 6
-  ]);
-
   useEffect(() => {
     if (reservationType === "private") {
+      // Example: Replace with your real API endpoint for private safari availability
       fetch(`http://localhost:5000/api/availability?type=private&park=${park}`)
         .then((res) => res.json())
         .then((data) => {
@@ -143,12 +126,15 @@ const Packages = () => {
     setSelectedLunchItems(getLunchMenu().map((item) => item.name));
   }, [vegOption]);
 
+  // Park images mapping
   const parkImages = {
     yala: yalaImage,
     bundala: bundalaImage,
     udawalawe: udawalaweImage,
+    Lunugamwehera: lunugamweheraImage,
   };
 
+  // Pricing data
   const defaultpricing = {
     jeep: {
       basic: { morning: 5, afternoon: 5, extended: 7, fullDay: 10 },
@@ -211,15 +197,29 @@ const Packages = () => {
     return <div className="p-8">Loading...</div>;
   }
 
+  // Calculate total price
   const calculateTotal = () => {
     let total = 0;
+
+    // Add base safari price
     if (reservationType === "private") {
       const jeepPrice = pricing.jeep[jeepType][timeSlot];
       const guidePrice = pricing.guide[guideOption];
-      total = jeepPrice * people + guidePrice;
+      total = jeepPrice + guidePrice;
+
+      // Add ticket price per person (example: $15 for foreign, $5 for local)
+      const ticketPrice = visitorType === "foreign" ? 15 : 5;
+      total += ticketPrice * people;
     } else {
+      // Shared safari base price per person
       total = pricing.shared[Math.min(people, 7)] * people;
+
+      // Add ticket price per person (example: $15 for foreign, $5 for local)
+      const ticketPrice = visitorType === "foreign" ? 15 : 5;
+      total += ticketPrice * people;
     }
+
+    // Add meal prices per person if meals are selected
     if (mealOption === "with") {
       if (includeBreakfast) {
         total +=
@@ -234,6 +234,7 @@ const Packages = () => {
             .reduce((sum, item) => sum + item.price, 0) * people;
       }
     }
+
     return total.toFixed(2);
   };
 
@@ -245,12 +246,25 @@ const Packages = () => {
     );
   };
 
+  // Handler for lunch menu selection
   const handleLunchItemChange = (itemName) => {
     setSelectedLunchItems((prev) =>
       prev.includes(itemName)
         ? prev.filter((i) => i !== itemName)
         : [...prev, itemName]
     );
+  };
+
+  const handleRefreshPricing = () => {
+    setLoading(true);
+    fetch("http://localhost:5000/api/packages")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.jeep && data.shared && data.meals && data.guide)
+          setPricing(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   };
 
   const reservationDate =
@@ -268,81 +282,62 @@ const Packages = () => {
       ? selectedSeats
       : "-";
 
-  const handleConfirmBooking = async () => {
-    // Validation
-    if (!fullName.trim()) {
-      setFormError("Full Name is required.");
-      return;
-    }
-    if (!phoneNumber.trim()) {
-      setFormError("Phone Number is required.");
-      return;
-    }
-    if (!email.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
-      setFormError("Valid Email is required.");
-      return;
-    }
-    if (
-      reservationType === "shared" &&
-      (selectedJeepIndex === null || selectedSeat === null)
-    ) {
-      setFormError("Please select your jeep and seat.");
-      return;
-    }
-    setFormError("");
+  const validateBooking = () => {
+    if (!fullName.trim()) return "Full Name is required";
+    if (!phoneNumber.trim()) return "Phone Number is required";
+    if (!email.trim()) return "Email is required";
+    if (visitorType === "foreign" && !passportNumber.trim())
+      return "Passport Number is required";
+    if (visitorType === "local" && !nicNumber.trim())
+      return "NIC Number is required";
+    if (reservationType === "private" && !privateDate)
+      return "Please select a date";
+    if (reservationType === "shared" && !sharedSelectedDate)
+      return "Please select a date";
+    return null;
+  };
 
-    const bookingData = {
-      reservationType,
-      park,
-      block,
-      jeepType,
-      timeSlot,
-      guideOption,
-      visitorType,
-      people,
-      fullName,
-      phoneNumber,
-      email,
-      pickupLocation,
-      hotelWhatsapp,
-      accommodation,
-      passportNumber,
-      nicNumber,
-      localContact,
-      localAccommodation,
-      seat:
-        reservationType === "shared" &&
-        selectedJeepIndex !== null &&
-        selectedSeat
-          ? `Jeep ${selectedJeepIndex + 1}, Seat ${selectedSeat}`
-          : reservationSeat,
-      date: reservationDate,
-      mealOption,
-      vegOption,
-      includeEggs,
-      includeLunch,
-      includeBreakfast,
-      selectedBreakfastItems,
-      selectedLunchItems,
-      total: calculateTotal(),
-    };
-
-    try {
-      const res = await fetch("http://localhost:5000/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bookingData),
-      });
-      if (res.ok) {
-        navigate("/booking", {
-          state: { total: calculateTotal(), email: email },
-        });
-      } else {
-        setFormError("Booking failed. Please try again.");
-      }
-    } catch (err) {
-      setFormError("Booking failed. Please try again.");
+  // 2. Book Now handler function
+  const handleBookNow = () => {
+    const error = validateBooking();
+    if (error) {
+      alert(error); // You can use better UI for error
+      return;
     }
+    // Pass all booking details to Booking page
+    navigate("/booking", {
+      state: {
+        total: calculateTotal(),
+        reservationType,
+        park,
+        block,
+        jeepType,
+        timeSlot,
+        guideOption,
+        visitorType,
+        mealOption,
+        vegOption,
+        includeEggs,
+        includeLunch,
+        includeBreakfast,
+        people,
+        pickupLocation,
+        hotelWhatsapp,
+        accommodation,
+        passportNumber,
+        fullName,
+        phoneNumber,
+        email,
+        nicNumber,
+        localContact,
+        localAccommodation,
+        selectedDate:
+          reservationType === "private" ? privateDate : sharedSelectedDate,
+        selectedSeats: reservationType === "shared" ? sharedSelectedSeat : "",
+        selectedBreakfastItems,
+        selectedLunchItems,
+      },
+    });
   };
 
   return (
@@ -389,7 +384,7 @@ const Packages = () => {
                 <span className="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
                   1
                 </span>
-                Choose Your Safari Type
+                Choose Your Safari
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -562,6 +557,7 @@ const Packages = () => {
                   )}
                 </div>
                 {/* Date Selection Popup */}
+                {/* Contact form modal for shared safari booking */}
                 <Modal
                   isOpen={reservationType === "shared" && showBookingSection}
                   onRequestClose={() => setShowBookingSection(false)}
@@ -569,86 +565,71 @@ const Packages = () => {
                   overlayClassName="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
                 >
                   <h2 className="text-xl font-bold mb-4">Contact Details</h2>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      setShowBookingSection(false);
-                      navigate("/booking", {
-                        state: { total: calculateTotal() },
-                      });
+                  <p className="mb-4 text-green-700 font-medium">
+                    Are you Interested in this Shared Safari? 📅 Check the
+                    available dates and safari details. 📞 To join this safari,
+                    please contact us directly to this Number +94 773 742 700
+                  </p>
+                  <button
+                    type="button"
+                    className="mb-4 px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-700 flex items-center"
+                    onClick={() => {
+                      // Replace with your WhatsApp number and message
+                      window.open(
+                        `https://wa.me/+94773742700?text=Hello! I am interested in booking a shared safari. My name is ${
+                          fullName || ""
+                        }.`,
+                        "_blank"
+                      );
                     }}
-                    className="space-y-4"
                   >
-                    <div>
-                      <label
-                        className="block font-semibold mb-1"
-                        htmlFor="fullName"
-                      >
-                        Full Name
-                      </label>
-                      <input
-                        id="fullName"
-                        type="text"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className="w-full border border-gray-300 rounded px-3 py-2"
-                        required
-                        placeholder="Enter your full name"
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M16 12v1a4 4 0 01-8 0v-1m8 0a4 4 0 00-8 0m8 0V8a4 4 0 00-8 0v4"
                       />
-                    </div>
-                    <div>
-                      <label
-                        className="block font-semibold mb-1"
-                        htmlFor="phoneNumber"
-                      >
-                        Phone Number
-                      </label>
-                      <input
-                        id="phoneNumber"
-                        type="tel"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full border border-gray-300 rounded px-3 py-2"
-                        required
-                        placeholder="Enter your phone number"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        className="block font-semibold mb-1"
-                        htmlFor="email"
-                      >
-                        Email Address
-                      </label>
-                      <input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full border border-gray-300 rounded px-3 py-2"
-                        required
-                        placeholder="Enter your email address"
-                      />
-                    </div>
-                    <div className="flex justify-end gap-2 mt-6">
-                      <button
-                        type="button"
-                        className="px-4 py-2 rounded bg-gray-200"
-                        onClick={() => setShowBookingSection(false)}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-4 py-2 rounded bg-green-600 text-white"
-                      >
-                        Continue to Payment
-                      </button>
-                    </div>
-                  </form>
+                    </svg>
+                    Contact via WhatsApp
+                  </button>
                 </Modal>
-
-                {/* Date Selection Popup */}
+                <Modal
+                  isOpen={showDatePopup}
+                  onRequestClose={() => setShowDatePopup(false)}
+                  className="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto mt-32"
+                  overlayClassName="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
+                >
+                  <h2 className="text-xl font-bold mb-4">
+                    Select Your Safari Date
+                  </h2>
+                  <Calendar
+                    value={sharedSelectedDate}
+                    onChange={setSharedSelectedDate}
+                    minDate={new Date()}
+                    tileClassName={({ date, view }) =>
+                      view === "month" &&
+                      sharedSelectedDate &&
+                      date.toDateString() === sharedSelectedDate.toDateString()
+                        ? "react-calendar__tile--active bg-green-600 text-white rounded-full shadow font-bold"
+                        : "rounded-full"
+                    }
+                    className="border rounded-xl shadow mb-6 p-2"
+                  />
+                  <div className="flex justify-end gap-2 mt-6">
+                    <button
+                      className="px-4 py-2 rounded bg-gray-200"
+                      onClick={() => setShowDatePopup(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </Modal>
                 <Modal
                   isOpen={showDatePopup}
                   onRequestClose={() => setShowDatePopup(false)}
@@ -683,89 +664,12 @@ const Packages = () => {
                       disabled={!sharedSelectedDate}
                       onClick={() => {
                         setShowDatePopup(false);
-                        setShowJeepPopup(true); // Show jeep selection popup
                       }}
                     >
                       OK
                     </button>
                   </div>
                 </Modal>
-
-                {/* Jeep Selection Popup */}
-                <Modal
-                  isOpen={showJeepPopup}
-                  onRequestClose={() => setShowJeepPopup(false)}
-                  className="bg-white p-8 rounded-xl shadow-lg max-w-3xl mx-auto mt-32"
-                  overlayClassName="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
-                >
-                  <h2 className="text-xl font-bold mb-6">
-                    Please select your jeep{" "}
-                  </h2>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
-                    {jeepImages.map((img, idx) => {
-                      const isFullyBooked = bookedSeats[idx].length === 6;
-                      return (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            if (!isFullyBooked) {
-                              setSelectedJeepIndex(idx);
-                              setShowJeepPopup(false);
-                              setShowSeatPopup(true);
-                            }
-                          }}
-                          className={`rounded-xl overflow-hidden border-2 transition-all flex flex-col items-center p-2
-            ${
-              isFullyBooked
-                ? "opacity-50 grayscale cursor-not-allowed border-gray-300"
-                : ""
-            }
-            ${
-              selectedJeepIndex === idx
-                ? "border-green-600 ring-2 ring-green-400"
-                : "border-gray-200 hover:border-green-400"
-            }
-          `}
-                          disabled={isFullyBooked}
-                        >
-                          <img
-                            src={img}
-                            alt={`Jeep ${idx + 1}`}
-                            className="w-32 h-24 object-cover mb-2 rounded"
-                          />
-                          <span className="font-semibold">Jeep {idx + 1}</span>
-                          {isFullyBooked && (
-                            <span className="text-xs text-red-500 mt-1">
-                              Fully Booked
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="flex justify-between mt-6">
-                    <button
-                      className="px-4 py-2 rounded bg-gray-200"
-                      onClick={() => {
-                        setShowJeepPopup(false);
-                        setShowDatePopup(true);
-                      }}
-                    >
-                      Back
-                    </button>
-                    <button
-                      className="px-4 py-2 rounded bg-green-600 text-white"
-                      disabled={selectedJeepIndex === null}
-                      onClick={() => {
-                        setShowJeepPopup(false);
-                        setShowSeatPopup(true);
-                      }}
-                    >
-                      Next
-                    </button>
-                  </div>
-                </Modal>
-
                 {/* Seat Selection Popup */}
                 <Modal
                   isOpen={showSeatPopup}
@@ -773,55 +677,40 @@ const Packages = () => {
                   className="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto mt-32"
                   overlayClassName="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center"
                 >
-                  <h2 className="text-xl font-bold mb-6">
-                    Please select your seat
-                  </h2>
-                  <div className="flex flex-wrap gap-4 justify-center mb-6">
-                    {[1, 2, 3, 4, 5, 6].map((seat) => {
-                      const isBooked =
-                        bookedSeats[selectedJeepIndex]?.includes(seat);
-                      return (
-                        <button
-                          key={seat}
-                          disabled={isBooked}
-                          onClick={() => setSelectedSeat(seat)}
-                          className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold border-2
-            ${
-              isBooked
-                ? "bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed"
-                : ""
-            }
-            ${
-              selectedSeat === seat
-                ? "bg-green-600 text-white border-green-700"
-                : "bg-white border-gray-300 hover:bg-green-100"
-            }
-          `}
-                        >
-                          {seat}
-                        </button>
-                      );
-                    })}
+                  <h2 className="text-xl font-bold mb-4">Select Your Seat</h2>
+                  <div className="flex gap-3 flex-wrap mb-6">
+                    {[1, 2, 3, 4, 5, 6, 7].map((seat) => (
+                      <button
+                        key={seat}
+                        disabled={sharedBookedSeats.includes(seat)}
+                        onClick={() => setSharedSelectedSeat(seat)}
+                        className={`w-12 h-12 rounded-full border-2 text-lg font-bold
+                ${
+                  sharedBookedSeats.includes(seat)
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : sharedSelectedSeat === seat
+                    ? "bg-green-600 text-white border-green-600"
+                    : "bg-white text-green-700 border-green-400 hover:bg-green-100"
+                }
+              `}
+                      >
+                        {seat}
+                      </button>
+                    ))}
                   </div>
-                  <div className="flex justify-between mt-6">
+                  <div className="flex justify-end gap-2">
                     <button
                       className="px-4 py-2 rounded bg-gray-200"
-                      onClick={() => {
-                        setShowSeatPopup(false);
-                        setShowJeepPopup(true);
-                      }}
+                      onClick={() => setShowSeatPopup(false)}
                     >
-                      Back
+                      Cancel
                     </button>
                     <button
                       className="px-4 py-2 rounded bg-green-600 text-white"
-                      disabled={selectedSeat === null}
-                      onClick={() => {
-                        setShowSeatPopup(false);
-                        // Proceed to next step or save selection
-                      }}
+                      disabled={!sharedSelectedSeat}
+                      onClick={() => setShowSeatPopup(false)}
                     >
-                      Confirm
+                      OK
                     </button>
                   </div>
                 </Modal>
@@ -834,7 +723,7 @@ const Packages = () => {
                 <span className="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
                   2
                 </span>
-                Select Your Wildlife Destination
+                Select Your Safari Parks
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -854,6 +743,11 @@ const Packages = () => {
                     name: "Udawalawe National Park",
                     description: "Elephant sightings guaranteed",
                   },
+                  {
+                    id: "Lunugamwehera",
+                    name: "Lunugamwehera National Park",
+                    description: "Famous for Elephant Watching",
+                  },
                 ].map((p) => (
                   <div
                     key={p.id}
@@ -865,54 +759,79 @@ const Packages = () => {
                     }`}
                   >
                     <img
-                      src={parkImages[p.id]}
+                      src={p.image ? p.image : parkImages[p.id]}
                       alt={p.name}
                       className="h-32 w-full object-cover"
                     />
                     <div className="p-4">
                       <h3 className="font-semibold text-lg">{p.name}</h3>
                       <p className="text-sm text-gray-600">{p.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                      <div className="mt-3 flex gap-2">
+                        {/* Private Safari Ticket Price */}
+                        <div className="flex items-center gap-1">
+                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">
+                            Private Safari
+                          </span>
+                          {reservationType === "private" && (
+                            <span className="text-green-700 font-bold text-sm">
+                              ${pricing.jeep[jeepType][timeSlot]}
+                            </span>
+                          )}
+                        </div>
+                        {/* Shared Safari Ticket Price */}
+                                    <div className="flex items-center gap-1">
+                                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">
+                                      Shared Safari
+                                      </span>
+                                      {reservationType === "shared" && (
+                                      <span className="text-blue-700 font-bold text-sm">
+                                        ${pricing.shared[Math.min(people, 7)]} /person
+                                      </span>
+                                      )}
+                                    </div>
+                                    </div>
+                                  </div>
+                                  </div>
+                                ))}
+                                </div>
 
-              {park === "yala" && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-medium mb-3">Select Yala Block:</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    {["Block I", "Block II", "Block III & IV", "Block V"].map(
-                      (blk) => (
-                        <button
-                          key={blk}
-                          onClick={() =>
-                            setBlock(
-                              blk
-                                .toLowerCase()
-                                .replace(" & ", "")
-                                .replace(" ", "")
-                            )
-                          }
-                          className={`py-2 px-3 rounded text-sm ${
-                            block ===
-                            blk
-                              .toLowerCase()
-                              .replace(" & ", "")
-                              .replace(" ", "")
-                              ? "bg-green-600 text-white"
-                              : "bg-white border border-gray-300 hover:bg-gray-100"
-                          }`}
-                        >
-                          {blk}
-                        </button>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-            </section>
+                                {park === "yala" && (
+                                <div className="bg-gray-50 p-4 rounded-lg">
+                                  <h3 className="font-medium mb-3">Select Safari Type:</h3>
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                  {(reservationType === "shared"
+                                    ? ["Block I", "Block V"]
+                                    : ["Block I", "Block II", "Block III & IV", "Block V"]
+                                  ).map((blk) => (
+                                    <button
+                                    key={blk}
+                                    onClick={() =>
+                                      setBlock(
+                                      blk
+                                        .toLowerCase()
+                                        .replace(" & ", "")
+                                        .replace(" ", "")
+                                      )
+                                    }
+                                    className={`py-2 px-3 rounded text-sm ${
+                                      block ===
+                                      blk
+                                      .toLowerCase()
+                                      .replace(" & ", "")
+                                      .replace(" ", "")
+                                      ? "bg-green-600 text-white"
+                                      : "bg-white border border-gray-300 hover:bg-gray-100"
+                                    }`}
+                                    >
+                                    {blk}
+                                    </button>
+                                  ))}
+                                  </div>
+                                </div>
+                                )}
+                              </section>
 
-            {/* 3. Jeep Options */}
+                              {/* 3. Jeep Options */}
             <section className="mb-10">
               <h2 className="text-2xl font-bold text-green-800 mb-6 flex items-center">
                 <span className="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">
@@ -920,52 +839,51 @@ const Packages = () => {
                 </span>
                 Choose Your Safari Vehicle
               </h2>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 {[
                   {
                     id: "basic",
                     name: "Basic Jeep",
                     features: [
-                      "Standard seating",
-                      "Pop-up roof",
-                      "Basic comfort",
+                      "Adjustable Seats",
+                      "360° Viewing",
+                      "1-7 Seating Capacity",
+                      "Mahindra Maxi",
                     ],
                   },
                   {
                     id: "luxury",
                     name: "Luxury Jeep",
                     features: [
-                      "Comfortable seats",
-                      "Large viewing roof",
+                      "Adjustable Seats",
+                      "360° Viewing",
+                      "1-7 Seating Capacity",
                       "Charging ports",
+                      "Toyota Hilux",
                     ],
                   },
                   {
                     id: "superLuxury",
                     name: "Super Luxury",
                     features: [
-                      "Premium seats",
-                      "360° viewing",
+                      "Adjustable Seats",
+                      "360° Viewing",
+                      "1-7 Seating Capacity",
+                      "Charging ports",
                       "Refreshments included",
+                      "Toyota Land Cruiser",
                     ],
                   },
                 ].map((type) => (
                   <div
                     key={type.id}
-                    onClick={
-                      reservationType === "private"
-                        ? () => setJeepType(type.id)
-                        : undefined
-                    }
-                    className={`border-2 rounded-xl p-5 cursor-pointer transition-all
-          ${
-            reservationType === "private"
-              ? jeepType === type.id
-                ? "border-green-500 bg-green-50"
-                : "border-gray-200 hover:border-gray-300"
-              : "border-gray-200 bg-white pointer-events-none opacity-60"
-          }
-        `}
+                    onClick={() => setJeepType(type.id)}
+                    className={`border-2 rounded-xl p-5 cursor-pointer transition-all ${
+                      jeepType === type.id
+                        ? "border-green-500 bg-green-50"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
                   >
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="text-xl font-semibold">{type.name}</h3>
@@ -1006,9 +924,7 @@ const Packages = () => {
                   </div>
                 ))}
               </div>
-            </section>
-            {/* Time Slots */}
-            <section className="mb-10">
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
                   {
@@ -1073,13 +989,13 @@ const Packages = () => {
                   },
                   {
                     id: "driverGuide",
-                    name: "Driver + Guide",
+                    name: "Driver Guide",
                     description:
                       "Driver who also serves as your wildlife guide",
                   },
                   {
-                    id: "separateGuide",
-                    name: "Separate Guide",
+                    id: "Driver+Guide",
+                    name: "Driver + Guide",
                     description:
                       "Dedicated driver and professional wildlife guide",
                   },
@@ -1690,15 +1606,7 @@ const Packages = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Seat Number:</span>
-                        <span className="font-medium">
-                          {reservationType === "shared" &&
-                          selectedJeepIndex !== null &&
-                          selectedSeat
-                            ? `Jeep ${
-                                selectedJeepIndex + 1
-                              }, Seat ${selectedSeat}`
-                            : reservationSeat}
-                        </span>{" "}
+                        <span className="font-medium">{reservationSeat}</span>
                       </div>
                     </div>
                   </div>
@@ -1770,16 +1678,15 @@ const Packages = () => {
                       </div>
                     </div>
 
-                    {/* Error message here */}
-                    {formError && (
-                      <div className="mb-4 text-red-600 text-sm">
-                        {formError}
-                      </div>
-                    )}
-
                     <button
                       className="w-full mt-6 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-all flex items-center justify-center"
-                      onClick={handleConfirmBooking}
+                      onClick={() => {
+                        if (reservationType === "shared") {
+                          setShowBookingSection(true); // Show contact form modal
+                        } else {
+                          handleBookNow();
+                        }
+                      }}
                     >
                       <svg
                         className="w-5 h-5 mr-2"
