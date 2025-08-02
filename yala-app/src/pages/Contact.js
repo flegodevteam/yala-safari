@@ -82,7 +82,7 @@ export default function Contact() {
         <h1 className="text-3xl font-bold mb-8">Contact.</h1>
 
         {/* Address Section */}
-      
+
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-2">Address</h2>
           <p className="text-base">Tissamaharama, Yala, Sri Lanka</p>
@@ -148,61 +148,70 @@ export default function Contact() {
               Contact Us
             </h1>
             <p className="text-lg mb-8 text-gray-600 italic">
-              "Planning your dream safari or a serene escape at Wild Breeze?
-              Contact us today! Whether it's about our exclusive offers,
-              bookings, or any other inquiries, we're just a message away."
+              "Planning your dream safari or a serene escape at Yala? Contact us
+              today! Whether it's about our exclusive offers, bookings, or any
+              other inquiries, we're just a message away."
             </p>
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
                 <label className="block text-lg font-medium text-gray-700 mb-2">
                   Name
                 </label>
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    placeholder="Enter your name"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
-                  <label className="block text-lg font-medium text-gray-700 mb-2">
-                    Mail
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
-                </div>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Enter your name"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
               </div>
+
               <div>
                 <label className="block text-lg font-medium text-gray-700 mb-2">
-                  Your phone
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Enter your email"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-lg font-medium text-gray-700 mb-2">
+                  Phone
                 </label>
                 <input
                   type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
                   placeholder="Enter your phone"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
+
               <div>
                 <label className="block text-lg font-medium text-gray-700 mb-2">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter your subject"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-              <div>
-                <label className="block text-lg font-medium text-gray-700 mb-2">
-                  Your Message
+                  Message
                 </label>
                 <textarea
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
                   placeholder="Your message"
                   rows="4"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
                 ></textarea>
               </div>
+
               <button
                 type="submit"
                 className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-full transition duration-200"
@@ -210,6 +219,13 @@ export default function Contact() {
                 Submit
               </button>
             </form>
+
+            {/* Show success message */}
+            {submitted && (
+              <div className="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+                Thank you! Your message has been sent successfully.
+              </div>
+            )}
           </div>
           {/* Image Section */}
           <div className="w-full md:w-1/2 max-w-2xl flex">
