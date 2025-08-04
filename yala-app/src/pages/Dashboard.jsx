@@ -21,7 +21,7 @@ import UserManager from "../components/UserManager";
 import SettingsPanel from "../components/SettingsPanel";
 import ReportsDashboard from "../components/ReportsDashboard";
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
 
@@ -160,7 +160,12 @@ const AdminDashboard = () => {
           {activeTab === "packages" && <PackagesManager />}
           {activeTab === "availability" && <AvailabilityCalendar />}
           {activeTab === "bookings" && <BookingsManager />}
-          {activeTab === "blog" && <BlogContentManager />}
+          {activeTab === "blog" && (
+            <BlogContentManager
+              blogPosts={blogPosts}
+              setBlogPosts={setBlogPosts}
+            />
+          )}{" "}
           {activeTab === "media" && <MediaGallery />}
           {activeTab === "users" && <UserManager />}
           {activeTab === "reports" && <ReportsDashboard />}
