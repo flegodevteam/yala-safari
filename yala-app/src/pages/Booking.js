@@ -11,7 +11,10 @@ const PaymentPage = () => {
   const location = useLocation();
   const [nameOnCard, setNameOnCard] = useState("");
   const [error, setError] = useState("");
-  const total = location.state?.total || "0.00";
+  const total =
+    location.state?.taxiBooking && location.state?.estimatedPrice
+      ? location.state.estimatedPrice
+      : location.state?.total || "0.00";
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentFailed, setPaymentFailed] = useState(false);
   const [bankSlip, setBankSlip] = useState(null);

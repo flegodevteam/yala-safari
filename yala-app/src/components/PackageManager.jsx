@@ -1,198 +1,306 @@
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
-const defaultPricing = {
-  jeep: {
-    basic: { morning: 5, afternoon: 5, extended: 7, fullDay: 10 },
-    luxury: { morning: 7, afternoon: 7, extended: 9, fullDay: 12 },
-    superLuxury: { morning: 10, afternoon: 10, extended: 12, fullDay: 15 },
-  },
-  shared: { 1: 10, 2: 8, 3: 7, 4: 5, 5: 5, 6: 5, 7: 5 },
-  meals: { breakfast: 5, lunch: 6 },
-  guide: { driver: 0, driverGuide: 10, separateGuide: 15 },
-};
-const defaultAvailability = {
-  shared: ["2025-07-02", "2025-07-03"],
-  private: ["2025-07-02", "2025-07-03", "2025-07-04"],
-};
-
-const AdminPackages = () => {
-  const [pricing, setPricing] = useState(defaultPricing);
+const PackageManager = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
+  const [pricing, setPricing] = useState({
+    jeep: {
+      basic: { morning: 0, afternoon: 0, extended: 0, fullDay: 0 },
+      luxury: { morning: 0, afternoon: 0, extended: 0, fullDay: 0 },
+      superLuxury: { morning: 0, afternoon: 0, extended: 0, fullDay: 0 },
+    },
+    shared: {
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0,
+      6: 0,
+      7: 0,
+    },
+    meals: {
+      breakfast: 0,
+      lunch: 0,
+    },
+    guide: {
+      driver: 0,
+      driverGuide: 0,
+      separateGuide: 0,
+    },
+  });
+
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/packages")
-      .then((res) => res.json())
-      .then((data) => {
-  if (data && data.jeep && data.shared && data.meals && data.guide) setPricing(data);
-  else setPricing(defaultPricing);
-  setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    fetchPricing();
   }, []);
 
-  const handleJeepChange = (type, slot, value) => {
-    setPricing((prev) => ({
-      ...prev,
-      jeep: {
-        ...prev.jeep,
-        [type]: { ...prev.jeep[type], [slot]: Number(value) },
-      },
-    }));
-  };
-
-  const handleSharedChange = (num, value) => {
-    setPricing((prev) => ({
-      ...prev,
-      shared: { ...prev.shared, [num]: Number(value) },
-    }));
-  };
-
-  const handleMealsChange = (meal, value) => {
-    setPricing((prev) => ({
-      ...prev,
-      meals: { ...prev.meals, [meal]: Number(value) },
-    }));
-  };
-
-  const handleGuideChange = (type, value) => {
-    setPricing((prev) => ({
-      ...prev,
-      guide: { ...prev.guide, [type]: Number(value) },
-    }));
-  };
-
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    setMessage("");
+  const fetchPricing = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/packages", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch("http://localhost:5000/api/packages");
+      const data = await response.json();
+      if (data) {
+        setPricing(data);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching pricing:", error);
+      toast.error("Failed to load pricing data");
+      setLoading(false);
+    }
+  };
+
+  const handlePriceChange = (path, value) => {
+    const pathParts = path.split(".");
+    const newPricing = { ...pricing };
+
+    let current = newPricing;
+    for (let i = 0; i < pathParts.length - 1; i++) {
+      current = current[pathParts[i]];
+    }
+
+    current[pathParts[pathParts.length - 1]] = parseFloat(value) || 0;
+    setPricing(newPricing);
+  };
+
+  const savePricing = async () => {
+    setSaving(true);
+    try {
+      const response = await fetch("http://localhost:5000/api/packages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(pricing),
       });
-      if (res.ok) setMessage("Package pricing updated successfully!");
-      else setMessage("Failed to update pricing.");
-    } catch {
-      setMessage("Failed to update pricing.");
+
+      if (response.ok) {
+        toast.success("Pricing updated successfully!");
+      } else {
+        throw new Error("Failed to save pricing");
+      }
+    } catch (error) {
+      console.error("Error saving pricing:", error);
+      toast.error("Failed to update pricing");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
-  if (
-  !pricing ||
-  !pricing.jeep ||
-  !pricing.shared ||
-  !pricing.meals ||
-  !pricing.guide
-) {
-  return <div className="p-8">Loading...</div>;
-}
+  const resetToDefaults = () => {
+    setPricing({
+      jeep: {
+        basic: { morning: 5, afternoon: 5, extended: 7, fullDay: 10 },
+        luxury: { morning: 7, afternoon: 7, extended: 9, fullDay: 12 },
+        superLuxury: { morning: 10, afternoon: 10, extended: 12, fullDay: 15 },
+      },
+      shared: {
+        1: 10,
+        2: 8,
+        3: 7,
+        4: 5,
+        5: 5,
+        6: 5,
+        7: 5,
+      },
+      meals: {
+        breakfast: 5,
+        lunch: 6,
+      },
+      guide: {
+        driver: 0,
+        driverGuide: 10,
+        separateGuide: 15,
+      },
+    });
+    toast.info("Reset to default pricing");
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg mt-10 mb-10">
-      <h1 className="text-3xl font-bold mb-6 text-green-700">Manage Safari Packages & Pricing</h1>
-      <form onSubmit={handleSave} className="space-y-8">
-        {/* Jeep Pricing */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Jeep Pricing</h2>
-          {["basic", "luxury", "superLuxury"].map((type) => (
-            <div key={type} className="mb-4">
-              <h3 className="font-medium capitalize mb-2">{type.replace(/([A-Z])/g, " $1")}</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {["morning", "afternoon", "extended", "fullDay"].map((slot) => (
-                  <div key={slot}>
-                    <label className="block text-sm mb-1 capitalize">{slot}</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={pricing.jeep[type][slot]}
-                      onChange={(e) => handleJeepChange(type, slot, e.target.value)}
-                      className="w-full border border-gray-300 rounded px-2 py-1"
-                    />
+    <div className="min-h-screen bg-gray-100 py-8">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">Package Manager</h1>
+          <button
+            onClick={() => navigate("/admin/dashboard")}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+          <div className="p-6">
+            {/* Jeep Pricing Section */}
+            <section className="mb-10">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
+                Jeep Safari Pricing
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {Object.entries(pricing.jeep).map(([jeepType, timeSlots]) => (
+                  <div key={jeepType} className="border rounded-lg p-4 bg-gray-50">
+                    <h3 className="text-lg font-semibold mb-4 capitalize">
+                      {jeepType.replace(/([A-Z])/g, " $1").trim()} Jeep
+                    </h3>
+                    
+                    <div className="space-y-3">
+                      {Object.entries(timeSlots).map(([slot, price]) => (
+                        <div key={slot} className="flex items-center justify-between">
+                          <label className="capitalize">
+                            {slot.replace(/([A-Z])/g, " $1").trim()}:
+                          </label>
+                          <div className="flex items-center">
+                            <span className="mr-2">$</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.5"
+                              value={price}
+                              onChange={(e) =>
+                                handlePriceChange(`jeep.${jeepType}.${slot}`, e.target.value)
+                              }
+                              className="w-20 border rounded px-2 py-1"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
+            </section>
+
+            {/* Shared Safari Pricing */}
+            <section className="mb-10">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
+                Shared Safari Pricing (Per Person)
+              </h2>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                {Object.entries(pricing.shared).map(([people, price]) => (
+                  <div key={people} className="border rounded-lg p-4 bg-gray-50 text-center">
+                    <div className="font-medium mb-2">{people} {people === "1" ? "Person" : "People"}</div>
+                    <div className="flex items-center justify-center">
+                      <span className="mr-1">$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={price}
+                        onChange={(e) =>
+                          handlePriceChange(`shared.${people}`, e.target.value)
+                        }
+                        className="w-20 border rounded px-2 py-1 text-center"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Guide Pricing */}
+            <section className="mb-10">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
+                Guide Options Pricing
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {Object.entries(pricing.guide).map(([guideType, price]) => (
+                  <div key={guideType} className="border rounded-lg p-4 bg-gray-50">
+                    <h3 className="text-lg font-semibold mb-2 capitalize">
+                      {guideType.replace(/([A-Z])/g, " $1").trim()}
+                    </h3>
+                    <div className="flex items-center">
+                      <span className="mr-2">$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={price}
+                        onChange={(e) =>
+                          handlePriceChange(`guide.${guideType}`, e.target.value)
+                        }
+                        className="w-20 border rounded px-2 py-1"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Meal Pricing */}
+            <section className="mb-10">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
+                Meal Options Pricing
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Object.entries(pricing.meals).map(([mealType, price]) => (
+                  <div key={mealType} className="border rounded-lg p-4 bg-gray-50">
+                    <h3 className="text-lg font-semibold mb-2 capitalize">
+                      {mealType}
+                    </h3>
+                    <div className="flex items-center">
+                      <span className="mr-2">$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={price}
+                        onChange={(e) =>
+                          handlePriceChange(`meals.${mealType}`, e.target.value)
+                        }
+                        className="w-20 border rounded px-2 py-1"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-4 mt-8 pt-6 border-t">
+              <button
+                onClick={resetToDefaults}
+                className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
+                disabled={saving}
+              >
+                Reset Defaults
+              </button>
+              <button
+                onClick={savePricing}
+                className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center"
+                disabled={saving}
+              >
+                {saving ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </button>
             </div>
-          ))}
-        </section>
-
-        {/* Shared Pricing */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Shared Safari Pricing (per person)</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4, 5, 6, 7].map((num) => (
-              <div key={num}>
-                <label className="block text-sm mb-1">People: {num}</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={pricing.shared[num]}
-                  onChange={(e) => handleSharedChange(num, e.target.value)}
-                  className="w-full border border-gray-300 rounded px-2 py-1"
-                />
-              </div>
-            ))}
           </div>
-        </section>
-
-        {/* Meals Pricing */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Meals Pricing</h2>
-          <div className="grid grid-cols-2 gap-4">
-            {["breakfast", "lunch"].map((meal) => (
-              <div key={meal}>
-                <label className="block text-sm mb-1 capitalize">{meal}</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={pricing.meals[meal]}
-                  onChange={(e) => handleMealsChange(meal, e.target.value)}
-                  className="w-full border border-gray-300 rounded px-2 py-1"
-                />
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Guide Pricing */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Guide Pricing</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { key: "driver", label: "Driver Only" },
-              { key: "driverGuide", label: "Driver + Guide" },
-              { key: "separateGuide", label: "Separate Guide" },
-            ].map((g) => (
-              <div key={g.key}>
-                <label className="block text-sm mb-1">{g.label}</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={pricing.guide[g.key]}
-                  onChange={(e) => handleGuideChange(g.key, e.target.value)}
-                  className="w-full border border-gray-300 rounded px-2 py-1"
-                />
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <button
-          type="submit"
-          className="mt-6 w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-all"
-          disabled={saving}
-        >
-          {saving ? "Saving..." : "Save Changes"}
-        </button>
-        {message && (
-          <div className="mt-4 text-center text-green-700 font-semibold">{message}</div>
-        )}
-      </form>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default AdminPackages;
+export default PackageManager;

@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 const RoomDetails = ({ onBack }) => {
   const { roomType } = useParams();
   const navigate = useNavigate();
+  const [error, setError] = useState(""); // Error state
 
   // Enhanced room data with multiple images for each room type
   const roomData = {
@@ -76,7 +77,36 @@ const RoomDetails = ({ onBack }) => {
   };
 
   const handleBookNow = () => {
-    navigate('/booking');
+    // Validation
+    if (!checkInDate || !checkOutDate) {
+      setError("Please select both Check-in and Check-out dates.");
+      return;
+    }
+    if (new Date(checkInDate) >= new Date(checkOutDate)) {
+      setError("Check-out date must be after the Check-in date.");
+      return;
+    }
+    if (guestCount < 1) {
+      setError("At least 1 guest must be selected.");
+      return;
+    }
+    if (roomCount < 1) {
+      setError("At least 1 room must be selected.");
+      return;
+    }
+    setError(""); // Clear error
+    navigate("/booking", {
+      state: {
+        roomType: room.name,
+        checkInDate,
+        checkOutDate,
+        guestCount,
+        roomCount,
+        subtotal,
+        discount,
+        total,
+      },
+    });
   };
 
   return (
@@ -140,6 +170,12 @@ const RoomDetails = ({ onBack }) => {
 
       {/* Booking Details */}
       <div className="p-6">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 text-red-600 font-semibold text-center">
+            {error}
+          </div>
+        )}
         {/* Dates */}
         <div className="mb-6">
           <h2 className="text-lg font-semibold mb-2">Dates</h2>
