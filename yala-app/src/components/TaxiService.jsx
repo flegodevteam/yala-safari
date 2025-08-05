@@ -6,6 +6,7 @@ import {
   FaUserAlt,
   FaMoneyBillWave,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const TaxiService = () => {
   const [pickupLocation, setPickupLocation] = useState("");
@@ -14,6 +15,8 @@ const TaxiService = () => {
   const [pickupTime, setPickupTime] = useState("");
   const [passengers, setPassengers] = useState(1);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const vehicleTypes = [
     {
@@ -48,6 +51,47 @@ const TaxiService = () => {
   const calculateEstimatedPrice = (distance) => {
     if (!selectedVehicle) return 0;
     return (distance * selectedVehicle.pricePerKm).toFixed(2);
+  };
+
+  const handleBookTaxi = () => {
+    // Validation
+    if (!pickupLocation.trim()) {
+      setError("Pickup Location is required.");
+      return;
+    }
+    if (!dropLocation.trim()) {
+      setError("Drop Location is required.");
+      return;
+    }
+    if (!pickupDate) {
+      setError("Please select a Pickup Date.");
+      return;
+    }
+    if (!pickupTime) {
+      setError("Please select a Pickup Time.");
+      return;
+    }
+    if (!selectedVehicle) {
+      setError("Please select a vehicle.");
+      return;
+    }
+    setError("");
+
+    // Navigate to booking page with taxi details
+    navigate("/booking", {
+      state: {
+        taxiBooking: true,
+        pickupLocation,
+        dropLocation,
+        pickupDate,
+        pickupTime,
+        passengers,
+        vehicleId: selectedVehicle.id,
+        vehicleName: selectedVehicle.name,
+        estimatedPrice: calculateEstimatedPrice(50),
+        
+      },
+    });
   };
 
   return (
@@ -233,6 +277,11 @@ const TaxiService = () => {
                   </div>
                 )}
 
+                {error && (
+                  <div className="mb-4 text-red-600 font-semibold text-center">
+                    {error}
+                  </div>
+                )}
                 {/* Book Now Button */}
                 <button
                   disabled={
@@ -243,11 +292,7 @@ const TaxiService = () => {
                       ? "bg-gray-400 cursor-not-allowed"
                       : "bg-amber-600 hover:bg-amber-700"
                   }`}
-                  onClick={() => {
-                    if (selectedVehicle && pickupLocation && dropLocation) {
-                      window.location.href = "/booking";
-                    }
-                  }}
+                  onClick={handleBookTaxi}
                 >
                   Book Taxi Now
                 </button>
