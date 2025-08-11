@@ -39,15 +39,44 @@ const PackageManager = () => {
 
   const fetchPricing = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/packages");
-      const data = await response.json();
-      if (data) {
-        setPricing(data);
+      console.log("PackageManager: Fetching pricing...");
+
+      // First try to fetch from API
+      const response = await fetch(
+        "http://localhost:5000/api/packages/current"
+      );
+      console.log("PackageManager: Response status:", response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("PackageManager: Received data from API:", data);
+        if (data) {
+          setPricing(data);
+          // Save to localStorage as backup
+          localStorage.setItem("currentPricing", JSON.stringify(data));
+        }
+      } else {
+        throw new Error("API response not OK");
       }
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching pricing:", error);
-      toast.error("Failed to load pricing data");
+      console.error("PackageManager: Error fetching from API:", error);
+      console.log("PackageManager: Trying localStorage fallback...");
+
+      // Fallback to localStorage
+      const savedPricing = localStorage.getItem("currentPricing");
+      if (savedPricing) {
+        try {
+          const data = JSON.parse(savedPricing);
+          console.log("PackageManager: Loaded from localStorage:", data);
+          setPricing(data);
+        } catch (parseError) {
+          console.error(
+            "PackageManager: Error parsing localStorage data:",
+            parseError
+          );
+        }
+      }
       setLoading(false);
     }
   };
@@ -68,21 +97,49 @@ const PackageManager = () => {
   const savePricing = async () => {
     setSaving(true);
     try {
-      const response = await fetch("http://localhost:5000/api/packages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(pricing),
-      });
+      console.log("PackageManager: Saving pricing:", pricing);
 
-      if (response.ok) {
-        toast.success("Pricing updated successfully!");
-      } else {
-        throw new Error("Failed to save pricing");
+      // Save to localStorage immediately for instant sync
+      localStorage.setItem("currentPricing", JSON.stringify(pricing));
+      console.log("PackageManager: Saved to localStorage");
+
+      // Try to save to API
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/admin/packages",
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(pricing),
+          }
+        );
+
+        console.log("PackageManager: Save response status:", response.status);
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log("PackageManager: Save result:", result);
+          toast.success("Pricing updated successfully!");
+        } else {
+          const errorData = await response.json();
+          console.error("PackageManager: API Save error:", errorData);
+          toast.success("Pricing updated locally (API unavailable)");
+        }
+      } catch (apiError) {
+        console.error("PackageManager: API Error:", apiError);
+        toast.success("Pricing updated locally (API unavailable)");
       }
+
+      // Trigger events to notify other components about the pricing update
+      console.log("PackageManager: Dispatching pricing update events");
+      window.dispatchEvent(
+        new CustomEvent("pricingUpdated", { detail: pricing })
+      );
+      localStorage.setItem("lastPricingUpdate", Date.now().toString());
     } catch (error) {
-      console.error("Error saving pricing:", error);
+      console.error("PackageManager: Error saving pricing:", error);
       toast.error("Failed to update pricing");
     } finally {
       setSaving(false);
@@ -146,17 +203,23 @@ const PackageManager = () => {
               <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
                 Jeep Safari Pricing
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {Object.entries(pricing.jeep).map(([jeepType, timeSlots]) => (
-                  <div key={jeepType} className="border rounded-lg p-4 bg-gray-50">
+                  <div
+                    key={jeepType}
+                    className="border rounded-lg p-4 bg-gray-50"
+                  >
                     <h3 className="text-lg font-semibold mb-4 capitalize">
                       {jeepType.replace(/([A-Z])/g, " $1").trim()} Jeep
                     </h3>
-                    
+
                     <div className="space-y-3">
                       {Object.entries(timeSlots).map(([slot, price]) => (
-                        <div key={slot} className="flex items-center justify-between">
+                        <div
+                          key={slot}
+                          className="flex items-center justify-between"
+                        >
                           <label className="capitalize">
                             {slot.replace(/([A-Z])/g, " $1").trim()}:
                           </label>
@@ -168,7 +231,10 @@ const PackageManager = () => {
                               step="0.5"
                               value={price}
                               onChange={(e) =>
-                                handlePriceChange(`jeep.${jeepType}.${slot}`, e.target.value)
+                                handlePriceChange(
+                                  `jeep.${jeepType}.${slot}`,
+                                  e.target.value
+                                )
                               }
                               className="w-20 border rounded px-2 py-1"
                             />
@@ -186,11 +252,16 @@ const PackageManager = () => {
               <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
                 Shared Safari Pricing (Per Person)
               </h2>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
                 {Object.entries(pricing.shared).map(([people, price]) => (
-                  <div key={people} className="border rounded-lg p-4 bg-gray-50 text-center">
-                    <div className="font-medium mb-2">{people} {people === "1" ? "Person" : "People"}</div>
+                  <div
+                    key={people}
+                    className="border rounded-lg p-4 bg-gray-50 text-center"
+                  >
+                    <div className="font-medium mb-2">
+                      {people} {people === "1" ? "Person" : "People"}
+                    </div>
                     <div className="flex items-center justify-center">
                       <span className="mr-1">$</span>
                       <input
@@ -214,10 +285,13 @@ const PackageManager = () => {
               <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
                 Guide Options Pricing
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {Object.entries(pricing.guide).map(([guideType, price]) => (
-                  <div key={guideType} className="border rounded-lg p-4 bg-gray-50">
+                  <div
+                    key={guideType}
+                    className="border rounded-lg p-4 bg-gray-50"
+                  >
                     <h3 className="text-lg font-semibold mb-2 capitalize">
                       {guideType.replace(/([A-Z])/g, " $1").trim()}
                     </h3>
@@ -229,7 +303,10 @@ const PackageManager = () => {
                         step="1"
                         value={price}
                         onChange={(e) =>
-                          handlePriceChange(`guide.${guideType}`, e.target.value)
+                          handlePriceChange(
+                            `guide.${guideType}`,
+                            e.target.value
+                          )
                         }
                         className="w-20 border rounded px-2 py-1"
                       />
@@ -244,10 +321,13 @@ const PackageManager = () => {
               <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
                 Meal Options Pricing
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {Object.entries(pricing.meals).map(([mealType, price]) => (
-                  <div key={mealType} className="border rounded-lg p-4 bg-gray-50">
+                  <div
+                    key={mealType}
+                    className="border rounded-lg p-4 bg-gray-50"
+                  >
                     <h3 className="text-lg font-semibold mb-2 capitalize">
                       {mealType}
                     </h3>
@@ -285,9 +365,25 @@ const PackageManager = () => {
               >
                 {saving ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Saving...
                   </>
