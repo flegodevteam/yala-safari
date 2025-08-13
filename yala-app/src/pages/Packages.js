@@ -162,15 +162,79 @@ const Packages = () => {
   };
   const [pricing, setPricing] = useState(defaultpricing);
 
-  useEffect(() => {
-    fetch("http://localhost:5000/api/packages")
-      .then((res) => res.json())
+  const fetchPricing = () => {
+    console.log("Fetching pricing from API...");
+
+    fetch("http://localhost:5000/api/packages/current")
+      .then((res) => {
+        console.log("API response status:", res.status);
+        if (!res.ok) {
+          throw new Error("API response not OK");
+        }
+        return res.json();
+      })
       .then((data) => {
-        if (data && data.jeep && data.shared && data.meals && data.guide)
+        console.log("Received pricing data from API:", data);
+        if (data && data.jeep && data.shared && data.meals && data.guide) {
           setPricing(data);
+          console.log("Pricing updated from API successfully");
+          // Save to localStorage as backup
+          localStorage.setItem("currentPricing", JSON.stringify(data));
+        } else {
+          console.log("Invalid pricing data structure from API");
+          throw new Error("Invalid data structure");
+        }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((error) => {
+        console.error("Error fetching pricing from API:", error);
+        console.log("Trying localStorage fallback...");
+
+        // Fallback to localStorage
+        const savedPricing = localStorage.getItem("currentPricing");
+        if (savedPricing) {
+          try {
+            const data = JSON.parse(savedPricing);
+            console.log("Loaded pricing from localStorage:", data);
+            if (data && data.jeep && data.shared && data.meals && data.guide) {
+              setPricing(data);
+              console.log("Pricing updated from localStorage successfully");
+            }
+          } catch (parseError) {
+            console.error("Error parsing localStorage pricing:", parseError);
+          }
+        }
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchPricing();
+  }, []);
+
+  // Listen for pricing updates from admin panel
+  useEffect(() => {
+    const handlePricingUpdate = () => {
+      console.log("Received pricing update event, refetching...");
+      fetchPricing();
+    };
+
+    // Listen for custom pricing update events
+    window.addEventListener("pricingUpdated", handlePricingUpdate);
+
+    // Also listen for storage changes (in case admin is in different tab)
+    const handleStorageChange = (e) => {
+      if (e.key === "lastPricingUpdate") {
+        console.log("Detected pricing update via localStorage, refetching...");
+        fetchPricing();
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("pricingUpdated", handlePricingUpdate);
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -257,14 +321,7 @@ const Packages = () => {
 
   const handleRefreshPricing = () => {
     setLoading(true);
-    fetch("http://localhost:5000/api/packages")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.jeep && data.shared && data.meals && data.guide)
-          setPricing(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    fetchPricing();
   };
 
   const reservationDate =
@@ -779,59 +836,56 @@ const Packages = () => {
                           )}
                         </div>
                         {/* Shared Safari Ticket Price */}
-                                    <div className="flex items-center gap-1">
-                                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">
-                                      Shared Safari
-                                      </span>
-                                      {reservationType === "shared" && (
-                                      <span className="text-blue-700 font-bold text-sm">
-                                        ${pricing.shared[Math.min(people, 7)]} /person
-                                      </span>
-                                      )}
-                                    </div>
-                                    </div>
-                                  </div>
-                                  </div>
-                                ))}
-                                </div>
+                        <div className="flex items-center gap-1">
+                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">
+                            Shared Safari
+                          </span>
+                          {reservationType === "shared" && (
+                            <span className="text-blue-700 font-bold text-sm">
+                              ${pricing.shared[Math.min(people, 7)]} /person
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-                                {park === "yala" && (
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                  <h3 className="font-medium mb-3">Select Safari Type:</h3>
-                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                  {(reservationType === "shared"
-                                    ? ["Block I", "Block V"]
-                                    : ["Block I", "Block II", "Block III & IV", "Block V"]
-                                  ).map((blk) => (
-                                    <button
-                                    key={blk}
-                                    onClick={() =>
-                                      setBlock(
-                                      blk
-                                        .toLowerCase()
-                                        .replace(" & ", "")
-                                        .replace(" ", "")
-                                      )
-                                    }
-                                    className={`py-2 px-3 rounded text-sm ${
-                                      block ===
-                                      blk
-                                      .toLowerCase()
-                                      .replace(" & ", "")
-                                      .replace(" ", "")
-                                      ? "bg-green-600 text-white"
-                                      : "bg-white border border-gray-300 hover:bg-gray-100"
-                                    }`}
-                                    >
-                                    {blk}
-                                    </button>
-                                  ))}
-                                  </div>
-                                </div>
-                                )}
-                              </section>
+              {park === "yala" && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-medium mb-3">Select Safari Type:</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {(reservationType === "shared"
+                      ? ["Block I", "Block V"]
+                      : ["Block I", "Block II", "Block III & IV", "Block V"]
+                    ).map((blk) => (
+                      <button
+                        key={blk}
+                        onClick={() =>
+                          setBlock(
+                            blk
+                              .toLowerCase()
+                              .replace(" & ", "")
+                              .replace(" ", "")
+                          )
+                        }
+                        className={`py-2 px-3 rounded text-sm ${
+                          block ===
+                          blk.toLowerCase().replace(" & ", "").replace(" ", "")
+                            ? "bg-green-600 text-white"
+                            : "bg-white border border-gray-300 hover:bg-gray-100"
+                        }`}
+                      >
+                        {blk}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
 
-                              {/* 3. Jeep Options */}
+            {/* 3. Jeep Options */}
             <section className="mb-10">
               <h2 className="text-2xl font-bold text-green-800 mb-6 flex items-center">
                 <span className="bg-green-700 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">

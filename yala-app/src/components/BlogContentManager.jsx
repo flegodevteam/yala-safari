@@ -10,7 +10,7 @@ const categories = [
   "Birdwatching",
 ];
 
-export default function BlogContentManager({}) {
+export default function BlogContentManager() {
   const [blogPosts, setBlogPosts] = useState([]);
   const [form, setForm] = useState({
     title: "",
@@ -35,23 +35,45 @@ export default function BlogContentManager({}) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await axios.post("http://localhost:5000/api/blogs", form);
-    setBlogPosts([res.data, ...blogPosts]);
-    setForm({
-      title: "",
-      excerpt: "",
-      date: "",
-      category: categories[0],
-      image: "",
-      readTime: "",
-    });
-    setSuccess(true);
-    setTimeout(() => setSuccess(false), 2000);
+    try {
+      const res = await axios.post("http://localhost:5000/api/blogs", form);
+      setBlogPosts([res.data, ...blogPosts]);
+      setForm({
+        title: "",
+        excerpt: "",
+        date: "",
+        category: categories[0],
+        image: "",
+        readTime: "",
+      });
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+
+      // Trigger events to notify other components about blog updates
+      window.dispatchEvent(
+        new CustomEvent("blogUpdated", { detail: res.data })
+      );
+      localStorage.setItem("lastBlogUpdate", Date.now().toString());
+    } catch (error) {
+      console.error("Error creating blog:", error);
+    }
   };
 
   const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:5000/api/blogs/${id}`);
-    setBlogPosts(blogPosts.filter((post) => post.id !== id && post._id !== id));
+    try {
+      await axios.delete(`http://localhost:5000/api/blogs/${id}`);
+      setBlogPosts(
+        blogPosts.filter((post) => post.id !== id && post._id !== id)
+      );
+
+      // Trigger events to notify other components about blog deletion
+      window.dispatchEvent(
+        new CustomEvent("blogUpdated", { detail: { deleted: id } })
+      );
+      localStorage.setItem("lastBlogUpdate", Date.now().toString());
+    } catch (error) {
+      console.error("Error deleting blog:", error);
+    }
   };
   return (
     <div className="mt-12 bg-white p-5  rounded-xl shadow-lg flex justify-around gap-5">
@@ -175,7 +197,7 @@ export default function BlogContentManager({}) {
                 </div>
               </div>
               <button
-                onClick={() => handleDelete(post.id)}
+                onClick={() => handleDelete(post._id || post.id)}
                 className="ml-4 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
               >
                 Delete
