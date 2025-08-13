@@ -5,11 +5,45 @@ import axios from "axios";
 export default function Blog() {
   const [blogPosts, setBlogPosts] = useState([]);
 
-  useEffect(() => {
+  const fetchBlogs = () => {
+    console.log("Fetching blogs from API...");
     axios
       .get("http://localhost:5000/api/blogs")
-      .then((res) => setBlogPosts(res.data))
-      .catch((err) => console.error(err));
+      .then((res) => {
+        console.log("Received blog data:", res.data);
+        setBlogPosts(res.data);
+      })
+      .catch((err) => {
+        console.error("Error fetching blogs:", err);
+      });
+  };
+
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
+
+  // Listen for blog updates from admin panel
+  useEffect(() => {
+    const handleBlogUpdate = () => {
+      console.log("Blog update detected, refreshing...");
+      fetchBlogs();
+    };
+
+    // Listen for custom blog update events
+    window.addEventListener("blogUpdated", handleBlogUpdate);
+
+    // Also listen for storage changes (in case admin is in different tab)
+    const handleStorageChange = (e) => {
+      if (e.key === "lastBlogUpdate") {
+        fetchBlogs();
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("blogUpdated", handleBlogUpdate);
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   const categories = [
@@ -60,6 +94,12 @@ export default function Blog() {
           Expert advice, wildlife insights, and travel tips for your perfect
           safari experience.
         </p>
+        <button
+          onClick={fetchBlogs}
+          className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+        >
+          Refresh Blogs
+        </button>
       </div>
 
       <div className="mb-8">
