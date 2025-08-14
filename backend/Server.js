@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Routes
+
 app.use("/api/packages", packageRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/contact", contactRoutes);
@@ -43,12 +43,11 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/api", AvailableJeepsRoutes);
 app.use("/api", bookingRoutes);
 
-// Default route for testing
 app.get("/", (req, res) => {
   res.send("Server is running!");
 });
 
-// Start the server
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
