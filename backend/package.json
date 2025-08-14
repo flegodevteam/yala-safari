@@ -5,9 +5,8 @@
   "main": "Server.js",
   "type": "module",
   "scripts": {
-    "start": "node Server.js",
-    "dev": "nodemon Server.js",
-    "vercel-build": "echo 'Build complete'"
+    "start": "node Server",
+    "dev": "nodemon Server.js"
   },
   "keywords": [],
   "author": "",
