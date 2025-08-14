@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "builds": [{ "src": "server.js", "use": "@vercel/node" }],
+  "routes": [{ "src": "/(.*)", "dest": "server.js" }],
+  "env": {
+    "NODE_ENV": "development",
+    "PORT": "3001",
+    "MONGODB_URI": "",
+    "JWT_SECRET": "abc1234"
+  }
+}
