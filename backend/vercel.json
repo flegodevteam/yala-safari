@@ -1,28 +1,5 @@
 {
   "version": 2,
-  "name": "your-backend-app",
-  "builds": [
-    {
-      "src": "Server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/uploads/(.*)",
-      "dest": "/uploads/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "Server.js"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "functions": {
-    "Server.js": {
-      "maxDuration": 30
-    }
-  }
+  "builds": [{ "src": "Server.js", "use": "@vercel/node" }],
+  "routes": [{ "src": "/(.*)", "dest": "Server.js" }]
 }
