@@ -10,4 +10,6 @@ const TaxiBookingSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("TaxiBooking", TaxiBookingSchema);
+const TaxiBooking = mongoose.model("TaxiBooking", TaxiBookingSchema);
+
+module.exports = TaxiBooking;

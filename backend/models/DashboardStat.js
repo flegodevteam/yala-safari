@@ -13,4 +13,6 @@ const dashboardStatSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('DashboardStat', dashboardStatSchema);
+const DashboardStat = mongoose.model('DashboardStat', dashboardStatSchema);
+
+module.exports = DashboardStat;

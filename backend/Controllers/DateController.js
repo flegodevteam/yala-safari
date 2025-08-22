@@ -1,6 +1,6 @@
 const { privateDates, sharedDates } = require("../models/Date");
 
-exports.getAvailability = (req, res) => {
+export const getAvailability = (req, res) => {
   const { type, park } = req.query;
   if (type === "private") {
     res.json({ dates: privateDates });

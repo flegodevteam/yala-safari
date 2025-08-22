@@ -1,7 +1,8 @@
 const Package = require('../models/Package');
+const asyncHandler = require("express-async-handler");
 
 // Get current package/pricing
-exports.getPackage = async (req, res) => {
+export const getPackage = asyncHandler(async (req, res) => {
   try {
     const pkg = await Package.findOne().sort({ updatedAt: -1 });
     res.json(pkg);
@@ -9,10 +10,10 @@ exports.getPackage = async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch package" });
   }
-};
+});
 
 // Update package/pricing (admin only)
-exports.updatePackage = async (req, res) => {
+export const updatePackage = asyncHandler(async (req, res) => {
   try {
     const { jeep, shared, meals, guide } = req.body;
     let pkg = await Package.findOne();
@@ -30,4 +31,4 @@ exports.updatePackage = async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Failed to update package" });
   }
-};
+});

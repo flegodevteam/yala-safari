@@ -67,4 +67,6 @@ packageSchema.statics.initialize = async function() {
   }
 };
 
-module.exports = mongoose.model('Package', packageSchema);
+const Package = mongoose.model('Package', packageSchema);
+
+module.exports = Package;

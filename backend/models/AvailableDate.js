@@ -8,4 +8,6 @@ const availableDateSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('AvailableDate', availableDateSchema);
+const AvailableDate = mongoose.model('AvailableDate', availableDateSchema);
+
+module.exports = AvailableDate;
