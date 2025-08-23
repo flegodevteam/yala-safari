@@ -1,5 +1,5 @@
-const Booking = require("../models/Booking");
-const asyncHandler = require("express-async-handler");
+import Booking from "../models/Booking.js";
+import asyncHandler from "express-async-handler";
 
 export const createBooking = asyncHandler(async (req, res) => {
   try {

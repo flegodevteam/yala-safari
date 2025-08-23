@@ -1,5 +1,5 @@
-const TaxiBooking = require("../models/TaxiBooking");
-const asyncHandler = require("express-async-handler");
+import TaxiBooking from "../models/TaxiBooking.js";
+import asyncHandler from "express-async-handler";
 
 export const createBooking = asyncHandler(async (req, res) => {
   try {

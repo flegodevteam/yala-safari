@@ -1,5 +1,5 @@
-const Package = require('../models/Package');
-const asyncHandler = require("express-async-handler");
+import Package from '../models/Package.js';
+import asyncHandler from "express-async-handler";
 
 // Get current package/pricing
 export const getPackage = asyncHandler(async (req, res) => {

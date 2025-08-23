@@ -16,4 +16,4 @@ const sharedDates = [
 
 const Date = { privateDates, sharedDates };
 
-module.exports = Date;
+export default Date;

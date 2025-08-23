@@ -1,4 +1,5 @@
-const { privateDates, sharedDates } = require("../models/Date");
+import Date from "../models/Date.js";
+const { privateDates, sharedDates } = Date;
 
 export const getAvailability = (req, res) => {
   const { type, park } = req.query;
