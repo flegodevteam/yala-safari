@@ -1,6 +1,7 @@
-const express = require("express");
+import express from "express";
+import AvailableDate from "../models/AvailableDate.js";
+
 const router = express.Router();
-const AvailableDate = require("../models/AvailableDate");
 
 // Get all available dates
 router.get("/", async (req, res) => {
@@ -16,4 +17,4 @@ router.post("/", async (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = router;
+export default router;

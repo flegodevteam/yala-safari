@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
 
 // Create transporter
 const transporter = nodemailer.createTransport({
@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Function to send notification to admin
-exports.sendAdminNotification = async (contactData) => {
+export const sendAdminNotification = async (contactData) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: process.env.ADMIN_EMAIL,
@@ -39,7 +39,7 @@ exports.sendAdminNotification = async (contactData) => {
 };
 
 // Function to send thank you email to user
-exports.sendThankYouEmail = async (contactData) => {
+export const sendThankYouEmail = async (contactData) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: contactData.email,

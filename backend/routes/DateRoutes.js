@@ -1,7 +1,8 @@
-const express = require("express");
+import express from "express";
+import { getAvailability } from "../Controllers/DateController.js";
+
 const router = express.Router();
-const { getAvailability } = require("../Controllers/DateController");
 
 router.get("/availability", getAvailability);
 
-module.exports = router;
+export default router;

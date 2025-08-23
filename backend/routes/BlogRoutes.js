@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import Blog from '../models/Blog.js';
+import multer from 'multer';
+
 const router = express.Router();
-const Blog = require('../models/Blog');
-const multer = require('multer');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -54,4 +55,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

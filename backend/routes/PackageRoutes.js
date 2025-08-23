@@ -1,8 +1,9 @@
-const express = require("express");
-const Package = require("../models/Package");
+import express from "express";
+
+import Package from "../models/Package.js";
 const router = express.Router();
-const auth = require("../middleware/auth");
-const admin = require("../middleware/admin");
+import auth from "../middleware/auth.js";
+import admin from "../middleware/admin.js";
 
 // Health check endpoint
 router.get("/health", (req, res) => {
@@ -71,4 +72,4 @@ router.get("/history", [auth, admin], async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

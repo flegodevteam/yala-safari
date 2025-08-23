@@ -1,7 +1,7 @@
-const express = require("express");
-const multer = require("multer");
-const path = require("path");
-const Image = require("../models/Image");
+import express from "express";
+import multer from "multer";
+import path from "path";
+import Image from "../models/Image.js";
 
 const router = express.Router();
 
@@ -67,4 +67,4 @@ router.patch("/:id/featured", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

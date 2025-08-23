@@ -1,8 +1,9 @@
-const express = require("express");
+import express from "express";
+import taxiBookingController from "../controllers/taxiBookingController.js";
+
 const router = express.Router();
-const taxiBookingController = require("../controllers/taxiBookingController");
 
 router.post("/", taxiBookingController.createBooking);
 router.get("/", taxiBookingController.getBookings);
 
-module.exports = router;
+export default router;

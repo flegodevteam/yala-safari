@@ -1,6 +1,7 @@
-const express = require('express');
-const Contact = require('../models/Contact');
-const { sendAdminNotification, sendThankYouEmail } = require('../utils/emailService');
+import express from 'express';
+import Contact from '../models/Contact.js';
+import { sendAdminNotification, sendThankYouEmail } from '../utils/emailService.js';
+
 const router = express.Router();
 
 // Handle contact form submission
@@ -47,4 +48,4 @@ router.post('/', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

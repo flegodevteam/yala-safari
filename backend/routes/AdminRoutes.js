@@ -1,8 +1,9 @@
-const express = require("express");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const Admin = require("../models/Admin"); // Import the Admin model
-const Package = require("../models/Package"); // Import Package model for pricing management
+import express from "express";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import Admin from "../models/Admin.js"; // Import the Admin model
+import Package from "../models/Package.js"; // Import Package model for pricing management
+
 const router = express.Router();
 
 // Admin login route
@@ -94,4 +95,4 @@ router.put("/packages", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
