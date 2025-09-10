@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const packageSchema = new mongoose.Schema({
   jeep: {
@@ -67,4 +67,6 @@ packageSchema.statics.initialize = async function() {
   }
 };
 
-module.exports = mongoose.model('Package', packageSchema);
+const Package = mongoose.model('Package', packageSchema);
+
+export default Package;

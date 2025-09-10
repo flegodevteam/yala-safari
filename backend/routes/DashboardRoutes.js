@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import Booking from '../models/Booking.js';
+import DashboardStat from '../models/DashboardStat.js';
+
 const router = express.Router();
-const Booking = require('../models/Booking');
-const DashboardStat = require('../models/DashboardStat');
 
 // GET /api/dashboard/overview
 router.get('/overview', async (req, res) => {
@@ -49,4 +50,4 @@ router.get('/overview', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
