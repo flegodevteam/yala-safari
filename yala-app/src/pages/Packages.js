@@ -91,13 +91,22 @@ const Packages = () => {
   const [privateAvailableDates, setPrivateAvailableDates] = useState([]);
   useEffect(() => {
     if (reservationType === "private") {
-      // Example: Replace with your real API endpoint for private safari availability
-      fetch(`${apiEndpoints.packages.availability("private", park)}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setPrivateAvailableDates(data.dates || []);
-        })
-        .catch(() => setPrivateAvailableDates([]));
+      const fetchAvailability = async () => {
+        try {
+          const response = await authenticatedFetch(
+            apiEndpoints.packages.availability("private", park)
+          );
+          if (response.ok) {
+            const data = await response.json();
+            setPrivateAvailableDates(data.dates || []);
+          }
+        } catch (error) {
+          console.error("Error fetching availability:", error);
+          setPrivateAvailableDates([]);
+        }
+      };
+
+      fetchAvailability();
     }
   }, [reservationType, park]);
 

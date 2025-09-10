@@ -5,7 +5,7 @@ import startOfWeek from "date-fns/startOfWeek";
 import getDay from "date-fns/getDay";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useState } from "react";
-import { apiEndpoints } from "../config/api";
+import { apiEndpoints, authenticatedFetch } from "../config/api";
 
 const locales = {
   "en-US": require("date-fns/locale/en-US"),
@@ -66,11 +66,14 @@ const AvailabilityCalendar = () => {
   const handleAddEvent = async () => {
     if (newEvent.available) {
       const dateStr = format(newEvent.start, "yyyy-MM-dd");
-      await fetch(apiEndpoints.availableDates, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: dateStr }),
-      });
+      try {
+        await authenticatedFetch(apiEndpoints.availableDates, {
+          method: "POST",
+          body: JSON.stringify({ date: dateStr }),
+        });
+      } catch (error) {
+        console.error("Error adding available date:", error);
+      }
     }
   };
 

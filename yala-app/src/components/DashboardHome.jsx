@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { apiEndpoints } from "../config/api";
+import { apiEndpoints, authenticatedFetch } from "../config/api";
 
 const DashboardHome = () => {
   const [stats, setStats] = useState([]);
@@ -8,50 +7,63 @@ const DashboardHome = () => {
   const [recentBookings, setRecentBookings] = useState([]);
 
   useEffect(() => {
-    setLoading(true);
-    axios.get(apiEndpoints.dashboard.overview).then((res) => {
-      const s = [
-        {
-          name: "Total Bookings",
-          value: res.data.stats.totalBookings,
-          change: "+12%",
-          changeType: "positive",
-        },
-        {
-          name: "Revenue",
-          value: `$${res.data.stats.revenue}`,
-          change: "+8.2%",
-          changeType: "positive",
-        },
-        {
-          name: "Pending Bookings",
-          value: res.data.stats.pendingBookings,
-          change: "-2.5%",
-          changeType: "negative",
-        },
-        {
-          name: "Website Visitors",
-          value: res.data.stats.websiteVisitors,
-          change: "+24%",
-          changeType: "positive",
-        },
-        {
-          name: "Local Visitors",
-          value: res.data.stats.localVisitors,
-          change: "+24%",
-          changeType: "positive",
-        },
-        {
-          name: "Foreign Visitors",
-          value: res.data.stats.foreignVisitors,
-          change: "+24%",
-          changeType: "positive",
-        },
-      ];
-      setStats(s);
-      setRecentBookings(res.data.recentBookings);
-      setLoading(false);
-    });
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        const response = await authenticatedFetch(
+          apiEndpoints.dashboard.overview
+        );
+        if (response.ok) {
+          const res = await response.json();
+          const s = [
+            {
+              name: "Total Bookings",
+              value: res.stats.totalBookings,
+              change: "+12%",
+              changeType: "positive",
+            },
+            {
+              name: "Revenue",
+              value: `$${res.stats.revenue}`,
+              change: "+8.2%",
+              changeType: "positive",
+            },
+            {
+              name: "Pending Bookings",
+              value: res.stats.pendingBookings,
+              change: "-2.5%",
+              changeType: "negative",
+            },
+            {
+              name: "Website Visitors",
+              value: res.stats.websiteVisitors,
+              change: "+24%",
+              changeType: "positive",
+            },
+            {
+              name: "Local Visitors",
+              value: res.stats.localVisitors,
+              change: "+24%",
+              changeType: "positive",
+            },
+            {
+              name: "Foreign Visitors",
+              value: res.stats.foreignVisitors,
+              change: "+24%",
+              changeType: "positive",
+            },
+          ];
+          setStats(s);
+          setRecentBookings(res.recentBookings);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
   return (
