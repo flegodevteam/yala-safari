@@ -14,6 +14,7 @@ import Rooms from "./pages/Rooms";
 import RoomDetails from "./components/RoomDetails";
 import TaxiService from "./components/TaxiService";
 import BlogContentManager from "./components/BlogContentManager";
+import AuthGuard from "./components/AuthGuard";
 
 const initialBlogPosts = [
   {
@@ -57,31 +58,90 @@ function App() {
         <Navbar />
         <main className="flex-grow">
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/packages" element={<Packages />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/blog" element={<Blog blogPosts={blogPosts} />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/booking" element={<Booking />} />
+            <Route path="/admin" element={<AdminLogin />} />
+            <Route
+              path="/"
+              element={
+                <AuthGuard>
+                  <Home />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/packages"
+              element={
+                <AuthGuard>
+                  <Packages />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/about"
+              element={
+                <AuthGuard>
+                  <About />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/blog"
+              element={
+                <AuthGuard>
+                  <Blog blogPosts={blogPosts} />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/contact"
+              element={
+                <AuthGuard>
+                  <Contact />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/booking"
+              element={
+                <AuthGuard>
+                  <Booking />
+                </AuthGuard>
+              }
+            />
             <Route
               path="/dashboard"
               element={
-                <Dashboard blogPosts={blogPosts} setBlogPosts={setBlogPosts} />
+                <AuthGuard>
+                  <Dashboard
+                    blogPosts={blogPosts}
+                    setBlogPosts={setBlogPosts}
+                  />
+                </AuthGuard>
               }
-            />{" "}
-            <Route path="/admin" element={<AdminLogin />} />
-            {/* <Route
-              path="/admin/blog-manager"
+            />
+            <Route
+              path="/rooms"
               element={
-                <BlogContentManager
-                  blogPosts={blogPosts}
-                  setBlogPosts={setBlogPosts}
-                />
+                <AuthGuard>
+                  <Rooms />
+                </AuthGuard>
               }
-            /> */}
-            <Route path="/rooms" element={<Rooms />} />
-            <Route path="/room/:roomType" element={<RoomDetails />} />
-            <Route path="/taxi-service" element={<TaxiService />} />
+            />
+            <Route
+              path="/room/:roomType"
+              element={
+                <AuthGuard>
+                  <RoomDetails />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/taxi-service"
+              element={
+                <AuthGuard>
+                  <TaxiService />
+                </AuthGuard>
+              }
+            />
           </Routes>
         </main>
         <Footer />

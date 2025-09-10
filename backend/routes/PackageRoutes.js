@@ -11,8 +11,8 @@ router.get("/health", (req, res) => {
   res.json({ status: "OK", message: "Package routes working" });
 });
 
-// Get current pricing
-router.get("/current", async (req, res) => {
+// Get current pricing (requires authentication)
+router.get("/current", auth, async (req, res) => {
   try {
     console.log("PackageRoutes: GET /current called");
     const packages = await Package.findOne().sort({ createdAt: -1 });

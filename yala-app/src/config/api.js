@@ -4,6 +4,12 @@ export const API_BASE_URL =
 
 // API endpoint builders
 export const apiEndpoints = {
+  // Admin endpoints
+  admin: {
+    login: `${API_BASE_URL}/api/admin/login`,
+    packages: `${API_BASE_URL}/api/admin/packages`,
+  },
+
   // Package endpoints
   packages: {
     current: `${API_BASE_URL}/api/packages/current`,
@@ -39,6 +45,45 @@ export const apiEndpoints = {
 
   // Available dates endpoints
   availableDates: `${API_BASE_URL}/api/available-dates`,
+};
+
+// Helper function to get auth token from localStorage
+export const getAuthToken = () => {
+  return localStorage.getItem("adminToken");
+};
+
+// Helper function to create headers with auth token
+export const getAuthHeaders = () => {
+  const token = getAuthToken();
+  return {
+    "Content-Type": "application/json",
+    ...(token && { "x-auth-token": token }),
+  };
+};
+
+// Helper function for authenticated API requests
+export const authenticatedFetch = async (url, options = {}) => {
+  const token = getAuthToken();
+
+  const config = {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+      ...(token && { "x-auth-token": token }),
+    },
+  };
+
+  const response = await fetch(url, config);
+
+  // If unauthorized, redirect to login
+  if (response.status === 401) {
+    localStorage.removeItem("adminToken");
+    window.location.href = "/admin-login";
+    throw new Error("Authentication required");
+  }
+
+  return response;
 };
 
 export default API_BASE_URL;
