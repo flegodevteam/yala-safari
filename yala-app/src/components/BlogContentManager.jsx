@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { apiEndpoints } from "../config/api";
 
 const categories = [
   "Travel Tips",
@@ -24,7 +25,7 @@ export default function BlogContentManager() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/blogs")
+      .get(apiEndpoints.blogs.base)
       .then((res) => setBlogPosts(res.data))
       .catch((err) => console.error(err));
   }, []);
@@ -36,7 +37,7 @@ export default function BlogContentManager() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/blogs", form);
+      const res = await axios.post(apiEndpoints.blogs.base, form);
       setBlogPosts([res.data, ...blogPosts]);
       setForm({
         title: "",
@@ -61,7 +62,7 @@ export default function BlogContentManager() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/blogs/${id}`);
+      await axios.delete(apiEndpoints.blogs.byId(id));
       setBlogPosts(
         blogPosts.filter((post) => post.id !== id && post._id !== id)
       );

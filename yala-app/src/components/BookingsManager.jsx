@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { apiEndpoints, API_BASE_URL } from "../config/api";
 import {
   FiCalendar,
   FiEdit,
@@ -65,9 +66,6 @@ const BookingsManager = () => {
       color: "bg-blue-100 text-blue-800",
     },
   ];
-
-  // API Base URL
-  const API_BASE_URL = "http://localhost:5000/api";
 
   // Fetch all bookings
   const fetchBookings = async () => {
