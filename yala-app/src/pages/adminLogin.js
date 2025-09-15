@@ -31,10 +31,14 @@ const AdminLogin = () => {
 
       if (response.ok && data.token) {
         // Store the JWT token
+        console.log(
+          "Login successful, storing token and navigating to dashboard"
+        );
         localStorage.setItem("adminToken", data.token);
         toast.success("Login successful!");
         navigate("/dashboard");
       } else {
+        console.log("Login failed:", data.message);
         setErrorMsg(data.message || "Invalid email or password");
       }
     } catch (error) {

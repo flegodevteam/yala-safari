@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FiHome,
   FiPackage,
@@ -22,8 +23,14 @@ import SettingsPanel from "../components/SettingsPanel";
 import ReportsDashboard from "../components/ReportsDashboard";
 
 const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
+
+  const handleLogout = () => {
+    localStorage.removeItem("adminToken");
+    navigate("/");
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -114,7 +121,10 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4">
-          <button className="flex items-center p-2 rounded-lg hover:bg-indigo-700">
+          <button
+            onClick={handleLogout}
+            className="flex items-center p-2 rounded-lg hover:bg-indigo-700 w-full"
+          >
             <FiLogOut className="text-lg" />
             {sidebarOpen && <span className="ml-3">Logout</span>}
           </button>
