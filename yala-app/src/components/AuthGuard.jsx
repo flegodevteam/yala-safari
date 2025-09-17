@@ -11,9 +11,14 @@ const AuthGuard = ({ children }) => {
   useEffect(() => {
     const checkAuthentication = () => {
       const token = getAuthToken();
+      console.log(
+        "AuthGuard: Checking token:",
+        token ? "Token exists" : "No token"
+      );
 
       if (!token) {
         // No token found, redirect to admin login
+        console.log("AuthGuard: No token, redirecting to /admin");
         navigate("/admin", {
           state: { from: location.pathname },
         });
@@ -22,6 +27,7 @@ const AuthGuard = ({ children }) => {
 
       // Token exists, assume user is authenticated
       // In a production app, you might want to validate the token with the backend
+      console.log("AuthGuard: Token found, user authenticated");
       setIsAuthenticated(true);
       setIsLoading(false);
     };
