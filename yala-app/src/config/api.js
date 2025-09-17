@@ -68,7 +68,10 @@ export const authenticatedFetch = async (url, options = {}) => {
   const config = {
     ...options,
     headers: {
-      "Content-Type": "application/json",
+      // Only set Content-Type if it's not FormData
+      ...(!(options.body instanceof FormData) && {
+        "Content-Type": "application/json",
+      }),
       ...options.headers,
       ...(token && { "x-auth-token": token }),
     },
@@ -79,7 +82,7 @@ export const authenticatedFetch = async (url, options = {}) => {
   // If unauthorized, redirect to login
   if (response.status === 401) {
     localStorage.removeItem("adminToken");
-    window.location.href = "/admin-login";
+    window.location.href = "/admin";
     throw new Error("Authentication required");
   }
 

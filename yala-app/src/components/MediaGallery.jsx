@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FiImage, FiBookmark, FiTrash2 } from "react-icons/fi";
 import { format } from "date-fns";
-import { apiEndpoints } from "../config/api";
+import { apiEndpoints, authenticatedFetch } from "../config/api";
 
 const MediaGallery = () => {
   const [images, setImages] = useState([
@@ -45,10 +45,19 @@ const MediaGallery = () => {
   };
 
   useEffect(() => {
-    fetch(apiEndpoints.images.base)
-      .then((res) => res.json())
-      .then((data) => setImages(data))
-      .catch((err) => alert("Failed to fetch images"));
+    const fetchImages = async () => {
+      try {
+        const response = await authenticatedFetch(apiEndpoints.images.base);
+        if (response.ok) {
+          const data = await response.json();
+          setImages(data);
+        }
+      } catch (err) {
+        alert("Failed to fetch images");
+      }
+    };
+
+    fetchImages();
   }, []);
 
   const handleUpload = async (e) => {
@@ -70,7 +79,7 @@ const MediaGallery = () => {
     };
 
     try {
-      const response = await fetch(apiEndpoints.images.base, {
+      const response = await authenticatedFetch(apiEndpoints.images.base, {
         method: "POST",
         body: formData,
       });
@@ -91,9 +100,12 @@ const MediaGallery = () => {
   const toggleFeatured = async (id) => {
     if (!id) return;
     try {
-      const response = await fetch(apiEndpoints.images.featured(id), {
-        method: "PATCH",
-      });
+      const response = await authenticatedFetch(
+        apiEndpoints.images.featured(id),
+        {
+          method: "PATCH",
+        }
+      );
       if (response.ok) {
         const updated = await response.json();
         setImages(
@@ -115,7 +127,7 @@ const MediaGallery = () => {
 
   const deleteImage = async (id) => {
     try {
-      const response = await fetch(apiEndpoints.images.byId(id), {
+      const response = await authenticatedFetch(apiEndpoints.images.byId(id), {
         method: "DELETE",
       });
       if (response.ok) {
