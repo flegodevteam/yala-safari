@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { apiEndpoints } from "../config/api";
 import {
   FaFacebook,
   FaInstagram,
@@ -25,7 +26,7 @@ export default function Contact() {
 
     console.log("Submitting form data:", formData);
 
-    fetch("http://localhost:5000/api/contact", {
+    fetch(apiEndpoints.contact, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),

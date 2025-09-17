@@ -9,6 +9,7 @@ import Calendar from "react-calendar";
 import PaymentPage from "./Booking";
 import Modal from "react-modal";
 import lunugamweheraImage from "../assets/lunu.jpg";
+import { apiEndpoints } from "../config/api";
 
 const breakfastMenuItemsVeg = [
   { name: "Fresh tropical fruits", price: 2 },
@@ -91,7 +92,7 @@ const Packages = () => {
   useEffect(() => {
     if (reservationType === "private") {
       // Example: Replace with your real API endpoint for private safari availability
-      fetch(`http://localhost:5000/api/availability?type=private&park=${park}`)
+      fetch(`${apiEndpoints.packages.availability("private", park)}`)
         .then((res) => res.json())
         .then((data) => {
           setPrivateAvailableDates(data.dates || []);
@@ -165,7 +166,7 @@ const Packages = () => {
   const fetchPricing = () => {
     console.log("Fetching pricing from API...");
 
-    fetch("http://localhost:5000/api/packages/current")
+    fetch(apiEndpoints.packages.current)
       .then((res) => {
         console.log("API response status:", res.status);
         if (!res.ok) {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { apiEndpoints } from "../config/api";
 
 const PackageManager = () => {
   const [loading, setLoading] = useState(true);
@@ -42,9 +43,7 @@ const PackageManager = () => {
       console.log("PackageManager: Fetching pricing...");
 
       // First try to fetch from API
-      const response = await fetch(
-        "http://localhost:5000/api/packages/current"
-      );
+      const response = await fetch(apiEndpoints.packages.current);
       console.log("PackageManager: Response status:", response.status);
 
       if (response.ok) {
@@ -105,16 +104,13 @@ const PackageManager = () => {
 
       // Try to save to API
       try {
-        const response = await fetch(
-          "http://localhost:5000/api/admin/packages",
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(pricing),
-          }
-        );
+        const response = await fetch(apiEndpoints.packages.admin, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(pricing),
+        });
 
         console.log("PackageManager: Save response status:", response.status);
 

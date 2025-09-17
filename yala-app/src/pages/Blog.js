@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { apiEndpoints } from "../config/api";
 
 export default function Blog() {
   const [blogPosts, setBlogPosts] = useState([]);
@@ -8,7 +9,7 @@ export default function Blog() {
   const fetchBlogs = () => {
     console.log("Fetching blogs from API...");
     axios
-      .get("http://localhost:5000/api/blogs")
+      .get(apiEndpoints.blogs.base)
       .then((res) => {
         console.log("Received blog data:", res.data);
         setBlogPosts(res.data);
