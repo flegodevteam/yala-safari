@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FiHome,
@@ -11,6 +11,8 @@ import {
   FiBarChart2,
   FiImage,
   FiLogOut,
+  FiMenu,
+  FiX,
 } from "react-icons/fi";
 import DashboardHome from "../components/DashboardHome";
 import PackagesManager from "../components/PackageManager";
@@ -24,33 +26,83 @@ import ReportsDashboard from "../components/ReportsDashboard";
 
 const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Default closed on mobile
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if device is mobile/tablet
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 1024); // lg breakpoint
+      if (window.innerWidth < 1024) {
+        setSidebarOpen(false); // Close sidebar on mobile by default
+      } else {
+        setSidebarOpen(true); // Keep sidebar open on desktop
+      }
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     navigate("/");
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    // Close sidebar on mobile when navigating
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 relative">
+      {/* Mobile Overlay */}
+      {isMobile && sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <div
         className={`${
-          sidebarOpen ? "w-64" : "w-20"
-        } bg-indigo-800 text-white transition-all duration-300`}
+          sidebarOpen 
+            ? isMobile 
+              ? "w-64 translate-x-0" 
+              : "w-64" 
+            : isMobile 
+              ? "w-64 -translate-x-full" 
+              : "w-20"
+        } bg-indigo-800 text-white transition-all duration-300 fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto`}
       >
         <div className="p-4 flex items-center justify-between">
-          {sidebarOpen ? (
-            <h1 className="text-xl font-bold">Yala Safari Admin</h1>
+          {(sidebarOpen || !isMobile) ? (
+            <h1 className={`text-xl font-bold ${!sidebarOpen && !isMobile ? 'hidden' : ''}`}>
+              Yala Safari Admin
+            </h1>
           ) : (
             <h1 className="text-xl font-bold">YS</h1>
           )}
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1 rounded-lg hover:bg-indigo-700"
+            onClick={toggleSidebar}
+            className="p-1 rounded-lg hover:bg-indigo-700 lg:block"
           >
-            {sidebarOpen ? "«" : "»"}
+            {isMobile ? (
+              sidebarOpen ? <FiX className="text-xl" /> : <FiMenu className="text-xl" />
+            ) : (
+              sidebarOpen ? "«" : "»"
+            )}
           </button>
         </div>
 
@@ -59,64 +111,73 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
             icon={<FiHome />}
             text="Dashboard"
             active={activeTab === "dashboard"}
-            onClick={() => setActiveTab("dashboard")}
+            onClick={() => handleTabChange("dashboard")}
             sidebarOpen={sidebarOpen}
+            isMobile={isMobile}
           />
           <NavItem
             icon={<FiPackage />}
             text="Packages"
             active={activeTab === "packages"}
-            onClick={() => setActiveTab("packages")}
+            onClick={() => handleTabChange("packages")}
             sidebarOpen={sidebarOpen}
+            isMobile={isMobile}
           />
           <NavItem
             icon={<FiCalendar />}
             text="Availability"
             active={activeTab === "availability"}
-            onClick={() => setActiveTab("availability")}
+            onClick={() => handleTabChange("availability")}
             sidebarOpen={sidebarOpen}
+            isMobile={isMobile}
           />
           <NavItem
             icon={<FiBookmark />}
             text="Bookings"
             active={activeTab === "bookings"}
-            onClick={() => setActiveTab("bookings")}
+            onClick={() => handleTabChange("bookings")}
             sidebarOpen={sidebarOpen}
+            isMobile={isMobile}
           />
           <NavItem
             icon={<FiFileText />}
             text="Blog Content"
             active={activeTab === "blog"}
-            onClick={() => setActiveTab("blog")}
+            onClick={() => handleTabChange("blog")}
             sidebarOpen={sidebarOpen}
+            isMobile={isMobile}
           />
           <NavItem
             icon={<FiImage />}
             text="Media Gallery"
             active={activeTab === "media"}
-            onClick={() => setActiveTab("media")}
+            onClick={() => handleTabChange("media")}
             sidebarOpen={sidebarOpen}
+            isMobile={isMobile}
           />
           <NavItem
             icon={<FiUsers />}
             text="Users"
             active={activeTab === "users"}
-            onClick={() => setActiveTab("users")}
+            onClick={() => handleTabChange("users")}
             sidebarOpen={sidebarOpen}
+            isMobile={isMobile}
           />
           <NavItem
             icon={<FiBarChart2 />}
             text="Reports"
             active={activeTab === "reports"}
-            onClick={() => setActiveTab("reports")}
+            onClick={() => handleTabChange("reports")}
             sidebarOpen={sidebarOpen}
+            isMobile={isMobile}
           />
           <NavItem
             icon={<FiSettings />}
             text="Settings"
             active={activeTab === "settings"}
-            onClick={() => setActiveTab("settings")}
+            onClick={() => handleTabChange("settings")}
             sidebarOpen={sidebarOpen}
+            isMobile={isMobile}
           />
         </nav>
 
@@ -126,23 +187,34 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
             className="flex items-center p-2 rounded-lg hover:bg-indigo-700 w-full"
           >
             <FiLogOut className="text-lg" />
-            {sidebarOpen && <span className="ml-3">Logout</span>}
+            {(sidebarOpen || !isMobile) && <span className="ml-3">Logout</span>}
           </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <div className={`flex-1 overflow-auto ${isMobile ? 'w-full' : ''}`}>
+        {/* Header */}
         <header className="bg-white shadow-sm p-4 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-800 capitalize">
-            {activeTab.replace("-", " ")}
-          </h2>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
+          <div className="flex items-center">
+            {isMobile && (
+              <button
+                onClick={toggleSidebar}
+                className="mr-3 p-2 rounded-lg hover:bg-gray-100 lg:hidden"
+              >
+                <FiMenu className="text-xl text-gray-600" />
+              </button>
+            )}
+            <h2 className="text-lg lg:text-xl font-semibold text-gray-800 capitalize">
+              {activeTab.replace("-", " ")}
+            </h2>
+          </div>
+          <div className="flex items-center space-x-2 lg:space-x-4">
+            <div className="relative hidden sm:block">
               <input
                 type="text"
                 placeholder="Search..."
-                className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto"
               />
               <svg
                 className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
@@ -159,13 +231,13 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
                 />
               </svg>
             </div>
-            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-800 font-semibold">
+            <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-800 font-semibold text-sm lg:text-base">
               AD
             </div>
           </div>
         </header>
 
-        <main className="p-6">
+        <main className="p-3 lg:p-6 min-h-0 overflow-auto">
           {activeTab === "dashboard" && <DashboardHome />}
           {activeTab === "packages" && <PackagesManager />}
           {activeTab === "availability" && <AvailabilityCalendar />}
@@ -175,7 +247,7 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
               blogPosts={blogPosts}
               setBlogPosts={setBlogPosts}
             />
-          )}{" "}
+          )}
           {activeTab === "media" && <MediaGallery />}
           {activeTab === "users" && <UserManager />}
           {activeTab === "reports" && <ReportsDashboard />}
@@ -186,16 +258,20 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
   );
 };
 
-const NavItem = ({ icon, text, active, onClick, sidebarOpen }) => {
+const NavItem = ({ icon, text, active, onClick, sidebarOpen, isMobile }) => {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center w-full p-3 ${
-        active ? "bg-indigo-700" : "hover:bg-indigo-700"
+      className={`flex items-center w-full p-3 text-left transition-colors duration-200 ${
+        active 
+          ? "bg-indigo-700 text-white" 
+          : "text-indigo-100 hover:bg-indigo-700 hover:text-white"
       }`}
     >
-      <span className="text-lg">{icon}</span>
-      {sidebarOpen && <span className="ml-3">{text}</span>}
+      <span className="text-lg flex-shrink-0">{icon}</span>
+      {(sidebarOpen || !isMobile) && (
+        <span className="ml-3 text-sm lg:text-base font-medium">{text}</span>
+      )}
     </button>
   );
 };
