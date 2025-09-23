@@ -14,6 +14,7 @@ import Rooms from "./pages/Rooms";
 import RoomDetails from "./components/RoomDetails";
 import TaxiService from "./components/TaxiService";
 import BlogContentManager from "./components/BlogContentManager";
+import AuthGuard from "./components/AuthGuard";
 
 const initialBlogPosts = [
   {
@@ -57,6 +58,7 @@ function App() {
         <Navbar />
         <main className="flex-grow">
           <Routes>
+            <Route path="/admin" element={<AdminLogin />} />
             <Route path="/" element={<Home />} />
             <Route path="/packages" element={<Packages />} />
             <Route path="/about" element={<About />} />
@@ -66,19 +68,14 @@ function App() {
             <Route
               path="/dashboard"
               element={
-                <Dashboard blogPosts={blogPosts} setBlogPosts={setBlogPosts} />
+                <AuthGuard>
+                  <Dashboard
+                    blogPosts={blogPosts}
+                    setBlogPosts={setBlogPosts}
+                  />
+                </AuthGuard>
               }
-            />{" "}
-            <Route path="/admin" element={<AdminLogin />} />
-            {/* <Route
-              path="/admin/blog-manager"
-              element={
-                <BlogContentManager
-                  blogPosts={blogPosts}
-                  setBlogPosts={setBlogPosts}
-                />
-              }
-            /> */}
+            />
             <Route path="/rooms" element={<Rooms />} />
             <Route path="/room/:roomType" element={<RoomDetails />} />
             <Route path="/taxi-service" element={<TaxiService />} />

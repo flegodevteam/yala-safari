@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { apiEndpoints } from "../config/api";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -8,29 +10,43 @@ const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const allowedAdmins = [
-    { email: "admin@yala.com", password: "12345" },
-    // Add more admin emails as needed
-  ];
-
   const handleLogin = async (event) => {
     event.preventDefault();
     setIsLoading(true);
     setErrorMsg("");
 
-    const foundAdmin = allowedAdmins.find(
-      (admin) =>
-        admin.email === email.trim().toLowerCase() &&
-        admin.password === password
-    );
-    setTimeout(() => {
-      setIsLoading(false);
-      if (foundAdmin) {
+    try {
+      const response = await fetch(apiEndpoints.admin.login, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        // Store the JWT token
+        console.log(
+          "Login successful, storing token and navigating to dashboard"
+        );
+        localStorage.setItem("adminToken", data.token);
+        toast.success("Login successful!");
         navigate("/dashboard");
       } else {
-        setErrorMsg("Invalid email or password");
+        console.log("Login failed:", data.message);
+        setErrorMsg(data.message || "Invalid email or password");
       }
-    }, 800);
+    } catch (error) {
+      console.error("Login error:", error);
+      setErrorMsg("Network error. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { apiEndpoints, authenticatedFetch } from "../config/api";
 
 const categories = [
   "Travel Tips",
@@ -23,10 +23,19 @@ export default function BlogContentManager() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/blogs")
-      .then((res) => setBlogPosts(res.data))
-      .catch((err) => console.error(err));
+    const fetchBlogs = async () => {
+      try {
+        const response = await authenticatedFetch(apiEndpoints.blogs.base);
+        if (response.ok) {
+          const data = await response.json();
+          setBlogPosts(data);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchBlogs();
   }, []);
 
   const handleChange = (e) => {
@@ -36,24 +45,29 @@ export default function BlogContentManager() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/blogs", form);
-      setBlogPosts([res.data, ...blogPosts]);
-      setForm({
-        title: "",
-        excerpt: "",
-        date: "",
-        category: categories[0],
-        image: "",
-        readTime: "",
+      const response = await authenticatedFetch(apiEndpoints.blogs.base, {
+        method: "POST",
+        body: JSON.stringify(form),
       });
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 2000);
 
-      // Trigger events to notify other components about blog updates
-      window.dispatchEvent(
-        new CustomEvent("blogUpdated", { detail: res.data })
-      );
-      localStorage.setItem("lastBlogUpdate", Date.now().toString());
+      if (response.ok) {
+        const data = await response.json();
+        setBlogPosts([data, ...blogPosts]);
+        setForm({
+          title: "",
+          excerpt: "",
+          date: "",
+          category: categories[0],
+          image: "",
+          readTime: "",
+        });
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 2000);
+
+        // Trigger events to notify other components about blog updates
+        window.dispatchEvent(new CustomEvent("blogUpdated", { detail: data }));
+        localStorage.setItem("lastBlogUpdate", Date.now().toString());
+      }
     } catch (error) {
       console.error("Error creating blog:", error);
     }
@@ -61,16 +75,21 @@ export default function BlogContentManager() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/blogs/${id}`);
-      setBlogPosts(
-        blogPosts.filter((post) => post.id !== id && post._id !== id)
-      );
+      const response = await authenticatedFetch(apiEndpoints.blogs.byId(id), {
+        method: "DELETE",
+      });
 
-      // Trigger events to notify other components about blog deletion
-      window.dispatchEvent(
-        new CustomEvent("blogUpdated", { detail: { deleted: id } })
-      );
-      localStorage.setItem("lastBlogUpdate", Date.now().toString());
+      if (response.ok) {
+        setBlogPosts(
+          blogPosts.filter((post) => post.id !== id && post._id !== id)
+        );
+
+        // Trigger events to notify other components about blog deletion
+        window.dispatchEvent(
+          new CustomEvent("blogUpdated", { detail: { deleted: id } })
+        );
+        localStorage.setItem("lastBlogUpdate", Date.now().toString());
+      }
     } catch (error) {
       console.error("Error deleting blog:", error);
     }

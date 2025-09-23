@@ -9,6 +9,7 @@ import Calendar from "react-calendar";
 import PaymentPage from "./Booking";
 import Modal from "react-modal";
 import lunugamweheraImage from "../assets/lunu.jpg";
+import { apiEndpoints, authenticatedFetch } from "../config/api";
 
 const breakfastMenuItemsVeg = [
   { name: "Fresh tropical fruits", price: 2 },
@@ -90,13 +91,22 @@ const Packages = () => {
   const [privateAvailableDates, setPrivateAvailableDates] = useState([]);
   useEffect(() => {
     if (reservationType === "private") {
-      // Example: Replace with your real API endpoint for private safari availability
-      fetch(`http://localhost:5000/api/availability?type=private&park=${park}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setPrivateAvailableDates(data.dates || []);
-        })
-        .catch(() => setPrivateAvailableDates([]));
+      const fetchAvailability = async () => {
+        try {
+          const response = await authenticatedFetch(
+            apiEndpoints.packages.availability("private", park)
+          );
+          if (response.ok) {
+            const data = await response.json();
+            setPrivateAvailableDates(data.dates || []);
+          }
+        } catch (error) {
+          console.error("Error fetching availability:", error);
+          setPrivateAvailableDates([]);
+        }
+      };
+
+      fetchAvailability();
     }
   }, [reservationType, park]);
 
@@ -162,50 +172,49 @@ const Packages = () => {
   };
   const [pricing, setPricing] = useState(defaultpricing);
 
-  const fetchPricing = () => {
+  const fetchPricing = async () => {
     console.log("Fetching pricing from API...");
 
-    fetch("http://localhost:5000/api/packages/current")
-      .then((res) => {
-        console.log("API response status:", res.status);
-        if (!res.ok) {
-          throw new Error("API response not OK");
-        }
-        return res.json();
-      })
-      .then((data) => {
-        console.log("Received pricing data from API:", data);
-        if (data && data.jeep && data.shared && data.meals && data.guide) {
-          setPricing(data);
-          console.log("Pricing updated from API successfully");
-          // Save to localStorage as backup
-          localStorage.setItem("currentPricing", JSON.stringify(data));
-        } else {
-          console.log("Invalid pricing data structure from API");
-          throw new Error("Invalid data structure");
-        }
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching pricing from API:", error);
-        console.log("Trying localStorage fallback...");
+    try {
+      const res = await authenticatedFetch(apiEndpoints.packages.current);
+      console.log("API response status:", res.status);
 
-        // Fallback to localStorage
-        const savedPricing = localStorage.getItem("currentPricing");
-        if (savedPricing) {
-          try {
-            const data = JSON.parse(savedPricing);
-            console.log("Loaded pricing from localStorage:", data);
-            if (data && data.jeep && data.shared && data.meals && data.guide) {
-              setPricing(data);
-              console.log("Pricing updated from localStorage successfully");
-            }
-          } catch (parseError) {
-            console.error("Error parsing localStorage pricing:", parseError);
+      if (!res.ok) {
+        throw new Error("API response not OK");
+      }
+
+      const data = await res.json();
+      console.log("Received pricing data from API:", data);
+      if (data && data.jeep && data.shared && data.meals && data.guide) {
+        setPricing(data);
+        console.log("Pricing updated from API successfully");
+        // Save to localStorage as backup
+        localStorage.setItem("currentPricing", JSON.stringify(data));
+      } else {
+        console.log("Invalid pricing data structure from API");
+        throw new Error("Invalid data structure");
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching pricing from API:", error);
+      console.log("Trying localStorage fallback...");
+
+      // Fallback to localStorage
+      const savedPricing = localStorage.getItem("currentPricing");
+      if (savedPricing) {
+        try {
+          const data = JSON.parse(savedPricing);
+          console.log("Loaded pricing from localStorage:", data);
+          if (data && data.jeep && data.shared && data.meals && data.guide) {
+            setPricing(data);
+            console.log("Pricing updated from localStorage successfully");
           }
+        } catch (parseError) {
+          console.error("Error parsing localStorage pricing:", parseError);
         }
-        setLoading(false);
-      });
+      }
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

@@ -1,6 +1,7 @@
-const Booking = require("../models/Booking");
+import Booking from "../models/Booking.js";
+import asyncHandler from "express-async-handler";
 
-exports.createBooking = async (req, res) => {
+export const createBooking = asyncHandler(async (req, res) => {
   try {
     // Optionally, backend validation here
     if (req.body.paymentMethod === "online" && !req.body.onlineRef) {
@@ -31,4 +32,5 @@ exports.createBooking = async (req, res) => {
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }
-};
+});
+

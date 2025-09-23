@@ -1,21 +1,25 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { apiEndpoints, authenticatedFetch } from "../config/api";
 
 export default function Blog() {
   const [blogPosts, setBlogPosts] = useState([]);
 
-  const fetchBlogs = () => {
-    console.log("Fetching blogs from API...");
-    axios
-      .get("http://localhost:5000/api/blogs")
-      .then((res) => {
-        console.log("Received blog data:", res.data);
-        setBlogPosts(res.data);
-      })
-      .catch((err) => {
-        console.error("Error fetching blogs:", err);
-      });
+  const fetchBlogs = async () => {
+    try {
+      console.log("Fetching blogs from API...");
+      const response = await authenticatedFetch(apiEndpoints.blogs.base);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Received blog data:", data);
+        setBlogPosts(data);
+      } else {
+        console.error("Error fetching blogs:", response.status);
+      }
+    } catch (err) {
+      console.error("Error fetching blogs:", err);
+    }
   };
 
   useEffect(() => {
