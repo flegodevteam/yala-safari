@@ -39,7 +39,7 @@ const initialBlogPosts = [
   },
   {
     id: "3",
-    title: "A Photographer’s Guide to Yala National Park",
+    title: "A Photographer's Guide to Yala National Park",
     excerpt:
       "Capture the best moments of your safari with these photography tips and tricks...",
     date: "2024-05-20",
@@ -58,13 +58,21 @@ function App() {
         <Navbar />
         <main className="flex-grow">
           <Routes>
-            <Route path="/admin" element={<AdminLogin />} />
+            {/* Home route - exact match */}
             <Route path="/" element={<Home />} />
+            
+            {/* Public routes */}
             <Route path="/packages" element={<Packages />} />
             <Route path="/about" element={<About />} />
             <Route path="/blog" element={<Blog blogPosts={blogPosts} />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/booking" element={<Booking />} />
+            <Route path="/rooms" element={<Rooms />} />
+            <Route path="/room/:roomType" element={<RoomDetails />} />
+            <Route path="/taxi-service" element={<TaxiService />} />
+            
+            {/* Admin routes */}
+            <Route path="/admin" element={<AdminLogin />} />
             <Route
               path="/dashboard"
               element={
@@ -76,9 +84,6 @@ function App() {
                 </AuthGuard>
               }
             />
-            <Route path="/rooms" element={<Rooms />} />
-            <Route path="/room/:roomType" element={<RoomDetails />} />
-            <Route path="/taxi-service" element={<TaxiService />} />
           </Routes>
         </main>
         <Footer />
