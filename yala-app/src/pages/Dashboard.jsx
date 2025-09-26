@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAuthToken } from "../config/api";
+import { logDebugInfo } from "../utils/debugHelper";
+import {
+  checkProductionEnvironment,
+  diagnoseAuthenticationIssue,
+} from "../utils/productionDiagnostics";
 import {
   FiHome,
   FiPackage,
@@ -32,6 +38,24 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
 
   // Check if device is mobile/tablet
   useEffect(() => {
+    // Comprehensive debug and diagnostic info for production
+    logDebugInfo("Dashboard Load");
+
+    // Run production diagnostics if in production
+    if (process.env.NODE_ENV === "production") {
+      checkProductionEnvironment().then((results) => {
+        console.log("🔧 Production Environment Check:", results);
+      });
+
+      const authDiagnosis = diagnoseAuthenticationIssue();
+      console.log("🔐 Authentication Diagnosis:", authDiagnosis);
+
+      if (authDiagnosis.issues.length > 0) {
+        console.warn("⚠️  Authentication Issues Found:", authDiagnosis.issues);
+        console.info("💡 Recommendations:", authDiagnosis.recommendations);
+      }
+    }
+
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 1024); // lg breakpoint
       if (window.innerWidth < 1024) {
@@ -42,14 +66,25 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
     };
 
     checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    
-    return () => window.removeEventListener('resize', checkScreenSize);
+    window.addEventListener("resize", checkScreenSize);
+
+    return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
   const handleLogout = () => {
+    console.log("Logout initiated");
     localStorage.removeItem("adminToken");
-    navigate("/");
+    navigate("/admin-login");
+  };
+
+  // Debug function for production troubleshooting
+  const handleDebugInfo = () => {
+    const debugInfo = logDebugInfo("Manual Debug Check");
+    alert(
+      `Debug info logged to console. Environment: ${
+        process.env.NODE_ENV
+      }, API: ${process.env.REACT_APP_API_BASE_URL || "localhost:5000"}`
+    );
   };
 
   const toggleSidebar = () => {
@@ -62,6 +97,11 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
     if (isMobile) {
       setSidebarOpen(false);
     }
+  };
+
+  // Navigation handler for child components
+  const handleInternalNavigation = (tabName) => {
+    handleTabChange(tabName);
   };
 
   return (
@@ -77,18 +117,22 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
       {/* Sidebar */}
       <div
         className={`${
-          sidebarOpen 
-            ? isMobile 
-              ? "w-64 translate-x-0" 
-              : "w-64" 
-            : isMobile 
-              ? "w-64 -translate-x-full" 
-              : "w-20"
+          sidebarOpen
+            ? isMobile
+              ? "w-64 translate-x-0"
+              : "w-64"
+            : isMobile
+            ? "w-64 -translate-x-full"
+            : "w-20"
         } bg-indigo-800 text-white transition-all duration-300 fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto`}
       >
         <div className="p-4 flex items-center justify-between">
-          {(sidebarOpen || !isMobile) ? (
-            <h1 className={`text-xl font-bold ${!sidebarOpen && !isMobile ? 'hidden' : ''}`}>
+          {sidebarOpen || !isMobile ? (
+            <h1
+              className={`text-xl font-bold ${
+                !sidebarOpen && !isMobile ? "hidden" : ""
+              }`}
+            >
               Yala Safari Admin
             </h1>
           ) : (
@@ -99,9 +143,15 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
             className="p-1 rounded-lg hover:bg-indigo-700 lg:block"
           >
             {isMobile ? (
-              sidebarOpen ? <FiX className="text-xl" /> : <FiMenu className="text-xl" />
+              sidebarOpen ? (
+                <FiX className="text-xl" />
+              ) : (
+                <FiMenu className="text-xl" />
+              )
+            ) : sidebarOpen ? (
+              "«"
             ) : (
-              sidebarOpen ? "«" : "»"
+              "»"
             )}
           </button>
         </div>
@@ -193,7 +243,7 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
       </div>
 
       {/* Main Content */}
-      <div className={`flex-1 overflow-auto ${isMobile ? 'w-full' : ''}`}>
+      <div className={`flex-1 overflow-auto ${isMobile ? "w-full" : ""}`}>
         {/* Header */}
         <header className="bg-white shadow-sm p-4 flex justify-between items-center">
           <div className="flex items-center">
@@ -238,7 +288,9 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
         </header>
 
         <main className="p-3 lg:p-6 min-h-0 overflow-auto">
-          {activeTab === "dashboard" && <DashboardHome />}
+          {activeTab === "dashboard" && (
+            <DashboardHome onNavigate={handleInternalNavigation} />
+          )}
           {activeTab === "packages" && <PackagesManager />}
           {activeTab === "availability" && <AvailabilityCalendar />}
           {activeTab === "bookings" && <BookingsManager />}
@@ -263,8 +315,8 @@ const NavItem = ({ icon, text, active, onClick, sidebarOpen, isMobile }) => {
     <button
       onClick={onClick}
       className={`flex items-center w-full p-3 text-left transition-colors duration-200 ${
-        active 
-          ? "bg-indigo-700 text-white" 
+        active
+          ? "bg-indigo-700 text-white"
           : "text-indigo-100 hover:bg-indigo-700 hover:text-white"
       }`}
     >

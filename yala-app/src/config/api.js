@@ -65,6 +65,11 @@ export const getAuthHeaders = () => {
 export const authenticatedFetch = async (url, options = {}) => {
   const token = getAuthToken();
 
+  if (!token) {
+    // Don't automatically redirect here, let the calling component handle it
+    throw new Error("No authentication token found");
+  }
+
   const config = {
     ...options,
     headers: {
@@ -73,17 +78,18 @@ export const authenticatedFetch = async (url, options = {}) => {
         "Content-Type": "application/json",
       }),
       ...options.headers,
-      ...(token && { "x-auth-token": token }),
+      Authorization: `Bearer ${token}`, // Use Bearer token format
+      "x-auth-token": token, // Keep the old format for backward compatibility
     },
   };
 
   const response = await fetch(url, config);
 
-  // If unauthorized, redirect to login
+  // If unauthorized, just throw an error and let AuthGuard handle the redirect
   if (response.status === 401) {
+    // Remove invalid token
     localStorage.removeItem("adminToken");
-    window.location.href = "/admin";
-    throw new Error("Authentication required");
+    throw new Error("Authentication failed - please login again");
   }
 
   return response;

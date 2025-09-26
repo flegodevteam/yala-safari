@@ -1,14 +1,23 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { apiEndpoints } from "../config/api";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Check if there's an error from AuthGuard
+  useEffect(() => {
+    if (location.state?.error) {
+      setErrorMsg(location.state.error);
+      toast.error(location.state.error);
+    }
+  }, [location.state]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -36,7 +45,10 @@ const AdminLogin = () => {
         );
         localStorage.setItem("adminToken", data.token);
         toast.success("Login successful!");
-        navigate("/dashboard");
+
+        // Navigate to the original intended destination or dashboard
+        const returnTo = location.state?.from || "/dashboard";
+        navigate(returnTo, { replace: true });
       } else {
         console.log("Login failed:", data.message);
         setErrorMsg(data.message || "Invalid email or password");
