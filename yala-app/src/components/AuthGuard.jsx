@@ -13,10 +13,26 @@ const AuthGuard = ({ children }) => {
 
     const checkAuthentication = () => {
       try {
+        console.log("AuthGuard: Checking authentication for:", location.pathname);
+        
+        // Only run authentication check if we're on a protected route
+        const protectedRoutes = ['/dashboard'];
+        const isProtectedRoute = protectedRoutes.some(route => 
+          location.pathname.startsWith(route)
+        );
+
+        if (!isProtectedRoute) {
+          console.log("AuthGuard: Not a protected route, allowing access");
+          if (isMounted) {
+            setIsAuthenticated(true);
+            setIsLoading(false);
+          }
+          return;
+        }
+
         const token = getAuthToken();
         console.log(
-          "AuthGuard: Checking token on location:",
-          location.pathname,
+          "AuthGuard: Checking token for protected route:",
           token ? "Token exists" : "No token"
         );
 

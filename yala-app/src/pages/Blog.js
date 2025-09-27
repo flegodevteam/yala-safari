@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { apiEndpoints, authenticatedFetch } from "../config/api";
+import { apiEndpoints, publicFetch } from "../config/api";
 
 export default function Blog() {
   const [blogPosts, setBlogPosts] = useState([]);
@@ -8,7 +8,7 @@ export default function Blog() {
   const fetchBlogs = async () => {
     try {
       console.log("Fetching blogs from API...");
-      const response = await authenticatedFetch(apiEndpoints.blogs.base);
+      const response = await publicFetch(apiEndpoints.blogs.base);
 
       if (response.ok) {
         const data = await response.json();

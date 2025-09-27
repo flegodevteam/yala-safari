@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { apiEndpoints, authenticatedFetch } from "../config/api";
+import { apiEndpoints, publicFetch } from "../config/api";
 
 const PaymentPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("cash");
@@ -78,7 +78,7 @@ const PaymentPage = () => {
 
     // Backend API call
     try {
-      const res = await authenticatedFetch(apiEndpoints.booking, {
+      const res = await publicFetch(apiEndpoints.booking, {
         method: "POST",
         body: JSON.stringify(bookingData),
       });

@@ -9,7 +9,7 @@ import Calendar from "react-calendar";
 import PaymentPage from "./Booking";
 import Modal from "react-modal";
 import lunugamweheraImage from "../assets/lunu.jpg";
-import { apiEndpoints, authenticatedFetch } from "../config/api";
+import { apiEndpoints, publicFetch } from "../config/api";
 
 const breakfastMenuItemsVeg = [
   { name: "Fresh tropical fruits", price: 2 },
@@ -93,7 +93,7 @@ const Packages = () => {
     if (reservationType === "private") {
       const fetchAvailability = async () => {
         try {
-          const response = await authenticatedFetch(
+          const response = await publicFetch(
             apiEndpoints.packages.availability("private", park)
           );
           if (response.ok) {
@@ -176,7 +176,7 @@ const Packages = () => {
     console.log("Fetching pricing from API...");
 
     try {
-      const res = await authenticatedFetch(apiEndpoints.packages.current);
+      const res = await publicFetch(apiEndpoints.packages.current);
       console.log("API response status:", res.status);
 
       if (!res.ok) {
