@@ -9,46 +9,120 @@ const AuthGuard = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkAuthentication = () => {
-      console.log("AuthGuard: Checking authentication for:", location.pathname);
-      
-      // Only run authentication check if we're on a protected route
-      const protectedRoutes = ['/dashboard'];
-      const isProtectedRoute = protectedRoutes.some(route => 
-        location.pathname.startsWith(route)
-      );
+      try {
+        console.log("AuthGuard: Checking authentication for:", location.pathname);
+        
+        // Only run authentication check if we're on a protected route
+        const protectedRoutes = ['/dashboard'];
+        const isProtectedRoute = protectedRoutes.some(route => 
+          location.pathname.startsWith(route)
+        );
 
-      if (!isProtectedRoute) {
-        console.log("AuthGuard: Not a protected route, allowing access");
-        setIsAuthenticated(true);
-        setIsLoading(false);
-        return;
+        if (!isProtectedRoute) {
+          console.log("AuthGuard: Not a protected route, allowing access");
+          if (isMounted) {
+            setIsAuthenticated(true);
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        const token = getAuthToken();
+        console.log(
+          "AuthGuard: Checking token for protected route:",
+          token ? "Token exists" : "No token"
+        );
+
+        if (!token) {
+          // No token found, redirect to admin login
+          console.log("AuthGuard: No token, redirecting to /admin-login");
+          if (isMounted) {
+            setIsAuthenticated(false);
+            setIsLoading(false);
+            navigate("/admin-login", {
+              state: { from: location.pathname },
+              replace: true,
+            });
+          }
+          return;
+        }
+
+        // Basic token format validation
+        try {
+          // Check if token is a valid JWT (has 3 parts separated by dots)
+          const tokenParts = token.split(".");
+          if (tokenParts.length !== 3) {
+            throw new Error("Invalid token format");
+          }
+
+          // Decode the payload to check expiration
+          const payload = JSON.parse(atob(tokenParts[1]));
+          const currentTime = Math.floor(Date.now() / 1000);
+
+          if (payload.exp && payload.exp < currentTime) {
+            throw new Error("Token expired");
+          }
+
+          // Token is valid
+          console.log("AuthGuard: Token is valid, user authenticated");
+          if (isMounted) {
+            setIsAuthenticated(true);
+            setIsLoading(false);
+          }
+        } catch (tokenError) {
+          console.log(
+            "AuthGuard: Token validation failed:",
+            tokenError.message
+          );
+          // Remove invalid token
+          localStorage.removeItem("adminToken");
+          if (isMounted) {
+            setIsAuthenticated(false);
+            setIsLoading(false);
+            navigate("/admin-login", {
+              state: { from: location.pathname, error: "Session expired" },
+              replace: true,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("AuthGuard: Authentication check failed:", error);
+        if (isMounted) {
+          setIsAuthenticated(false);
+          setIsLoading(false);
+          navigate("/admin-login", {
+            state: { from: location.pathname, error: "Authentication error" },
+            replace: true,
+          });
+        }
       }
-
-      const token = getAuthToken();
-      console.log(
-        "AuthGuard: Checking token for protected route:",
-        token ? "Token exists" : "No token"
-      );
-
-      if (!token) {
-        // No token found, redirect to admin login
-        console.log("AuthGuard: No token, redirecting to /admin");
-        navigate("/admin", {
-          state: { from: location.pathname },
-        });
-        return;
-      }
-
-      // Token exists, assume user is authenticated
-      // In a production app, you might want to validate the token with the backend
-      console.log("AuthGuard: Token found, user authenticated");
-      setIsAuthenticated(true);
-      setIsLoading(false);
     };
 
-    checkAuthentication();
-  }, [navigate, location]);
+    // Only check authentication on mount, not on every location change
+    if (isLoading) {
+      checkAuthentication();
+    }
+
+    // Listen for storage changes (logout in other tabs)
+    const handleStorageChange = (e) => {
+      if (e.key === "adminToken" && !e.newValue && isMounted) {
+        // Token was removed in another tab
+        console.log("AuthGuard: Token removed in another tab");
+        setIsAuthenticated(false);
+        navigate("/admin-login", { replace: true });
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [navigate]); // Remove location dependency to prevent re-checking on every route change
 
   if (isLoading) {
     return (
