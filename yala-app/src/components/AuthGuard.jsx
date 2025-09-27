@@ -9,23 +9,28 @@ const AuthGuard = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkAuthentication = () => {
       try {
         const token = getAuthToken();
         console.log(
-          "AuthGuard: Checking token:",
+          "AuthGuard: Checking token on location:",
+          location.pathname,
           token ? "Token exists" : "No token"
         );
 
         if (!token) {
           // No token found, redirect to admin login
           console.log("AuthGuard: No token, redirecting to /admin-login");
-          setIsAuthenticated(false);
-          setIsLoading(false);
-          navigate("/admin-login", {
-            state: { from: location.pathname },
-            replace: true, // Use replace to avoid back button issues
-          });
+          if (isMounted) {
+            setIsAuthenticated(false);
+            setIsLoading(false);
+            navigate("/admin-login", {
+              state: { from: location.pathname },
+              replace: true,
+            });
+          }
           return;
         }
 
@@ -47,8 +52,10 @@ const AuthGuard = ({ children }) => {
 
           // Token is valid
           console.log("AuthGuard: Token is valid, user authenticated");
-          setIsAuthenticated(true);
-          setIsLoading(false);
+          if (isMounted) {
+            setIsAuthenticated(true);
+            setIsLoading(false);
+          }
         } catch (tokenError) {
           console.log(
             "AuthGuard: Token validation failed:",
@@ -56,29 +63,36 @@ const AuthGuard = ({ children }) => {
           );
           // Remove invalid token
           localStorage.removeItem("adminToken");
-          setIsAuthenticated(false);
-          setIsLoading(false);
-          navigate("/admin-login", {
-            state: { from: location.pathname, error: "Session expired" },
-            replace: true,
-          });
+          if (isMounted) {
+            setIsAuthenticated(false);
+            setIsLoading(false);
+            navigate("/admin-login", {
+              state: { from: location.pathname, error: "Session expired" },
+              replace: true,
+            });
+          }
         }
       } catch (error) {
         console.error("AuthGuard: Authentication check failed:", error);
-        setIsAuthenticated(false);
-        setIsLoading(false);
-        navigate("/admin-login", {
-          state: { from: location.pathname, error: "Authentication error" },
-          replace: true,
-        });
+        if (isMounted) {
+          setIsAuthenticated(false);
+          setIsLoading(false);
+          navigate("/admin-login", {
+            state: { from: location.pathname, error: "Authentication error" },
+            replace: true,
+          });
+        }
       }
     };
 
-    checkAuthentication();
+    // Only check authentication on mount, not on every location change
+    if (isLoading) {
+      checkAuthentication();
+    }
 
     // Listen for storage changes (logout in other tabs)
     const handleStorageChange = (e) => {
-      if (e.key === "adminToken" && !e.newValue) {
+      if (e.key === "adminToken" && !e.newValue && isMounted) {
         // Token was removed in another tab
         console.log("AuthGuard: Token removed in another tab");
         setIsAuthenticated(false);
@@ -89,9 +103,10 @@ const AuthGuard = ({ children }) => {
     window.addEventListener("storage", handleStorageChange);
 
     return () => {
+      isMounted = false;
       window.removeEventListener("storage", handleStorageChange);
     };
-  }, [navigate, location]);
+  }, [navigate]); // Remove location dependency to prevent re-checking on every route change
 
   if (isLoading) {
     return (

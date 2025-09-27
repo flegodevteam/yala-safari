@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { apiEndpoints, authenticatedFetch } from "../config/api";
 
@@ -31,8 +30,6 @@ const PackageManager = () => {
       separateGuide: 0,
     },
   });
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchPricing();
@@ -181,12 +178,6 @@ const PackageManager = () => {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Package Manager</h1>
-          <button
-            onClick={() => navigate("/admin/dashboard")}
-            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
-          >
-            Back to Dashboard
-          </button>
         </div>
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
