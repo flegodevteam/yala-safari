@@ -10,7 +10,7 @@ const imageSchema = new mongoose.Schema(
     originalName: { type: String }, // Original filename
     fileSize: { type: Number }, // File size in bytes
     mimeType: { type: String }, // MIME type of the file
-    uploadedAt: { type: Date, default: Date.now }
+    uploadedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

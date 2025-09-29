@@ -45,23 +45,34 @@ const MediaGallery = () => {
     const file = e.target.files[0];
     if (file) {
       // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
       if (!allowedTypes.includes(file.type)) {
-        alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
-        e.target.value = ''; // Clear the input
+        alert("Please select a valid image file (JPEG, PNG, GIF, or WebP)");
+        e.target.value = ""; // Clear the input
         return;
       }
-      
+
       // Validate file size (max 10MB)
       const maxSize = 10 * 1024 * 1024; // 10MB in bytes
       if (file.size > maxSize) {
-        alert('File size must be less than 10MB');
-        e.target.value = ''; // Clear the input
+        alert("File size must be less than 10MB");
+        e.target.value = ""; // Clear the input
         return;
       }
-      
+
       setSelectedFile(file);
-      console.log('File selected:', file.name, file.type, (file.size / 1024 / 1024).toFixed(2) + 'MB');
+      console.log(
+        "File selected:",
+        file.name,
+        file.type,
+        (file.size / 1024 / 1024).toFixed(2) + "MB"
+      );
     }
   };
 
@@ -101,7 +112,12 @@ const MediaGallery = () => {
     formData.append("category", selectedCategory);
 
     console.log("MediaGallery: Starting image upload...");
-    console.log("File:", selectedFile.name, selectedFile.type, selectedFile.size);
+    console.log(
+      "File:",
+      selectedFile.name,
+      selectedFile.type,
+      selectedFile.size
+    );
     console.log("Title:", imageTitle);
     console.log("Category:", selectedCategory);
 
@@ -111,9 +127,9 @@ const MediaGallery = () => {
         body: formData,
         // Don't set Content-Type header for FormData - let browser set it
       });
-      
+
       console.log("MediaGallery: Upload response status:", response.status);
-      
+
       if (response.ok) {
         const newImage = await response.json();
         console.log("MediaGallery: Upload successful:", newImage);
@@ -124,7 +140,11 @@ const MediaGallery = () => {
         alert("Image uploaded successfully!");
       } else {
         const errorData = await response.text();
-        console.error("MediaGallery: Upload failed:", response.status, errorData);
+        console.error(
+          "MediaGallery: Upload failed:",
+          response.status,
+          errorData
+        );
         alert(`Upload failed: ${response.status} - ${errorData}`);
       }
     } catch (err) {

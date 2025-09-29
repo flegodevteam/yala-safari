@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
@@ -12,7 +12,7 @@ import adminRoutes from "./routes/AdminRoutes.js";
 import dashboardRoutes from "./routes/DashboardRoutes.js";
 import imageRoutes from "./routes/ImageRoutes.js";
 import path from "path";
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 import AvailableJeepsRoutes from "./routes/routes/AvailableJeepsRoutes.js";
 import bookingRoutes from "./routes/BookingRoutes.js";
 
@@ -52,11 +52,8 @@ app.get("/", (req, res) => {
   res.send("Server is running!");
 });
 
-
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
-    

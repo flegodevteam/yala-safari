@@ -22,26 +22,30 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     // Generate unique filename with timestamp and random number
-    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
+    const uniqueName =
+      Date.now() +
+      "-" +
+      Math.round(Math.random() * 1e9) +
+      path.extname(file.originalname);
     cb(null, uniqueName);
   },
 });
 
 // File filter to only allow images
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image/')) {
+  if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed!'), false);
+    cb(new Error("Only image files are allowed!"), false);
   }
 };
 
-const upload = multer({ 
+const upload = multer({
   storage,
   fileFilter,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
-  }
+  },
 });
 
 // Get all images (requires authentication)
@@ -55,56 +59,63 @@ router.get("/", auth, async (req, res) => {
 });
 
 // Upload a new image (admin only)
-router.post("/", [auth, admin], (req, res, next) => {
-  upload.single("image")(req, res, (err) => {
-    if (err instanceof multer.MulterError) {
-      if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ error: "File too large. Maximum size is 10MB." });
+router.post(
+  "/",
+  [auth, admin],
+  (req, res, next) => {
+    upload.single("image")(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return res
+            .status(400)
+            .json({ error: "File too large. Maximum size is 10MB." });
+        }
+        return res.status(400).json({ error: `Upload error: ${err.message}` });
+      } else if (err) {
+        return res.status(400).json({ error: err.message });
       }
-      return res.status(400).json({ error: `Upload error: ${err.message}` });
-    } else if (err) {
-      return res.status(400).json({ error: err.message });
-    }
-    next();
-  });
-}, async (req, res) => {
-  try {
-    console.log("Image upload request received");
-    console.log("Request body:", req.body);
-    console.log("Uploaded file:", req.file);
-
-    const { title, category } = req.body;
-    
-    if (!title || !title.trim()) {
-      return res.status(400).json({ error: "Title is required" });
-    }
-    
-    if (!req.file) {
-      return res.status(400).json({ error: "Image file is required" });
-    }
-
-    const url = `/uploads/${req.file.filename}`;
-    
-    const image = new Image({
-      title: title.trim(),
-      url,
-      category: category || 'wildlife',
-      featured: false,
-      filename: req.file.filename,
-      originalName: req.file.originalname,
-      fileSize: req.file.size,
-      mimeType: req.file.mimetype,
+      next();
     });
-    
-    await image.save();
-    console.log("Image saved successfully:", image);
-    
-    res.status(201).json(image);
-  } catch (err) {
-    console.error("Image upload error:", err);
-    res.status(400).json({ error: err.message });
+  },
+  async (req, res) => {
+    try {
+      console.log("Image upload request received");
+      console.log("Request body:", req.body);
+      console.log("Uploaded file:", req.file);
+
+      const { title, category } = req.body;
+
+      if (!title || !title.trim()) {
+        return res.status(400).json({ error: "Title is required" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: "Image file is required" });
+      }
+
+      const url = `/uploads/${req.file.filename}`;
+
+      const image = new Image({
+        title: title.trim(),
+        url,
+        category: category || "wildlife",
+        featured: false,
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        fileSize: req.file.size,
+        mimeType: req.file.mimetype,
+      });
+
+      await image.save();
+      console.log("Image saved successfully:", image);
+
+      res.status(201).json(image);
+    } catch (err) {
+      console.error("Image upload error:", err);
+      res.status(400).json({ error: err.message });
+    }
   }
-});
+);
 
 // Delete an image (admin only)
 router.delete("/:id", [auth, admin], async (req, res) => {
