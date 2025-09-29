@@ -39,9 +39,30 @@ const MediaGallery = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageTitle, setImageTitle] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("wildlife");
+  const [uploading, setUploading] = useState(false);
 
   const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+        e.target.value = ''; // Clear the input
+        return;
+      }
+      
+      // Validate file size (max 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+      if (file.size > maxSize) {
+        alert('File size must be less than 10MB');
+        e.target.value = ''; // Clear the input
+        return;
+      }
+      
+      setSelectedFile(file);
+      console.log('File selected:', file.name, file.type, (file.size / 1024 / 1024).toFixed(2) + 'MB');
+    }
   };
 
   useEffect(() => {
@@ -62,38 +83,55 @@ const MediaGallery = () => {
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!selectedFile) return;
+    if (!selectedFile) {
+      alert("Please select a file to upload");
+      return;
+    }
+
+    if (!imageTitle.trim()) {
+      alert("Please enter a title for the image");
+      return;
+    }
+
+    setUploading(true);
 
     const formData = new FormData();
     formData.append("image", selectedFile);
     formData.append("title", imageTitle);
     formData.append("category", selectedCategory);
 
-    // In a real app, you would upload to your server here
-    const newImage = {
-      id: images.length + 1,
-      url: URL.createObjectURL(selectedFile),
-      title: imageTitle,
-      category: selectedCategory,
-      featured: false,
-    };
+    console.log("MediaGallery: Starting image upload...");
+    console.log("File:", selectedFile.name, selectedFile.type, selectedFile.size);
+    console.log("Title:", imageTitle);
+    console.log("Category:", selectedCategory);
 
     try {
       const response = await authenticatedFetch(apiEndpoints.images.base, {
         method: "POST",
         body: formData,
+        // Don't set Content-Type header for FormData - let browser set it
       });
+      
+      console.log("MediaGallery: Upload response status:", response.status);
+      
       if (response.ok) {
         const newImage = await response.json();
+        console.log("MediaGallery: Upload successful:", newImage);
         setImages([...images, newImage]);
         setUploadModalOpen(false);
         setSelectedFile(null);
         setImageTitle("");
+        alert("Image uploaded successfully!");
       } else {
-        alert("Upload failed");
+        const errorData = await response.text();
+        console.error("MediaGallery: Upload failed:", response.status, errorData);
+        alert(`Upload failed: ${response.status} - ${errorData}`);
       }
     } catch (err) {
+      console.error("MediaGallery: Network error:", err);
       alert("Network error: " + err.message);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -271,19 +309,30 @@ const MediaGallery = () => {
                     <div className="space-y-1 text-center">
                       {selectedFile ? (
                         <div>
-                          <p className="text-sm text-gray-600">
+                          <div className="mb-3">
+                            <img
+                              src={URL.createObjectURL(selectedFile)}
+                              alt="Preview"
+                              className="mx-auto h-24 w-24 object-cover rounded-lg"
+                            />
+                          </div>
+                          <p className="text-sm text-gray-600 font-medium">
                             {selectedFile.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                           </p>
                           <button
                             type="button"
                             onClick={() => setSelectedFile(null)}
-                            className="mt-2 text-sm text-red-600"
+                            className="mt-2 text-sm text-red-600 hover:text-red-800"
                           >
                             Remove
                           </button>
                         </div>
                       ) : (
                         <>
+                          <FiImage className="mx-auto h-12 w-12 text-gray-400" />
                           <div className="flex text-sm text-gray-600">
                             <label className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
                               <span>Upload a file</span>
@@ -291,13 +340,13 @@ const MediaGallery = () => {
                                 type="file"
                                 className="sr-only"
                                 onChange={handleFileChange}
-                                accept="image/*"
+                                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                               />
                             </label>
                             <p className="pl-1">or drag and drop</p>
                           </div>
                           <p className="text-xs text-gray-500">
-                            PNG, JPG, GIF up to 10MB
+                            JPEG, PNG, GIF, WebP up to 10MB
                           </p>
                         </>
                       )}
@@ -342,10 +391,14 @@ const MediaGallery = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    disabled={!selectedFile}
+                    className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                      uploading || !selectedFile || !imageTitle.trim()
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-indigo-600 hover:bg-indigo-700"
+                    } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+                    disabled={uploading || !selectedFile || !imageTitle.trim()}
                   >
-                    Upload Image
+                    {uploading ? "Uploading..." : "Upload Image"}
                   </button>
                 </div>
               </form>

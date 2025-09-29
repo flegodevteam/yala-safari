@@ -60,7 +60,7 @@ function App() {
           <Routes>
             {/* Home route - exact match */}
             <Route path="/" element={<Home />} />
-            
+
             {/* Public routes */}
             <Route path="/packages" element={<Packages />} />
             <Route path="/about" element={<About />} />
@@ -70,7 +70,7 @@ function App() {
             <Route path="/rooms" element={<Rooms />} />
             <Route path="/room/:roomType" element={<RoomDetails />} />
             <Route path="/taxi-service" element={<TaxiService />} />
-            
+
             {/* Admin routes */}
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/admin-login" element={<AdminLogin />} />

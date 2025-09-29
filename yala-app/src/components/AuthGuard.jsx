@@ -13,11 +13,14 @@ const AuthGuard = ({ children }) => {
 
     const checkAuthentication = () => {
       try {
-        console.log("AuthGuard: Checking authentication for:", location.pathname);
-        
+        console.log(
+          "AuthGuard: Checking authentication for:",
+          location.pathname
+        );
+
         // Only run authentication check if we're on a protected route
-        const protectedRoutes = ['/dashboard'];
-        const isProtectedRoute = protectedRoutes.some(route => 
+        const protectedRoutes = ["/dashboard"];
+        const isProtectedRoute = protectedRoutes.some((route) =>
           location.pathname.startsWith(route)
         );
 

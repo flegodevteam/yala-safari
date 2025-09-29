@@ -81,14 +81,15 @@ export const authenticatedFetch = async (url, options = {}) => {
   // Only redirect to admin login if we're on a protected admin route
   if (response.status === 401) {
     const currentPath = window.location.pathname;
-    const isAdminRoute = currentPath.startsWith('/dashboard') || currentPath.startsWith('/admin');
-    
+    const isAdminRoute =
+      currentPath.startsWith("/dashboard") || currentPath.startsWith("/admin");
+
     if (isAdminRoute) {
       localStorage.removeItem("adminToken");
       // Let AuthGuard handle redirect instead of direct navigation
       throw new Error("Authentication required");
     }
-    
+
     // For non-admin routes, just log the error but don't redirect
     console.warn("API request unauthorized, but on public route:", currentPath);
   }

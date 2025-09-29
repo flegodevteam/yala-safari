@@ -35,16 +35,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// Serve static files from uploads directory
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-
+// API Routes
 app.use("/api/packages", packageRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/images", imageRoutes);
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/api", AvailableJeepsRoutes);
 app.use("/api", bookingRoutes);
 
