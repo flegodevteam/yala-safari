@@ -90,7 +90,7 @@ router.post(
       console.log("Request headers:", {
         "content-type": req.headers["content-type"],
         "x-auth-token": req.headers["x-auth-token"] ? "present" : "missing",
-        "authorization": req.headers["authorization"] ? "present" : "missing"
+        authorization: req.headers["authorization"] ? "present" : "missing",
       });
       console.log("Request body:", req.body);
       console.log("Uploaded file:", req.file);

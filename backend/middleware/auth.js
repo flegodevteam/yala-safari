@@ -4,7 +4,7 @@ import Admin from "../models/Admin.js";
 export default async (req, res, next) => {
   // Try to get token from multiple header formats
   let token = req.header("x-auth-token");
-  
+
   // If x-auth-token not found, try Authorization header
   if (!token) {
     const authHeader = req.header("Authorization");
@@ -16,7 +16,7 @@ export default async (req, res, next) => {
   console.log("Auth middleware - Token found:", !!token);
   console.log("Auth middleware - Headers:", {
     "x-auth-token": req.header("x-auth-token") ? "present" : "missing",
-    "Authorization": req.header("Authorization") ? "present" : "missing"
+    Authorization: req.header("Authorization") ? "present" : "missing",
   });
 
   if (!token) {

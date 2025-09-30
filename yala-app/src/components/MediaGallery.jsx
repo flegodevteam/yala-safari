@@ -77,15 +77,31 @@ const MediaGallery = () => {
   };
 
   useEffect(() => {
+    console.log("MediaGallery: Component mounted");
+    console.log("API endpoints:", apiEndpoints);
+    console.log("Images base URL:", apiEndpoints.images.base);
+
     const fetchImages = async () => {
       try {
+        console.log(
+          "MediaGallery: Fetching images from:",
+          apiEndpoints.images.base
+        );
         const response = await authenticatedFetch(apiEndpoints.images.base);
+        console.log("MediaGallery: Fetch response status:", response.status);
         if (response.ok) {
           const data = await response.json();
+          console.log("MediaGallery: Fetched images:", data);
           setImages(data);
+        } else {
+          console.error(
+            "MediaGallery: Failed to fetch images:",
+            response.status
+          );
         }
       } catch (err) {
-        alert("Failed to fetch images");
+        console.error("MediaGallery: Error fetching images:", err);
+        alert("Failed to fetch images: " + err.message);
       }
     };
 
@@ -121,9 +137,9 @@ const MediaGallery = () => {
     );
     console.log("Title:", imageTitle);
     console.log("Category:", selectedCategory);
-    
+
     // Log the auth token to verify it exists
-    const token = localStorage.getItem('adminToken');
+    const token = localStorage.getItem("adminToken");
     console.log("Auth token present:", !!token);
     if (token) {
       console.log("Token preview:", token.substring(0, 20) + "...");
@@ -137,7 +153,10 @@ const MediaGallery = () => {
       });
 
       console.log("MediaGallery: Upload response status:", response.status);
-      console.log("MediaGallery: Response headers:", Object.fromEntries(response.headers.entries()));
+      console.log(
+        "MediaGallery: Response headers:",
+        Object.fromEntries(response.headers.entries())
+      );
 
       if (response.ok) {
         const newImage = await response.json();
@@ -151,13 +170,25 @@ const MediaGallery = () => {
         let errorData;
         try {
           errorData = await response.json();
-          console.error("MediaGallery: Upload failed (JSON):", response.status, errorData);
+          console.error(
+            "MediaGallery: Upload failed (JSON):",
+            response.status,
+            errorData
+          );
         } catch (e) {
           errorData = await response.text();
-          console.error("MediaGallery: Upload failed (Text):", response.status, errorData);
+          console.error(
+            "MediaGallery: Upload failed (Text):",
+            response.status,
+            errorData
+          );
         }
-        
-        const errorMessage = errorData?.error || errorData?.message || errorData || `HTTP ${response.status}`;
+
+        const errorMessage =
+          errorData?.error ||
+          errorData?.message ||
+          errorData ||
+          `HTTP ${response.status}`;
         alert(`Upload failed: ${errorMessage}`);
       }
     } catch (err) {
