@@ -8,6 +8,12 @@ import admin from "../middleware/admin.js";
 
 const router = express.Router();
 
+// Test endpoint to verify the route is working
+router.get("/test", (req, res) => {
+  console.log("Image routes test endpoint hit");
+  res.json({ message: "Image routes are working" });
+});
+
 // Ensure uploads directory exists
 const uploadsDir = "uploads";
 if (!fs.existsSync(uploadsDir)) {
@@ -79,17 +85,26 @@ router.post(
   },
   async (req, res) => {
     try {
-      console.log("Image upload request received");
+      console.log("=== Image upload request received ===");
+      console.log("Request method:", req.method);
+      console.log("Request headers:", {
+        "content-type": req.headers["content-type"],
+        "x-auth-token": req.headers["x-auth-token"] ? "present" : "missing",
+        "authorization": req.headers["authorization"] ? "present" : "missing"
+      });
       console.log("Request body:", req.body);
       console.log("Uploaded file:", req.file);
+      console.log("User from auth middleware:", req.user);
 
       const { title, category } = req.body;
 
       if (!title || !title.trim()) {
+        console.log("Upload failed - Title is required");
         return res.status(400).json({ error: "Title is required" });
       }
 
       if (!req.file) {
+        console.log("Upload failed - Image file is required");
         return res.status(400).json({ error: "Image file is required" });
       }
 

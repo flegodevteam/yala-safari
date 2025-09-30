@@ -27,11 +27,23 @@ const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
 // Request logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  if (req.url.includes('/api/images')) {
+    console.log('Image route accessed:', {
+      method: req.method,
+      url: req.url,
+      headers: {
+        'content-type': req.headers['content-type'],
+        'authorization': req.headers['authorization'] ? 'present' : 'missing',
+        'x-auth-token': req.headers['x-auth-token'] ? 'present' : 'missing'
+      }
+    });
+  }
   next();
 });
 

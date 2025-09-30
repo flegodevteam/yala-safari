@@ -112,6 +112,7 @@ const MediaGallery = () => {
     formData.append("category", selectedCategory);
 
     console.log("MediaGallery: Starting image upload...");
+    console.log("API endpoint:", apiEndpoints.images.base);
     console.log(
       "File:",
       selectedFile.name,
@@ -120,6 +121,13 @@ const MediaGallery = () => {
     );
     console.log("Title:", imageTitle);
     console.log("Category:", selectedCategory);
+    
+    // Log the auth token to verify it exists
+    const token = localStorage.getItem('adminToken');
+    console.log("Auth token present:", !!token);
+    if (token) {
+      console.log("Token preview:", token.substring(0, 20) + "...");
+    }
 
     try {
       const response = await authenticatedFetch(apiEndpoints.images.base, {
@@ -129,6 +137,7 @@ const MediaGallery = () => {
       });
 
       console.log("MediaGallery: Upload response status:", response.status);
+      console.log("MediaGallery: Response headers:", Object.fromEntries(response.headers.entries()));
 
       if (response.ok) {
         const newImage = await response.json();
@@ -139,13 +148,17 @@ const MediaGallery = () => {
         setImageTitle("");
         alert("Image uploaded successfully!");
       } else {
-        const errorData = await response.text();
-        console.error(
-          "MediaGallery: Upload failed:",
-          response.status,
-          errorData
-        );
-        alert(`Upload failed: ${response.status} - ${errorData}`);
+        let errorData;
+        try {
+          errorData = await response.json();
+          console.error("MediaGallery: Upload failed (JSON):", response.status, errorData);
+        } catch (e) {
+          errorData = await response.text();
+          console.error("MediaGallery: Upload failed (Text):", response.status, errorData);
+        }
+        
+        const errorMessage = errorData?.error || errorData?.message || errorData || `HTTP ${response.status}`;
+        alert(`Upload failed: ${errorMessage}`);
       }
     } catch (err) {
       console.error("MediaGallery: Network error:", err);
