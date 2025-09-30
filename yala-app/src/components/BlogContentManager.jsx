@@ -15,6 +15,7 @@ export default function BlogContentManager() {
   const [form, setForm] = useState({
     title: "",
     excerpt: "",
+    content: "",
     date: "",
     category: categories[0],
     image: "",
@@ -25,7 +26,10 @@ export default function BlogContentManager() {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await authenticatedFetch(apiEndpoints.blogs.base);
+        // Use admin endpoint to fetch all blogs including drafts
+        const response = await authenticatedFetch(
+          `${apiEndpoints.blogs.base}/admin`
+        );
         if (response.ok) {
           const data = await response.json();
           setBlogPosts(data);
@@ -45,6 +49,8 @@ export default function BlogContentManager() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      console.log("Creating blog with data:", form);
+
       const response = await authenticatedFetch(apiEndpoints.blogs.base, {
         method: "POST",
         body: JSON.stringify(form),
@@ -52,10 +58,12 @@ export default function BlogContentManager() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log("Blog created successfully:", data);
         setBlogPosts([data, ...blogPosts]);
         setForm({
           title: "",
           excerpt: "",
+          content: "",
           date: "",
           category: categories[0],
           image: "",
@@ -67,9 +75,14 @@ export default function BlogContentManager() {
         // Trigger events to notify other components about blog updates
         window.dispatchEvent(new CustomEvent("blogUpdated", { detail: data }));
         localStorage.setItem("lastBlogUpdate", Date.now().toString());
+      } else {
+        const errorData = await response.json();
+        console.error("Error creating blog:", errorData);
+        alert(`Error creating blog: ${errorData.error || "Unknown error"}`);
       }
     } catch (error) {
       console.error("Error creating blog:", error);
+      alert(`Error creating blog: ${error.message}`);
     }
   };
 
@@ -126,6 +139,21 @@ export default function BlogContentManager() {
               required
               className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-green-400"
               placeholder="Short description"
+              rows="2"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Content
+            </label>
+            <textarea
+              name="content"
+              value={form.content}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-green-400"
+              placeholder="Full blog content"
+              rows="6"
             />
           </div>
           <div className="flex gap-4">
