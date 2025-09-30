@@ -57,6 +57,12 @@ export const getAuthHeaders = () => {
 // Helper function for authenticated API requests
 export const authenticatedFetch = async (url, options = {}) => {
   const token = getAuthToken();
+
+  if (!token) {
+    // Don't automatically redirect here, let the calling component handle it
+    throw new Error("No authentication token found");
+  }
+
   const config = {
     ...options,
     headers: {
@@ -65,7 +71,8 @@ export const authenticatedFetch = async (url, options = {}) => {
         "Content-Type": "application/json",
       }),
       ...options.headers,
-      ...(token && { "x-auth-token": token }),
+      Authorization: `Bearer ${token}`, // Use Bearer token format
+      "x-auth-token": token, // Keep the old format for backward compatibility
     },
   };
 
@@ -74,14 +81,15 @@ export const authenticatedFetch = async (url, options = {}) => {
   // Only redirect to admin login if we're on a protected admin route
   if (response.status === 401) {
     const currentPath = window.location.pathname;
-    const isAdminRoute = currentPath.startsWith('/dashboard') || currentPath.startsWith('/admin');
-    
+    const isAdminRoute =
+      currentPath.startsWith("/dashboard") || currentPath.startsWith("/admin");
+
     if (isAdminRoute) {
       localStorage.removeItem("adminToken");
-      window.location.href = "/admin";
+      // Let AuthGuard handle redirect instead of direct navigation
       throw new Error("Authentication required");
     }
-    
+
     // For non-admin routes, just log the error but don't redirect
     console.warn("API request unauthorized, but on public route:", currentPath);
   }
@@ -122,9 +130,9 @@ export const adminFetch = async (url, options = {}) => {
 
   // Always redirect on 401 for admin endpoints
   if (response.status === 401) {
+    // Remove invalid token
     localStorage.removeItem("adminToken");
-    window.location.href = "/admin";
-    throw new Error("Authentication required");
+    throw new Error("Authentication failed - please login again");
   }
 
   return response;

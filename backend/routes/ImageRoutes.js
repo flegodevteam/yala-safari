@@ -1,22 +1,58 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 import Image from "../models/Image.js";
 import auth from "../middleware/auth.js";
 import admin from "../middleware/admin.js";
 
 const router = express.Router();
 
-// Multer setup for file uploads
+// Test endpoint to verify the route is working
+router.get("/test", (req, res) => {
+  console.log("Image routes test endpoint hit");
+  res.json({ message: "Image routes are working" });
+});
+
+// Ensure uploads directory exists
+const uploadsDir = "uploads";
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log("Created uploads directory");
+}
+
+// Multer setup for file uploads with better validation
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
+    // Generate unique filename with timestamp and random number
+    const uniqueName =
+      Date.now() +
+      "-" +
+      Math.round(Math.random() * 1e9) +
+      path.extname(file.originalname);
+    cb(null, uniqueName);
   },
 });
-const upload = multer({ storage });
+
+// File filter to only allow images
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only image files are allowed!"), false);
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+});
 
 // Get all images (requires authentication)
 router.get("/", auth, async (req, res) => {
@@ -29,22 +65,72 @@ router.get("/", auth, async (req, res) => {
 });
 
 // Upload a new image (admin only)
-router.post("/", [auth, admin], upload.single("image"), async (req, res) => {
-  try {
-    const { title, category } = req.body;
-    const url = req.file ? `/uploads/${req.file.filename}` : req.body.url;
-    const image = new Image({
-      title,
-      url,
-      category,
-      featured: false,
+router.post(
+  "/",
+  [auth, admin],
+  (req, res, next) => {
+    upload.single("image")(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return res
+            .status(400)
+            .json({ error: "File too large. Maximum size is 10MB." });
+        }
+        return res.status(400).json({ error: `Upload error: ${err.message}` });
+      } else if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+      next();
     });
-    await image.save();
-    res.status(201).json(image);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+  },
+  async (req, res) => {
+    try {
+      console.log("=== Image upload request received ===");
+      console.log("Request method:", req.method);
+      console.log("Request headers:", {
+        "content-type": req.headers["content-type"],
+        "x-auth-token": req.headers["x-auth-token"] ? "present" : "missing",
+        authorization: req.headers["authorization"] ? "present" : "missing",
+      });
+      console.log("Request body:", req.body);
+      console.log("Uploaded file:", req.file);
+      console.log("User from auth middleware:", req.user);
+
+      const { title, category } = req.body;
+
+      if (!title || !title.trim()) {
+        console.log("Upload failed - Title is required");
+        return res.status(400).json({ error: "Title is required" });
+      }
+
+      if (!req.file) {
+        console.log("Upload failed - Image file is required");
+        return res.status(400).json({ error: "Image file is required" });
+      }
+
+      const url = `/uploads/${req.file.filename}`;
+
+      const image = new Image({
+        title: title.trim(),
+        url,
+        category: category || "wildlife",
+        featured: false,
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        fileSize: req.file.size,
+        mimeType: req.file.mimetype,
+      });
+
+      await image.save();
+      console.log("Image saved successfully:", image);
+
+      res.status(201).json(image);
+    } catch (err) {
+      console.error("Image upload error:", err);
+      res.status(400).json({ error: err.message });
+    }
   }
-});
+);
 
 // Delete an image (admin only)
 router.delete("/:id", [auth, admin], async (req, res) => {
