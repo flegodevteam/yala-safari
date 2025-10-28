@@ -1,68 +1,156 @@
+// utils/emailService.js
 import nodemailer from 'nodemailer';
+import handlebars from 'handlebars';
+import fs from 'fs/promises';
+import path from 'path';
 
-// Create transporter
-const transporter = nodemailer.createTransport({
-  service: 'gmail', // or your email service
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  },
-  secure: true,
-  port: 465,
-});
+class EmailService {
+  constructor() {
+    this.transporter = nodemailer.createTransporter({
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      secure: process.env.EMAIL_PORT === '465',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
 
-// Function to send notification to admin
-export const sendAdminNotification = async (contactData) => {
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: process.env.ADMIN_EMAIL,
-    subject: 'New Contact Form Submission',
-    html: `
-      <h2>New Contact Form Submission</h2>
-      <p><strong>Name:</strong> ${contactData.name}</p>
-      <p><strong>Email:</strong> ${contactData.email}</p>
-      <p><strong>Phone:</strong> ${contactData.phone || 'Not provided'}</p>
-      <p><strong>Subject:</strong> ${contactData.subject || 'No subject'}</p>
-      <p><strong>Message:</strong></p>
-      <p>${contactData.message}</p>
-      <br>
-      <p>This message was received at ${new Date().toLocaleString()}</p>
-    `
-  };
+    // Register Handlebars helpers
+    handlebars.registerHelper('formatDate', (date) => {
+      return new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    });
 
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log('Admin notification email sent');
-  } catch (error) {
-    console.error('Error sending admin notification:', error);
+    handlebars.registerHelper('formatCurrency', (amount) => {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD'
+      }).format(amount);
+    });
   }
-};
 
-// Function to send thank you email to user
-export const sendThankYouEmail = async (contactData) => {
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: contactData.email,
-    subject: 'Thank you for contacting Yala Safari',
-    html: `
-      <h2>Dear ${contactData.name},</h2>
-      <p>Thank you for reaching out to Yala Safari! We've received your message and will get back to you as soon as possible.</p>
-      <p>Here's a copy of your message for reference:</p>
-      <blockquote>
-        <p>${contactData.message}</p>
-      </blockquote>
-      <p>If you have any urgent inquiries, please feel free to call us at +94 773 742 700.</p>
-      <br>
-      <p>Best regards,</p>
-      <p>The Yala Safari Team</p>
-      <img src="https://your-logo-url.com/logo.png" alt="Yala Safari Logo" width="150">
-    `
-  };
+  /**
+   * Send email
+   */
+  async sendEmail(to, subject, template, data) {
+    try {
+      // Load template
+      const templatePath = path.join(
+        process.cwd(),
+        'templates',
+        'emails',
+        `${template}.hbs`
+      );
+      const templateContent = await fs.readFile(templatePath, 'utf-8');
+      const compiledTemplate = handlebars.compile(templateContent);
+      const html = compiledTemplate(data);
 
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log('Thank you email sent to user');
-  } catch (error) {
-    console.error('Error sending thank you email:', error);
+      // Send email
+      const mailOptions = {
+        from: `Yala Safari <${process.env.EMAIL_FROM}>`,
+        to,
+        subject,
+        html
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      
+      console.log(`Email sent successfully to ${to}`);
+    } catch (error) {
+      console.error('Email sending failed:', error);
+      throw error;
+    }
   }
-};
+
+  /**
+   * Send booking confirmation
+   */
+  async sendBookingConfirmation(booking) {
+    const email = booking.customer?.email || booking.guestDetails?.email;
+    
+    await this.sendEmail(
+      email,
+      `Booking Confirmation - ${booking.bookingNumber}`,
+      'booking-confirmation',
+      {
+        bookingNumber: booking.bookingNumber,
+        customerName: booking.customer?.fullName || 
+                     `${booking.guestDetails?.firstName} ${booking.guestDetails?.lastName}`,
+        safari: booking.safari,
+        date: booking.date,
+        timeSlot: booking.timeSlot,
+        participants: booking.participants,
+        total: booking.pricing.total,
+        pickup: booking.pickup
+      }
+    );
+  }
+
+  /**
+   * Send booking cancellation
+   */
+  async sendBookingCancellation(booking) {
+    const email = booking.customer?.email || booking.guestDetails?.email;
+    
+    await this.sendEmail(
+      email,
+      `Booking Cancellation - ${booking.bookingNumber}`,
+      'booking-cancellation',
+      {
+        bookingNumber: booking.bookingNumber,
+        customerName: booking.customer?.fullName || 
+                     `${booking.guestDetails?.firstName} ${booking.guestDetails?.lastName}`,
+        safari: booking.safari,
+        date: booking.date,
+        refundAmount: booking.cancellation?.refundAmount,
+        reason: booking.cancellation?.reason
+      }
+    );
+  }
+
+  /**
+   * Send welcome email
+   */
+  async sendWelcomeEmail(user, verificationToken) {
+    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+    
+    await this.sendEmail(
+      user.email,
+      'Welcome to Yala Safari',
+      'welcome',
+      {
+        name: user.profile.firstName,
+        verificationUrl
+      }
+    );
+  }
+
+  /**
+   * Send password reset email
+   */
+  async sendPasswordResetEmail(user, resetToken) {
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    
+    await this.sendEmail(
+      user.email,
+      'Password Reset Request',
+      'password-reset',
+      {
+        name: user.profile.firstName,
+        resetUrl
+      }
+    );
+  }
+}
+
+export default new EmailService();
+export const { 
+  sendBookingConfirmation,
+  sendBookingCancellation,
+  sendWelcomeEmail,
+  sendPasswordResetEmail
+} = new EmailService();
