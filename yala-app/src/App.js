@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import React, { useState } from "react";
 import Home from "./pages/Home";
 import Packages from "./pages/Packages";
+import BookingConfirmation from './pages/BookingConfirmation';
 import About from "./pages/About";
 import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
@@ -13,7 +14,7 @@ import AdminLogin from "./pages/adminLogin";
 import Rooms from "./pages/Rooms";
 import RoomDetails from "./components/RoomDetails";
 import TaxiService from "./components/TaxiService";
-import BlogContentManager from "./components/BlogContentManager";
+//import BlogContentManager from "./components/BlogContentManager";
 import AuthGuard from "./components/AuthGuard";
 
 const initialBlogPosts = [
@@ -70,6 +71,8 @@ function App() {
             <Route path="/rooms" element={<Rooms />} />
             <Route path="/room/:roomType" element={<RoomDetails />} />
             <Route path="/taxi-service" element={<TaxiService />} />
+
+            <Route path="/booking/confirm" element={<BookingConfirmation />} />
             
             {/* Admin routes */}
             <Route path="/admin" element={<AdminLogin />} />

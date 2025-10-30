@@ -19,6 +19,8 @@ const breakfastMenuItemsVeg = [
   // Eggs will be handled by the "Include Eggs" checkbox
 ];
 
+
+
 const breakfastMenuItemsNonVeg = [
   { name: "Fresh tropical fruits", price: 2 },
   { name: "Pasta (any style)", price: 1.5 },
@@ -173,49 +175,59 @@ const Packages = () => {
   const [pricing, setPricing] = useState(defaultpricing);
 
   const fetchPricing = async () => {
-    console.log("Fetching pricing from API...");
+  console.log("Fetching pricing from API...");
 
-    try {
-      const res = await publicFetch(apiEndpoints.packages.current);
-      console.log("API response status:", res.status);
+  try {
+    const res = await publicFetch(apiEndpoints.packages.current);
+    console.log("API response status:", res.status);
 
-      if (!res.ok) {
-        throw new Error("API response not OK");
-      }
-
-      const data = await res.json();
-      console.log("Received pricing data from API:", data);
-      if (data && data.jeep && data.shared && data.meals && data.guide) {
-        setPricing(data);
-        console.log("Pricing updated from API successfully");
-        // Save to localStorage as backup
-        localStorage.setItem("currentPricing", JSON.stringify(data));
-      } else {
-        console.log("Invalid pricing data structure from API");
-        throw new Error("Invalid data structure");
-      }
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching pricing from API:", error);
-      console.log("Trying localStorage fallback...");
-
-      // Fallback to localStorage
-      const savedPricing = localStorage.getItem("currentPricing");
-      if (savedPricing) {
-        try {
-          const data = JSON.parse(savedPricing);
-          console.log("Loaded pricing from localStorage:", data);
-          if (data && data.jeep && data.shared && data.meals && data.guide) {
-            setPricing(data);
-            console.log("Pricing updated from localStorage successfully");
-          }
-        } catch (parseError) {
-          console.error("Error parsing localStorage pricing:", parseError);
-        }
-      }
-      setLoading(false);
+    if (!res.ok) {
+      throw new Error(`API response not OK: ${res.status}`);
     }
-  };
+
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error("Response is not JSON");
+    }
+
+    const data = await res.json();
+    console.log("Received pricing data from API:", data);
+    
+    if (data && data.jeep && data.shared && data.meals && data.guide) {
+      setPricing(data);
+      console.log("Pricing updated from API successfully");
+      localStorage.setItem("currentPricing", JSON.stringify(data));
+    } else {
+      console.log("Invalid pricing data structure from API");
+      throw new Error("Invalid data structure");
+    }
+    setLoading(false);
+  } catch (error) {
+    console.error("Error fetching pricing from API:", error);
+    console.log("Trying localStorage fallback...");
+
+    // Fallback to localStorage
+    const savedPricing = localStorage.getItem("currentPricing");
+    if (savedPricing) {
+      try {
+        const data = JSON.parse(savedPricing);
+        console.log("Loaded pricing from localStorage:", data);
+        if (data && data.jeep && data.shared && data.meals && data.guide) {
+          setPricing(data);
+          console.log("Pricing updated from localStorage successfully");
+        }
+      } catch (parseError) {
+        console.error("Error parsing localStorage pricing:", parseError);
+        // Use default pricing as last resort
+        setPricing(defaultpricing);
+      }
+    } else {
+      // Use default pricing
+      setPricing(defaultpricing);
+    }
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchPricing();
@@ -364,48 +376,194 @@ const Packages = () => {
   };
 
   // 2. Book Now handler function
-  const handleBookNow = () => {
-    const error = validateBooking();
-    if (error) {
-      alert(error); // You can use better UI for error
-      return;
+//   const handleBookNow = () => {
+//   const error = validateBooking();
+//   if (error) {
+//     alert(error);
+//     return;
+//   }
+  
+//   // Prepare complete booking data
+//   const bookingData = {
+//     // Customer Information (already filled in Packages page)
+//     customerName: fullName,
+//     customerEmail: email,
+//     customerPhone: phoneNumber,
+    
+//     // Booking Details
+//     reservationType,
+//     park,
+//     block,
+//     jeepType,
+//     timeSlot,
+//     guideOption,
+//     visitorType,
+//     mealOption,
+//     vegOption,
+//     people,
+    
+//     // Date Selection
+//     date: reservationType === "private" ? privateDate : sharedSelectedDate,
+//     selectedSeats: reservationType === "shared" ? sharedSelectedSeat : people,
+    
+//     // Meal Options
+//     includeBreakfast,
+//     includeLunch,
+//     includeEggs,
+//     selectedBreakfastItems,
+//     selectedLunchItems,
+    
+//     // Additional Information
+//     pickupLocation,
+//     hotelWhatsapp,
+//     accommodation,
+//     passportNumber: visitorType === "foreign" ? passportNumber : "",
+//     nicNumber: visitorType === "local" ? nicNumber : "",
+//     localContact: visitorType === "local" ? localContact : "",
+//     localAccommodation: visitorType === "local" ? localAccommodation : "",
+    
+//     // Price Information (IMPORTANT - ADD THESE)
+//     ticketPrice: visitorType === "foreign" ? 15 * people : 5 * people,
+//     jeepPrice: reservationType === "private" ? pricing.jeep[jeepType][timeSlot] : pricing.shared[Math.min(people, 7)] * people,
+//     guidePrice: reservationType === "private" ? pricing.guide[guideOption] : 0,
+//     mealPrice: (() => {
+//       let meal = 0;
+//       if (mealOption === "with") {
+//         if (includeBreakfast) {
+//           meal += getBreakfastMenu()
+//             .filter((item) => selectedBreakfastItems.includes(item.name))
+//             .reduce((sum, item) => sum + item.price, 0) * people;
+//         }
+//         if (includeLunch) {
+//           meal += getLunchMenu()
+//             .filter((item) => selectedLunchItems.includes(item.name))
+//             .reduce((sum, item) => sum + item.price, 0) * people;
+//         }
+//       }
+//       return meal;
+//     })(),
+//     totalPrice: parseFloat(calculateTotal()),
+//   };
+
+//   // Navigate to BookingConfirmation
+//   navigate("/booking/confirm", { state: bookingData });
+// };
+// 2. Book Now handler function
+const handleBookNow = () => {
+  const error = validateBooking();
+  if (error) {
+    alert(error);
+    return;
+  }
+  
+  // Calculate meal price (matching backend calculation exactly)
+  const calculateMealPrice = () => {
+    let meal = 0;
+    if (mealOption === "with") {
+      if (includeBreakfast && selectedBreakfastItems && selectedBreakfastItems.length > 0) {
+        const breakfastTotal = getBreakfastMenu()
+          .filter((item) => selectedBreakfastItems.includes(item.name))
+          .reduce((sum, item) => sum + item.price, 0);
+        
+        meal += breakfastTotal * people;
+        
+        // Add eggs if veg option and includeEggs is true
+        if (vegOption === 'veg' && includeEggs) {
+          meal += 1.5 * people;
+        }
+      }
+      
+      if (includeLunch && selectedLunchItems && selectedLunchItems.length > 0) {
+        const lunchTotal = getLunchMenu()
+          .filter((item) => selectedLunchItems.includes(item.name))
+          .reduce((sum, item) => sum + item.price, 0);
+        
+        meal += lunchTotal * people;
+      }
     }
-    // Pass all booking details to Booking page
-    navigate("/booking", {
-      state: {
-        total: calculateTotal(),
-        reservationType,
-        park,
-        block,
-        jeepType,
-        timeSlot,
-        guideOption,
-        visitorType,
-        mealOption,
-        vegOption,
-        includeEggs,
-        includeLunch,
-        includeBreakfast,
-        people,
-        pickupLocation,
-        hotelWhatsapp,
-        accommodation,
-        passportNumber,
-        fullName,
-        phoneNumber,
-        email,
-        nicNumber,
-        localContact,
-        localAccommodation,
-        selectedDate:
-          reservationType === "private" ? privateDate : sharedSelectedDate,
-        selectedSeats: reservationType === "shared" ? sharedSelectedSeat : "",
-        selectedBreakfastItems,
-        selectedLunchItems,
-      },
-    });
+    return Number(meal.toFixed(2));
   };
 
+  // Calculate ticket price
+  const ticketPricePerPerson = visitorType === "foreign" ? 15 : 5;
+  const calculatedTicketPrice = ticketPricePerPerson * people;
+
+  // Calculate jeep price
+  let calculatedJeepPrice = 0;
+  if (reservationType === "private") {
+    calculatedJeepPrice = pricing.jeep[jeepType][timeSlot];
+  } else {
+    calculatedJeepPrice = pricing.shared[Math.min(people, 7)] * people;
+  }
+
+  // Calculate guide price
+  const calculatedGuidePrice = reservationType === "private" ? pricing.guide[guideOption] : 0;
+
+  // Calculate meal price
+  const calculatedMealPrice = calculateMealPrice();
+
+  // Calculate total
+  const calculatedTotalPrice = calculatedTicketPrice + calculatedJeepPrice + calculatedGuidePrice + calculatedMealPrice;
+
+  console.log('📊 Frontend Calculation Summary:');
+  console.log('   Ticket Price:', calculatedTicketPrice);
+  console.log('   Jeep Price:', calculatedJeepPrice);
+  console.log('   Guide Price:', calculatedGuidePrice);
+  console.log('   Meal Price:', calculatedMealPrice);
+  console.log('   TOTAL:', calculatedTotalPrice);
+
+  // Prepare complete booking data
+  const bookingData = {
+    // Customer Information
+    customerName: fullName,
+    customerEmail: email,
+    customerPhone: phoneNumber,
+    
+    // Booking Details
+    reservationType,
+    park,
+    block,
+    jeepType,
+    timeSlot,
+    guideOption,
+    visitorType,
+    mealOption,
+    vegOption,
+    people,
+    
+    // Date Selection
+    date: reservationType === "private" ? privateDate : sharedSelectedDate,
+    selectedSeats: reservationType === "shared" ? sharedSelectedSeat : people,
+    
+    // ✅ CRITICAL: Send ALL Meal Details to Backend
+    includeBreakfast,
+    includeLunch,
+    includeEggs,
+    selectedBreakfastItems: includeBreakfast ? selectedBreakfastItems : [],
+    selectedLunchItems: includeLunch ? selectedLunchItems : [],
+    
+    // Additional Information
+    pickupLocation,
+    hotelWhatsapp,
+    accommodation,
+    passportNumber: visitorType === "foreign" ? passportNumber : "",
+    nicNumber: visitorType === "local" ? nicNumber : "",
+    localContact: visitorType === "local" ? localContact : "",
+    localAccommodation: visitorType === "local" ? localAccommodation : "",
+    
+    // ✅ IMPORTANT: Send Calculated Prices (for verification, backend will recalculate)
+    ticketPrice: calculatedTicketPrice,
+    jeepPrice: calculatedJeepPrice,
+    guidePrice: calculatedGuidePrice,
+    mealPrice: calculatedMealPrice,
+    totalPrice: calculatedTotalPrice,
+  };
+
+  console.log('📤 Sending booking data to backend:', bookingData);
+
+  // Navigate to BookingConfirmation
+  navigate("/booking/confirm", { state: bookingData });
+};
   return (
     <div className="min-h-screen bg-green-50 py-8">
       <div className="max-w-5xl mx-auto px-4">
@@ -1057,7 +1215,7 @@ const Packages = () => {
                       "Driver who also serves as your wildlife guide",
                   },
                   {
-                    id: "Driver+Guide",
+                    id: "separateGuide",
                     name: "Driver + Guide",
                     description:
                       "Dedicated driver and professional wildlife guide",

@@ -1,0 +1,473 @@
+.booking-confirmation-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.booking-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 800px;
+  width: 100%;
+  padding: 40px;
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.booking-card h1 {
+  color: #2c3e50;
+  font-size: 32px;
+  margin-bottom: 30px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.booking-card h2 {
+  color: #34495e;
+  font-size: 24px;
+  margin-bottom: 20px;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 10px;
+}
+
+.error-message {
+  background-color: #fee;
+  border-left: 4px solid #f44336;
+  color: #c62828;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+}
+
+/* Booking Summary */
+.booking-summary {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.summary-item .label {
+  font-size: 14px;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.summary-item .value {
+  font-size: 16px;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* Price Breakdown */
+.price-breakdown {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+}
+
+.price-breakdown h3 {
+  color: #34495e;
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.price-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #ecf0f1;
+  color: #2c3e50;
+}
+
+.price-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 0;
+  margin-top: 10px;
+  border-top: 3px solid #667eea;
+  font-size: 20px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+/* Form Styles */
+.booking-form {
+  margin-top: 30px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #34495e;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Buttons */
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.btn-primary,
+.btn-secondary {
+  flex: 1;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #f8f9fa;
+  transform: translateY(-2px);
+}
+
+/* Success Message */
+.success-message {
+  text-align: center;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  font-size: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.booking-id {
+  font-size: 18px;
+  color: #7f8c8d;
+  margin: 15px 0;
+}
+
+.booking-id strong {
+  color: #667eea;
+  font-size: 20px;
+}
+
+/* Payment Info Box */
+.payment-info-box {
+  background: #f8f9fa;
+  padding: 30px;
+  border-radius: 12px;
+  margin: 30px 0;
+  text-align: left;
+}
+
+.payment-info-box h2 {
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.bank-details {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.bank-details h3 {
+  color: #34495e;
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.detail-row:last-of-type {
+  border-bottom: none;
+}
+
+.detail-row .label {
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.detail-row .value {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.total-amount {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  margin-top: 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.payment-instructions {
+  background: #fff3cd;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #ffc107;
+  margin-bottom: 20px;
+}
+
+.payment-instructions h4 {
+  color: #856404;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.payment-instructions ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #856404;
+}
+
+.payment-instructions li {
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+/* WhatsApp Button */
+.whatsapp-button {
+  width: 100%;
+  background: #25d366;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.whatsapp-button:hover {
+  background: #128c7e;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4);
+}
+
+.whatsapp-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.whatsapp-button-small {
+  background: #25d366;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.whatsapp-button-small:hover {
+  background: #128c7e;
+  transform: translateY(-2px);
+}
+
+.whatsapp-icon-small {
+  width: 20px;
+  height: 20px;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.action-buttons button {
+  flex: 1;
+}
+
+/* Help Section */
+.help-section {
+  margin-top: 30px;
+  text-align: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.help-section p {
+  color: #7f8c8d;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .booking-card {
+    padding: 25px;
+  }
+
+  .booking-card h1 {
+    font-size: 24px;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions,
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .price-total {
+    font-size: 18px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .booking-confirmation-container {
+    background: white;
+    padding: 0;
+  }
+
+  .whatsapp-button,
+  .action-buttons,
+  .help-section,
+  .btn-primary,
+  .btn-secondary {
+    display: none !important;
+  }
+
+  .booking-card {
+    box-shadow: none;
+    padding: 20px;
+  }
+}
