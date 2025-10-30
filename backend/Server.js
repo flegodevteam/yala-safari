@@ -32,10 +32,12 @@ const __dirname = path.dirname(__filename);
 // CORS Configuration
 // ==========================================
 const allowedOrigins = [
-  "http://localhost:3000",           // Local development
+  "http://localhost:3000",           // ✅ Local development frontend
   "http://localhost:5173",           // Vite default port
+  "http://localhost:5000",           // Backend local
   "https://www.yalasafari.com",     // Production domain
-  "https://yalasafari.com"          // Production without www
+  "https://yalasafari.com",         // Production without www
+  "https://yala-safari-hspl.vercel.app",  // ✅ ADD YOUR VERCEL BACKEND URL
 ];
 
 app.use(cors({
@@ -55,6 +57,17 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization", "x-auth-token"]
 }));
 
+// ==========================================
+// CORS Configuration (DEVELOPMENT MODE)
+// ==========================================
+// app.use(cors({
+//   origin: true, // ✅ Allow all origins (development only)
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization", "x-auth-token"]
+// }));
+
+//app.options('*', cors());
 // ==========================================
 // Middleware
 // ==========================================
@@ -104,7 +117,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // Booking Routes (Most Important - Place First)
-app.use("/api", bookingRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 // Package Routes
 app.use("/api/packages", packageRoutes);
