@@ -12,8 +12,14 @@ const AuthGuard = ({ children }) => {
     const checkAuthentication = () => {
       console.log("AuthGuard: Checking authentication for:", location.pathname);
       
-      // Only run authentication check if we're on a protected route
-      const protectedRoutes = ['/dashboard'];
+      // Define all protected routes (including new package management routes)
+      const protectedRoutes = [
+        '/dashboard',
+        '/dashboard/packages',
+        '/dashboard/packages/create',
+        '/dashboard/packages/edit',
+      ];
+      
       const isProtectedRoute = protectedRoutes.some(route => 
         location.pathname.startsWith(route)
       );
@@ -37,11 +43,22 @@ const AuthGuard = ({ children }) => {
         navigate("/admin", {
           state: { from: location.pathname },
         });
+        setIsLoading(false);
         return;
       }
 
+      // Optional: Validate token with backend
+      // validateToken(token).then(valid => {
+      //   if (!valid) {
+      //     localStorage.removeItem('adminToken');
+      //     navigate("/admin");
+      //   } else {
+      //     setIsAuthenticated(true);
+      //     setIsLoading(false);
+      //   }
+      // });
+
       // Token exists, assume user is authenticated
-      // In a production app, you might want to validate the token with the backend
       console.log("AuthGuard: Token found, user authenticated");
       setIsAuthenticated(true);
       setIsLoading(false);
@@ -52,8 +69,11 @@ const AuthGuard = ({ children }) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mb-4"></div>
+          <p className="text-xl text-gray-600">Verifying access...</p>
+        </div>
       </div>
     );
   }

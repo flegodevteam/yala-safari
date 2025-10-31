@@ -21,15 +21,26 @@ import MediaGallery from "../components/MediaGallery";
 import UserManager from "../components/UserManager";
 import SettingsPanel from "../components/SettingsPanel";
 import ReportsDashboard from "../components/ReportsDashboard";
+import { logout, getAdminInfo } from '../utils/auth';
 
 const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
+  
+  // Get admin info
+  const adminInfo = getAdminInfo();
+  const adminInitials = adminInfo?.name 
+    ? adminInfo.name.split(' ').map(n => n[0]).join('').toUpperCase()
+    : 'AD';
 
   const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    navigate("/");
+    logout(); // This will clear tokens and redirect to /admin
+  };
+
+  // Navigate to package management
+  const handlePackagesClick = () => {
+    navigate('/dashboard/packages');
   };
 
   return (
@@ -38,7 +49,7 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
       <div
         className={`${
           sidebarOpen ? "w-64" : "w-20"
-        } bg-indigo-800 text-white transition-all duration-300`}
+        } bg-indigo-800 text-white transition-all duration-300 relative`}
       >
         <div className="p-4 flex items-center justify-between">
           {sidebarOpen ? (
@@ -66,7 +77,7 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
             icon={<FiPackage />}
             text="Packages"
             active={activeTab === "packages"}
-            onClick={() => setActiveTab("packages")}
+            onClick={handlePackagesClick}
             sidebarOpen={sidebarOpen}
           />
           <NavItem
@@ -120,10 +131,11 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
           />
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4">
+        {/* Logout Button - Fixed to bottom */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-indigo-700">
           <button
             onClick={handleLogout}
-            className="flex items-center p-2 rounded-lg hover:bg-indigo-700 w-full"
+            className="flex items-center p-2 rounded-lg hover:bg-indigo-700 w-full transition-colors"
           >
             <FiLogOut className="text-lg" />
             {sidebarOpen && <span className="ml-3">Logout</span>}
@@ -159,8 +171,18 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
                 />
               </svg>
             </div>
-            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-800 font-semibold">
-              AD
+            
+            {/* Admin Profile */}
+            <div className="flex items-center gap-2">
+              <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-800 font-semibold">
+                {adminInitials}
+              </div>
+              {adminInfo && sidebarOpen && (
+                <div className="hidden md:block">
+                  <p className="text-sm font-medium text-gray-700">{adminInfo.name}</p>
+                  <p className="text-xs text-gray-500">{adminInfo.role || 'Admin'}</p>
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -175,7 +197,7 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
               blogPosts={blogPosts}
               setBlogPosts={setBlogPosts}
             />
-          )}{" "}
+          )}
           {activeTab === "media" && <MediaGallery />}
           {activeTab === "users" && <UserManager />}
           {activeTab === "reports" && <ReportsDashboard />}
@@ -190,7 +212,7 @@ const NavItem = ({ icon, text, active, onClick, sidebarOpen }) => {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center w-full p-3 ${
+      className={`flex items-center w-full p-3 transition-colors ${
         active ? "bg-indigo-700" : "hover:bg-indigo-700"
       }`}
     >
