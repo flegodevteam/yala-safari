@@ -16,7 +16,7 @@ const getApiBaseUrl = () => {
     return 'http://localhost:5000';
   } else {
     console.log('🌐 Running in production - Using Vercel backend');
-    return 'https://yala-safari-hspl.vercel.app';
+    return 'https://squid-app-qwyej.ondigitalocean.app';
   }
 };
 
