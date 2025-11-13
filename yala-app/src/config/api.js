@@ -1,7 +1,7 @@
 // API Configuration
 // Automatically detects environment and uses correct API URL
 const getApiBaseUrl = () => {
-  // 1. Check if environment variable is set
+  // 1. Check if environment variable is set (PRIORITY)
   if (process.env.REACT_APP_API_BASE_URL) {
     console.log('🔗 Using API_BASE_URL from .env:', process.env.REACT_APP_API_BASE_URL);
     return process.env.REACT_APP_API_BASE_URL;
@@ -15,8 +15,10 @@ const getApiBaseUrl = () => {
     console.log('💻 Running locally - Using http://localhost:5000');
     return 'http://localhost:5000';
   } else {
-    console.log('🌐 Running in production - Using Vercel backend');
-    return 'https://squid-app-qwyej.ondigitalocean.app';
+    // ✅ PRODUCTION URL - Replace with your actual DigitalOcean URL
+    const productionUrl = 'https://squid-app-qwyej.ondigitalocean.app';
+    console.log('🌐 Running in production - Using:', productionUrl);
+    return productionUrl;
   }
 };
 
@@ -34,10 +36,33 @@ export const apiEndpoints = {
   },
   // Package endpoints
   packages: {
+    base: `${API_BASE_URL}/api/packages`,
     current: `${API_BASE_URL}/api/packages/current`,
+    byId: (id) => `${API_BASE_URL}/api/packages/${id}`,
+    byPark: (park) => `${API_BASE_URL}/api/packages/park/${park}`,
+    stats: `${API_BASE_URL}/api/packages/stats/overview`,
+    toggleStatus: (id) => `${API_BASE_URL}/api/packages/${id}/toggle-status`,
     admin: `${API_BASE_URL}/api/admin/packages`,
     availability: (type, park) =>
       `${API_BASE_URL}/api/availability?type=${type}&park=${park}`,
+    
+    // 🆕 PRICING MANAGEMENT ENDPOINTS
+    pricing: {
+      // Update jeep pricing
+      jeep: (id) => `${API_BASE_URL}/api/packages/${id}/jeep-pricing`,
+      // Update guide pricing
+      guide: (id) => `${API_BASE_URL}/api/packages/${id}/guide-pricing`,
+      // Meal options management
+      mealOptions: {
+        add: (id) => `${API_BASE_URL}/api/packages/${id}/meal-options`,
+        update: (id, mealType, itemIndex) => 
+          `${API_BASE_URL}/api/packages/${id}/meal-options/${mealType}/${itemIndex}`,
+        delete: (id, mealType, itemIndex) => 
+          `${API_BASE_URL}/api/packages/${id}/meal-options/${mealType}/${itemIndex}`,
+      },
+      // Bulk update all pricing
+      bulk: (id) => `${API_BASE_URL}/api/packages/${id}/pricing-bulk`,
+    },
   },
   // Blog endpoints
   blogs: {
@@ -74,15 +99,6 @@ export const apiEndpoints = {
   settings: {
     bankDetails: `${API_BASE_URL}/api/settings/bank-details`,
     whatsapp: `${API_BASE_URL}/api/settings/whatsapp`,
-  },
-
-  packages: {
-    base: `${API_BASE_URL}/api/packages`,
-    current: `${API_BASE_URL}/api/packages/current`,
-    byId: (id) => `${API_BASE_URL}/api/packages/${id}`,
-    byPark: (park) => `${API_BASE_URL}/api/packages/park/${park}`,
-    stats: `${API_BASE_URL}/api/packages/stats/overview`,
-    toggleStatus: (id) => `${API_BASE_URL}/api/packages/${id}/toggle-status`,
   },
 };
 
@@ -179,6 +195,116 @@ export const adminFetch = async (url, options = {}) => {
   return response;
 };
 
+// 🆕 PACKAGE PRICING API FUNCTIONS
+export const packagePricingAPI = {
+  // Update jeep pricing for specific type and time slot
+  updateJeepPricing: async (packageId, jeepType, timeSlot, price) => {
+    try {
+      console.log(`🚙 Updating ${jeepType} jeep ${timeSlot} price to $${price}`);
+      const response = await adminFetch(apiEndpoints.packages.pricing.jeep(packageId), {
+        method: 'PUT',
+        body: JSON.stringify({ jeepType, timeSlot, price }),
+      });
+      const result = await response.json();
+      console.log('✅ Jeep pricing updated:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to update jeep pricing:', error);
+      throw error;
+    }
+  },
+
+  // Update guide pricing for specific guide type
+  updateGuidePricing: async (packageId, guideType, price) => {
+    try {
+      console.log(`👨‍✈️ Updating ${guideType} price to $${price}`);
+      const response = await adminFetch(apiEndpoints.packages.pricing.guide(packageId), {
+        method: 'PUT',
+        body: JSON.stringify({ guideType, price }),
+      });
+      const result = await response.json();
+      console.log('✅ Guide pricing updated:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to update guide pricing:', error);
+      throw error;
+    }
+  },
+
+  // Add new meal option
+  addMealOption: async (packageId, mealType, mealItem) => {
+    try {
+      console.log(`🍽️ Adding ${mealType} item:`, mealItem);
+      const response = await adminFetch(apiEndpoints.packages.pricing.mealOptions.add(packageId), {
+        method: 'POST',
+        body: JSON.stringify({ mealType, ...mealItem }),
+      });
+      const result = await response.json();
+      console.log('✅ Meal option added:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to add meal option:', error);
+      throw error;
+    }
+  },
+
+  // Update existing meal option
+  updateMealOption: async (packageId, mealType, itemIndex, updates) => {
+    try {
+      console.log(`🍽️ Updating ${mealType} item ${itemIndex}:`, updates);
+      const response = await adminFetch(
+        apiEndpoints.packages.pricing.mealOptions.update(packageId, mealType, itemIndex),
+        {
+          method: 'PUT',
+          body: JSON.stringify(updates),
+        }
+      );
+      const result = await response.json();
+      console.log('✅ Meal option updated:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to update meal option:', error);
+      throw error;
+    }
+  },
+
+  // Delete meal option
+  deleteMealOption: async (packageId, mealType, itemIndex) => {
+    try {
+      console.log(`🗑️ Deleting ${mealType} item ${itemIndex}`);
+      const response = await adminFetch(
+        apiEndpoints.packages.pricing.mealOptions.delete(packageId, mealType, itemIndex),
+        {
+          method: 'DELETE',
+        }
+      );
+      const result = await response.json();
+      console.log('✅ Meal option deleted:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to delete meal option:', error);
+      throw error;
+    }
+  },
+
+  // Bulk update all pricing at once
+  bulkUpdatePricing: async (packageId, pricingData) => {
+    try {
+      console.log('📦 Bulk updating pricing for package:', packageId);
+      const response = await adminFetch(apiEndpoints.packages.pricing.bulk(packageId), {
+        method: 'PUT',
+        body: JSON.stringify(pricingData),
+      });
+      const result = await response.json();
+      console.log('✅ Bulk pricing updated:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to bulk update pricing:', error);
+      throw error;
+    }
+  },
+};
+
 // Booking API Functions
 export const bookingAPI = {
   // Create new booking
@@ -241,6 +367,110 @@ export const bookingAPI = {
       return await response.json();
     } catch (error) {
       throw new Error(error.message || 'Failed to delete booking');
+    }
+  },
+};
+
+// 🆕 PACKAGE API FUNCTIONS (for convenience)
+export const packageAPI = {
+  // Get all packages
+  getAll: async (filters = {}) => {
+    try {
+      const queryParams = new URLSearchParams(filters).toString();
+      const url = queryParams 
+        ? `${apiEndpoints.packages.base}?${queryParams}`
+        : apiEndpoints.packages.base;
+      
+      const response = await publicFetch(url);
+      return await response.json();
+    } catch (error) {
+      throw new Error(error.message || 'Failed to fetch packages');
+    }
+  },
+
+  // Get package by ID
+  getById: async (id) => {
+    try {
+      const response = await publicFetch(apiEndpoints.packages.byId(id));
+      return await response.json();
+    } catch (error) {
+      throw new Error(error.message || 'Failed to fetch package');
+    }
+  },
+
+  // Create package (admin only)
+  create: async (packageData) => {
+    try {
+      console.log('📦 Creating package:', packageData);
+      const response = await adminFetch(apiEndpoints.packages.base, {
+        method: 'POST',
+        body: JSON.stringify(packageData),
+      });
+      const result = await response.json();
+      console.log('✅ Package created:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to create package:', error);
+      throw error;
+    }
+  },
+
+  // Update package (admin only)
+  update: async (id, packageData) => {
+    try {
+      console.log('📦 Updating package:', id);
+      const response = await adminFetch(apiEndpoints.packages.byId(id), {
+        method: 'PUT',
+        body: JSON.stringify(packageData),
+      });
+      const result = await response.json();
+      console.log('✅ Package updated:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to update package:', error);
+      throw error;
+    }
+  },
+
+  // Delete package (admin only)
+  delete: async (id) => {
+    try {
+      console.log('🗑️ Deleting package:', id);
+      const response = await adminFetch(apiEndpoints.packages.byId(id), {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+      console.log('✅ Package deleted:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to delete package:', error);
+      throw error;
+    }
+  },
+
+  // Toggle package status (admin only)
+  toggleStatus: async (id) => {
+    try {
+      console.log('🔄 Toggling package status:', id);
+      const response = await adminFetch(apiEndpoints.packages.toggleStatus(id), {
+        method: 'PATCH',
+      });
+      const result = await response.json();
+      console.log('✅ Package status toggled:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to toggle package status:', error);
+      throw error;
+    }
+  },
+
+  // Get package statistics (admin only)
+  getStats: async () => {
+    try {
+      const response = await adminFetch(apiEndpoints.packages.stats);
+      return await response.json();
+    } catch (error) {
+      throw new Error(error.message || 'Failed to fetch package stats');
     }
   },
 };

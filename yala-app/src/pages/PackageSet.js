@@ -152,18 +152,40 @@ const Packages = () => {
     });
 
     // 🆕 SET MEAL ITEMS FROM PACKAGE (FROM API, NOT HARDCODED)
-    if (pkg.mealOptions) {
-      if (pkg.mealOptions.breakfast && Array.isArray(pkg.mealOptions.breakfast)) {
-        setBreakfastMenuItems(pkg.mealOptions.breakfast);
-        setSelectedBreakfastItems(
-          pkg.mealOptions.breakfast.map((item) => item.name)
-        );
-      }
-      if (pkg.mealOptions.lunch && Array.isArray(pkg.mealOptions.lunch)) {
-        setLunchMenuItems(pkg.mealOptions.lunch);
-        setSelectedLunchItems(pkg.mealOptions.lunch.map((item) => item.name));
-      }
-    }
+    // 🆕 SET MEAL ITEMS FROM PACKAGE (FROM API, NOT HARDCODED)
+if (pkg.mealOptions) {
+  console.log("🍽️ Loading meal options from API:", pkg.mealOptions);
+  
+  // Set breakfast items
+  if (pkg.mealOptions.breakfast && Array.isArray(pkg.mealOptions.breakfast)) {
+    setBreakfastMenuItems(pkg.mealOptions.breakfast);
+    setSelectedBreakfastItems(
+      pkg.mealOptions.breakfast.map((item) => item.name)
+    );
+    console.log("✅ Breakfast items loaded:", pkg.mealOptions.breakfast.length, "items");
+  } else {
+    setBreakfastMenuItems([]);
+    setSelectedBreakfastItems([]);
+    console.log("⚠️ No breakfast items in package");
+  }
+  
+  // Set lunch items
+  if (pkg.mealOptions.lunch && Array.isArray(pkg.mealOptions.lunch)) {
+    setLunchMenuItems(pkg.mealOptions.lunch);
+    setSelectedLunchItems(pkg.mealOptions.lunch.map((item) => item.name));
+    console.log("✅ Lunch items loaded:", pkg.mealOptions.lunch.length, "items");
+  } else {
+    setLunchMenuItems([]);
+    setSelectedLunchItems([]);
+    console.log("⚠️ No lunch items in package");
+  }
+} else {
+  console.log("⚠️ No mealOptions object in package");
+  setBreakfastMenuItems([]);
+  setLunchMenuItems([]);
+  setSelectedBreakfastItems([]);
+  setSelectedLunchItems([]);
+}
 
     // Set package type if available
     if (pkg.packageType) {
@@ -189,26 +211,36 @@ const Packages = () => {
   // ========================================
 
   const getBreakfastMenu = () => {
-    if (!breakfastMenuItems || breakfastMenuItems.length === 0) return [];
-    
-    return breakfastMenuItems.filter((item) => {
-      if (vegOption === "veg") {
-        return item.isVegetarian !== false;
-      }
-      return true;
-    });
-  };
+  if (!breakfastMenuItems || breakfastMenuItems.length === 0) {
+    console.log("⚠️ No breakfast menu items available");
+    return [];
+  }
+  
+  return breakfastMenuItems.filter((item) => {
+    if (vegOption === "veg") {
+      // Only show items explicitly marked as vegetarian
+      return item.isVegetarian === true;
+    }
+    // For non-veg, show all items
+    return true;
+  });
+};
 
   const getLunchMenu = () => {
-    if (!lunchMenuItems || lunchMenuItems.length === 0) return [];
-    
-    return lunchMenuItems.filter((item) => {
-      if (vegOption === "veg") {
-        return item.isVegetarian !== false;
-      }
-      return true;
-    });
-  };
+  if (!lunchMenuItems || lunchMenuItems.length === 0) {
+    console.log("⚠️ No lunch menu items available");
+    return [];
+  }
+  
+  return lunchMenuItems.filter((item) => {
+    if (vegOption === "veg") {
+      // Only show items explicitly marked as vegetarian
+      return item.isVegetarian === true;
+    }
+    // For non-veg, show all items
+    return true;
+  });
+};
 
   // 🆕 GET TICKET PRICE FROM API (NO HARDCODED PRICES)
   const getTicketPrice = () => {
@@ -367,16 +399,30 @@ const Packages = () => {
   }, [searchQuery, filterPark, filterType, sortBy]);
 
   // 🆕 Update meal selections when vegOption changes
-  useEffect(() => {
-    if (breakfastMenuItems.length > 0) {
-      const filteredBreakfast = getBreakfastMenu();
-      setSelectedBreakfastItems(filteredBreakfast.map((item) => item.name));
-    }
-    if (lunchMenuItems.length > 0) {
-      const filteredLunch = getLunchMenu();
-      setSelectedLunchItems(filteredLunch.map((item) => item.name));
-    }
-  }, [vegOption]);
+  // 🆕 Update meal selections when vegOption changes
+useEffect(() => {
+  if (breakfastMenuItems.length > 0) {
+    const filteredBreakfast = getBreakfastMenu();
+    // Only keep selected items that are still in filtered menu
+    setSelectedBreakfastItems((prev) => 
+      prev.filter((itemName) => 
+        filteredBreakfast.some((item) => item.name === itemName)
+      )
+    );
+    console.log("🔄 Updated breakfast selection for", vegOption);
+  }
+  
+  if (lunchMenuItems.length > 0) {
+    const filteredLunch = getLunchMenu();
+    // Only keep selected items that are still in filtered menu
+    setSelectedLunchItems((prev) => 
+      prev.filter((itemName) => 
+        filteredLunch.some((item) => item.name === itemName)
+      )
+    );
+    console.log("🔄 Updated lunch selection for", vegOption);
+  }
+}, [vegOption]);
 
   // 🆕 Fetch private availability dates when needed
   useEffect(() => {
