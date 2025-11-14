@@ -12,8 +12,8 @@ const getApiBaseUrl = () => {
   console.log('📍 Current hostname:', hostname);
 
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    console.log('💻 Running locally - Using http://localhost:5000');
-    return 'http://localhost:5000';
+    console.log('💻 Running locally - Using https://squid-app-qwyej.ondigitalocean.app');
+    return 'https://squid-app-qwyej.ondigitalocean.app';
   } else {
     // ✅ PRODUCTION URL - Replace with your actual DigitalOcean URL
     const productionUrl = 'https://squid-app-qwyej.ondigitalocean.app';
