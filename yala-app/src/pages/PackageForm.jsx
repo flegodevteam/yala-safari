@@ -12,24 +12,29 @@ const PackageForm = () => {
     description: '',
     park: 'yala',
     block: '',
-    packageType: 'both',
+    packageType: 'private', // ONLY PRIVATE NOW
     maxCapacity: 7,
     
     // Jeep Pricing
     jeep: {
-      basic: { morning: 5, afternoon: 5, extended: 7, fullDay: 10 },
-      luxury: { morning: 7, afternoon: 7, extended: 9, fullDay: 12 },
-      superLuxury: { morning: 10, afternoon: 10, extended: 12, fullDay: 15 },
+      basic: { morning: 45, afternoon: 45, extended: 50, fullDay: 90 },
+      luxury: { morning: 65, afternoon: 65, extended: 70, fullDay: 130 },
+      superLuxury: { morning: 80, afternoon: 80, extended: 90, fullDay: 150 },
     },
     
-    // Shared Pricing
-    shared: { 1: 10, 2: 8, 3: 7, 4: 5, 5: 5, 6: 5, 7: 5 },
+    // REMOVED: Shared Safari Pricing
     
-    // Meals Pricing
+    // Legacy Meals Pricing (keep for backward compatibility)
     meals: { breakfast: 5, lunch: 6 },
     
+    // 🆕 DYNAMIC MEAL OPTIONS
+    mealOptions: {
+      breakfast: [],
+      lunch: []
+    },
+    
     // Guide Pricing
-    guide: { driver: 0, driverGuide: 10, separateGuide: 15 },
+    guide: { driver: 0, driverGuide: 15, separateGuide: 25 },
     
     // Ticket Pricing
     tickets: { foreign: 15, local: 5 },
@@ -40,6 +45,23 @@ const PackageForm = () => {
     
     isActive: true,
   });
+
+  // 🆕 New meal item states
+  const [newBreakfastItem, setNewBreakfastItem] = useState({
+    name: '',
+    price: '',
+    isVegetarian: false,
+    description: ''
+  });
+
+  const [newLunchItem, setNewLunchItem] = useState({
+    name: '',
+    price: '',
+    isVegetarian: false,
+    description: ''
+  });
+
+  const [editingMealIndex, setEditingMealIndex] = useState({ type: null, index: null });
 
   const [newFeature, setNewFeature] = useState('');
   const [newHighlight, setNewHighlight] = useState('');
@@ -59,7 +81,15 @@ const PackageForm = () => {
       const data = await response.json();
       
       if (data.success) {
-        setFormData(data.package);
+        // Initialize mealOptions if not present
+        const packageData = {
+          ...data.package,
+          mealOptions: data.package.mealOptions || {
+            breakfast: [],
+            lunch: []
+          }
+        };
+        setFormData(packageData);
       }
     } catch (error) {
       console.error('Error fetching package:', error);
@@ -114,15 +144,85 @@ const PackageForm = () => {
     }));
   };
 
-  const handleSharedPriceChange = (seats, value) => {
+  // REMOVED: handleSharedPriceChange - No shared safari
+
+  // 🆕 MEAL OPTIONS HANDLERS
+
+  const addBreakfastItem = () => {
+    if (!newBreakfastItem.name || !newBreakfastItem.price) {
+      alert('Please enter item name and price');
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
-      shared: {
-        ...prev.shared,
-        [seats]: Number(value),
-      },
+      mealOptions: {
+        ...prev.mealOptions,
+        breakfast: [
+          ...prev.mealOptions.breakfast,
+          {
+            name: newBreakfastItem.name,
+            price: Number(newBreakfastItem.price),
+            isVegetarian: newBreakfastItem.isVegetarian,
+            description: newBreakfastItem.description
+          }
+        ]
+      }
+    }));
+
+    // Reset form
+    setNewBreakfastItem({ name: '', price: '', isVegetarian: false, description: '' });
+  };
+
+  const addLunchItem = () => {
+    if (!newLunchItem.name || !newLunchItem.price) {
+      alert('Please enter item name and price');
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      mealOptions: {
+        ...prev.mealOptions,
+        lunch: [
+          ...prev.mealOptions.lunch,
+          {
+            name: newLunchItem.name,
+            price: Number(newLunchItem.price),
+            isVegetarian: newLunchItem.isVegetarian,
+            description: newLunchItem.description
+          }
+        ]
+      }
+    }));
+
+    // Reset form
+    setNewLunchItem({ name: '', price: '', isVegetarian: false, description: '' });
+  };
+
+  const removeMealItem = (mealType, index) => {
+    setFormData(prev => ({
+      ...prev,
+      mealOptions: {
+        ...prev.mealOptions,
+        [mealType]: prev.mealOptions[mealType].filter((_, i) => i !== index)
+      }
     }));
   };
+
+  const updateMealItem = (mealType, index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      mealOptions: {
+        ...prev.mealOptions,
+        [mealType]: prev.mealOptions[mealType].map((item, i) => 
+          i === index ? { ...item, [field]: field === 'price' ? Number(value) : value } : item
+        )
+      }
+    }));
+  };
+
+  // FEATURES & HIGHLIGHTS HANDLERS
 
   const addFeature = () => {
     if (newFeature.trim()) {
@@ -167,7 +267,7 @@ const PackageForm = () => {
           {isEditMode ? 'Edit Package' : 'Create New Package'}
         </h1>
         <p className="text-gray-600">
-          {isEditMode ? 'Update package details' : 'Add a new safari package'}
+          {isEditMode ? 'Update package details and pricing' : 'Add a new safari package with custom pricing'}
         </p>
       </div>
 
@@ -221,19 +321,8 @@ const PackageForm = () => {
               </div>
             )}
 
-            <div>
-              <label className="block font-semibold mb-2">Package Type *</label>
-              <select
-                required
-                value={formData.packageType}
-                onChange={(e) => setFormData({...formData, packageType: e.target.value})}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              >
-                <option value="both">Private & Shared</option>
-                <option value="private">Private Only</option>
-                <option value="shared">Shared Only</option>
-              </select>
-            </div>
+            {/* REMOVED: Package Type selector - Only private safari now */}
+            <input type="hidden" value="private" name="packageType" />
 
             <div>
               <label className="block font-semibold mb-2">Max Capacity</label>
@@ -274,18 +363,19 @@ const PackageForm = () => {
 
         {/* Jeep Pricing */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold mb-4">Jeep Pricing ($)</h2>
+          <h2 className="text-xl font-bold mb-4">🚙 Jeep Pricing ($)</h2>
+          <p className="text-sm text-gray-600 mb-4">Set prices for different jeep types and time slots</p>
           
           {['basic', 'luxury', 'superLuxury'].map((jeepType) => (
-            <div key={jeepType} className="mb-6">
-              <h3 className="font-semibold mb-3 capitalize">
-                {jeepType.replace(/([A-Z])/g, ' $1').trim()}
+            <div key={jeepType} className="mb-6 pb-6 border-b last:border-b-0">
+              <h3 className="font-semibold mb-3 text-lg capitalize">
+                {jeepType === 'superLuxury' ? 'Super Luxury' : jeepType} Jeep
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {['morning', 'afternoon', 'extended', 'fullDay'].map((slot) => (
                   <div key={slot}>
-                    <label className="block text-sm mb-1 capitalize">
-                      {slot.replace(/([A-Z])/g, ' $1')}
+                    <label className="block text-sm mb-1 capitalize font-medium text-gray-700">
+                      {slot === 'fullDay' ? 'Full Day' : slot}
                     </label>
                     <input
                       type="number"
@@ -293,7 +383,8 @@ const PackageForm = () => {
                       step="0.01"
                       value={formData.jeep[jeepType][slot]}
                       onChange={(e) => handleJeepPriceChange(jeepType, slot, e.target.value)}
-                      className="w-full border border-gray-300 rounded px-3 py-2"
+                      className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-green-500"
+                      placeholder="0.00"
                     />
                   </div>
                 ))}
@@ -302,116 +393,320 @@ const PackageForm = () => {
           ))}
         </div>
 
-        {/* Shared Safari Pricing */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold mb-4">Shared Safari Pricing ($ per person)</h2>
-          <div className="grid grid-cols-3 md:grid-cols-7 gap-4">
-            {[1, 2, 3, 4, 5, 6, 7].map((seats) => (
-              <div key={seats}>
-                <label className="block text-sm mb-1">{seats} Seat{seats > 1 ? 's' : ''}</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.shared[seats]}
-                  onChange={(e) => handleSharedPriceChange(seats, e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* REMOVED: Shared Safari Pricing - Only private safaris now */}
 
-        {/* Meals & Guide Pricing */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Meals */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold mb-4">Meals Pricing ($)</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block font-semibold mb-2">Breakfast</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.meals.breakfast}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    meals: {...formData.meals, breakfast: Number(e.target.value)}
-                  })}
-                  className="w-full border border-gray-300 rounded px-3 py-2"
-                />
+        {/* 🆕 DYNAMIC MEAL OPTIONS */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-bold mb-4">🍽️ Meal Options</h2>
+          <p className="text-sm text-gray-600 mb-6">Add custom meal items with individual prices</p>
+
+          {/* BREAKFAST ITEMS */}
+          <div className="mb-8">
+            <h3 className="font-semibold text-lg mb-4 text-green-700">Breakfast Items</h3>
+            
+            {/* Add New Breakfast Item Form */}
+            <div className="bg-green-50 rounded-lg p-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Item Name *</label>
+                  <input
+                    type="text"
+                    value={newBreakfastItem.name}
+                    onChange={(e) => setNewBreakfastItem({...newBreakfastItem, name: e.target.value})}
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    placeholder="e.g., Fresh Fruit Platter"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Price ($) *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={newBreakfastItem.price}
+                    onChange={(e) => setNewBreakfastItem({...newBreakfastItem, price: e.target.value})}
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    type="button"
+                    onClick={addBreakfastItem}
+                    className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-medium"
+                  >
+                    + Add Item
+                  </button>
+                </div>
               </div>
-              <div>
-                <label className="block font-semibold mb-2">Lunch</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.meals.lunch}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    meals: {...formData.meals, lunch: Number(e.target.value)}
-                  })}
-                  className="w-full border border-gray-300 rounded px-3 py-2"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Description (optional)</label>
+                  <input
+                    type="text"
+                    value={newBreakfastItem.description}
+                    onChange={(e) => setNewBreakfastItem({...newBreakfastItem, description: e.target.value})}
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    placeholder="Brief description"
+                  />
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="breakfast-veg"
+                    checked={newBreakfastItem.isVegetarian}
+                    onChange={(e) => setNewBreakfastItem({...newBreakfastItem, isVegetarian: e.target.checked})}
+                    className="mr-2 h-5 w-5"
+                  />
+                  <label htmlFor="breakfast-veg" className="text-sm font-medium">Vegetarian</label>
+                </div>
               </div>
+            </div>
+
+            {/* Breakfast Items List */}
+            <div className="space-y-3">
+              {formData.mealOptions.breakfast.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">No breakfast items added yet</p>
+              ) : (
+                formData.mealOptions.breakfast.map((item, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <input
+                            type="text"
+                            value={item.name}
+                            onChange={(e) => updateMealItem('breakfast', index, 'name', e.target.value)}
+                            className="font-semibold border-b border-transparent hover:border-gray-300 focus:border-green-500 outline-none px-1"
+                          />
+                          {item.isVegetarian && (
+                            <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded">🌱 Veg</span>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <label className="text-gray-600">Price:</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={item.price}
+                              onChange={(e) => updateMealItem('breakfast', index, 'price', e.target.value)}
+                              className="ml-2 w-20 border border-gray-300 rounded px-2 py-1"
+                            />
+                          </div>
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={item.isVegetarian}
+                              onChange={(e) => updateMealItem('breakfast', index, 'isVegetarian', e.target.checked)}
+                              className="mr-2"
+                            />
+                            <label className="text-gray-600">Vegetarian</label>
+                          </div>
+                        </div>
+                        {item.description && (
+                          <p className="text-sm text-gray-600 mt-2">{item.description}</p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeMealItem('breakfast', index)}
+                        className="ml-4 text-red-600 hover:text-red-800 font-bold text-xl"
+                        title="Remove item"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
-          {/* Guide */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold mb-4">Guide Pricing ($)</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block font-semibold mb-2">Driver Only</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.guide.driver}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    guide: {...formData.guide, driver: Number(e.target.value)}
-                  })}
-                  className="w-full border border-gray-300 rounded px-3 py-2"
-                />
+          {/* LUNCH ITEMS */}
+          <div>
+            <h3 className="font-semibold text-lg mb-4 text-orange-700">Lunch Items</h3>
+            
+            {/* Add New Lunch Item Form */}
+            <div className="bg-orange-50 rounded-lg p-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Item Name *</label>
+                  <input
+                    type="text"
+                    value={newLunchItem.name}
+                    onChange={(e) => setNewLunchItem({...newLunchItem, name: e.target.value})}
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    placeholder="e.g., Rice & Curry"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Price ($) *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={newLunchItem.price}
+                    onChange={(e) => setNewLunchItem({...newLunchItem, price: e.target.value})}
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    type="button"
+                    onClick={addLunchItem}
+                    className="w-full bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 font-medium"
+                  >
+                    + Add Item
+                  </button>
+                </div>
               </div>
-              <div>
-                <label className="block font-semibold mb-2">Driver + Guide</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.guide.driverGuide}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    guide: {...formData.guide, driverGuide: Number(e.target.value)}
-                  })}
-                  className="w-full border border-gray-300 rounded px-3 py-2"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Description (optional)</label>
+                  <input
+                    type="text"
+                    value={newLunchItem.description}
+                    onChange={(e) => setNewLunchItem({...newLunchItem, description: e.target.value})}
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                    placeholder="Brief description"
+                  />
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="lunch-veg"
+                    checked={newLunchItem.isVegetarian}
+                    onChange={(e) => setNewLunchItem({...newLunchItem, isVegetarian: e.target.checked})}
+                    className="mr-2 h-5 w-5"
+                  />
+                  <label htmlFor="lunch-veg" className="text-sm font-medium">Vegetarian</label>
+                </div>
               </div>
-              <div>
-                <label className="block font-semibold mb-2">Separate Guide</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.guide.separateGuide}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    guide: {...formData.guide, separateGuide: Number(e.target.value)}
-                  })}
-                  className="w-full border border-gray-300 rounded px-3 py-2"
-                />
-              </div>
+            </div>
+
+            {/* Lunch Items List */}
+            <div className="space-y-3">
+              {formData.mealOptions.lunch.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">No lunch items added yet</p>
+              ) : (
+                formData.mealOptions.lunch.map((item, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <input
+                            type="text"
+                            value={item.name}
+                            onChange={(e) => updateMealItem('lunch', index, 'name', e.target.value)}
+                            className="font-semibold border-b border-transparent hover:border-gray-300 focus:border-orange-500 outline-none px-1"
+                          />
+                          {item.isVegetarian && (
+                            <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded">🌱 Veg</span>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <label className="text-gray-600">Price:</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={item.price}
+                              onChange={(e) => updateMealItem('lunch', index, 'price', e.target.value)}
+                              className="ml-2 w-20 border border-gray-300 rounded px-2 py-1"
+                            />
+                          </div>
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={item.isVegetarian}
+                              onChange={(e) => updateMealItem('lunch', index, 'isVegetarian', e.target.checked)}
+                              className="mr-2"
+                            />
+                            <label className="text-gray-600">Vegetarian</label>
+                          </div>
+                        </div>
+                        {item.description && (
+                          <p className="text-sm text-gray-600 mt-2">{item.description}</p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeMealItem('lunch', index)}
+                        className="ml-4 text-red-600 hover:text-red-800 font-bold text-xl"
+                        title="Remove item"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Guide Pricing */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-bold mb-4">👨‍✈️ Guide Pricing ($)</h2>
+          <p className="text-sm text-gray-600 mb-4">Set prices for different guide options</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block font-semibold mb-2">Driver Only</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.guide.driver}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  guide: {...formData.guide, driver: Number(e.target.value)}
+                })}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-green-500"
+                placeholder="0.00"
+              />
+              <p className="text-xs text-gray-500 mt-1">Basic transportation only</p>
+            </div>
+            <div>
+              <label className="block font-semibold mb-2">Driver Guide</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.guide.driverGuide}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  guide: {...formData.guide, driverGuide: Number(e.target.value)}
+                })}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-green-500"
+                placeholder="0.00"
+              />
+              <p className="text-xs text-gray-500 mt-1">Driver + wildlife guide</p>
+            </div>
+            <div>
+              <label className="block font-semibold mb-2">Driver + Separate Guide</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.guide.separateGuide}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  guide: {...formData.guide, separateGuide: Number(e.target.value)}
+                })}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-green-500"
+                placeholder="0.00"
+              />
+              <p className="text-xs text-gray-500 mt-1">Professional guide included</p>
             </div>
           </div>
         </div>
 
         {/* Ticket Pricing */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold mb-4">Ticket Pricing ($)</h2>
+          <h2 className="text-xl font-bold mb-4">🎫 Ticket Pricing ($ per person)</h2>
+          <p className="text-sm text-gray-600 mb-4">National park entry fees</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block font-semibold mb-2">Foreign Visitor</label>
@@ -424,7 +719,8 @@ const PackageForm = () => {
                   ...formData,
                   tickets: {...formData.tickets, foreign: Number(e.target.value)}
                 })}
-                className="w-full border border-gray-300 rounded px-3 py-2"
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-green-500"
+                placeholder="0.00"
               />
             </div>
             <div>
@@ -438,7 +734,8 @@ const PackageForm = () => {
                   ...formData,
                   tickets: {...formData.tickets, local: Number(e.target.value)}
                 })}
-                className="w-full border border-gray-300 rounded px-3 py-2"
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-green-500"
+                placeholder="0.00"
               />
             </div>
           </div>
@@ -446,7 +743,7 @@ const PackageForm = () => {
 
         {/* Features */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold mb-4">Package Features</h2>
+          <h2 className="text-xl font-bold mb-4">✨ Package Features</h2>
           <div className="flex gap-2 mb-4">
             <input
               type="text"
@@ -454,12 +751,12 @@ const PackageForm = () => {
               onChange={(e) => setNewFeature(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
               className="flex-1 border border-gray-300 rounded px-3 py-2"
-              placeholder="e.g., Professional Guide"
+              placeholder="e.g., Professional Guide, All Equipment Included"
             />
             <button
               type="button"
               onClick={addFeature}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-medium"
             >
               Add
             </button>
@@ -474,7 +771,7 @@ const PackageForm = () => {
                 <button
                   type="button"
                   onClick={() => removeFeature(index)}
-                  className="text-green-600 hover:text-green-800"
+                  className="text-green-600 hover:text-green-800 font-bold"
                 >
                   ×
                 </button>
@@ -485,7 +782,7 @@ const PackageForm = () => {
 
         {/* Highlights */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold mb-4">Package Highlights</h2>
+          <h2 className="text-xl font-bold mb-4">🌟 Package Highlights</h2>
           <div className="flex gap-2 mb-4">
             <input
               type="text"
@@ -493,12 +790,12 @@ const PackageForm = () => {
               onChange={(e) => setNewHighlight(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addHighlight())}
               className="flex-1 border border-gray-300 rounded px-3 py-2"
-              placeholder="e.g., Leopard Sightings"
+              placeholder="e.g., Leopard Sightings, Elephant Herds"
             />
             <button
               type="button"
               onClick={addHighlight}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-medium"
             >
               Add
             </button>
@@ -513,7 +810,7 @@ const PackageForm = () => {
                 <button
                   type="button"
                   onClick={() => removeHighlight(index)}
-                  className="text-blue-600 hover:text-blue-800"
+                  className="text-blue-600 hover:text-blue-800 font-bold"
                 >
                   ×
                 </button>
@@ -523,18 +820,18 @@ const PackageForm = () => {
         </div>
 
         {/* Submit Buttons */}
-        <div className="flex gap-4">
+        <div className="flex gap-4 sticky bottom-4">
           <button
             type="submit"
             disabled={saving}
-            className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400"
+            className="flex-1 bg-green-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-green-700 disabled:bg-gray-400 shadow-lg"
           >
-            {saving ? 'Saving...' : isEditMode ? 'Update Package' : 'Create Package'}
+            {saving ? 'Saving...' : isEditMode ? '✓ Update Package' : '+ Create Package'}
           </button>
           <button
             type="button"
             onClick={() => navigate('/dashboard/packages')}
-            className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400"
+            className="px-8 py-4 bg-gray-300 text-gray-700 rounded-lg font-bold text-lg hover:bg-gray-400 shadow-lg"
           >
             Cancel
           </button>

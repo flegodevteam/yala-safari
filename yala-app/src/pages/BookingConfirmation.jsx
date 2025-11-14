@@ -1,358 +1,425 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { bookingAPI } from '../config/api';
-import './BookingConfirmation.css';
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { apiEndpoints, publicFetch } from "../config/api";
+import { toast } from "react-toastify";
 
 const BookingConfirmation = () => {
-    const location = useLocation();
-    const navigate = useNavigate();
-    const bookingDetails = location.state;
+  const location = useLocation();
+  const navigate = useNavigate();
+  const bookingData = location.state;
 
-    const [formData, setFormData] = useState({
-        customerName: bookingDetails?.customerName || '',     // ✅ Pre-filled from Packages
-        customerEmail: bookingDetails?.customerEmail || '',   // ✅ Pre-filled from Packages
-        customerPhone: bookingDetails?.customerPhone || '',   // ✅ Pre-filled from Packages
-        specialRequests: '',
-    });
+  const [loading, setLoading] = useState(false);
+  const [bookingConfirmed, setBookingConfirmed] = useState(false);
+  const [confirmedBookingId, setConfirmedBookingId] = useState(null);
 
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [bookingId, setBookingId] = useState('');
+  // If no booking data, redirect back
+  if (!bookingData) {
+    navigate("/packages");
+    return null;
+  }
 
-    // WhatsApp and Bank Details (these should come from backend/env in production)
-    const ADMIN_WHATSAPP = process.env.REACT_APP_ADMIN_WHATSAPP || '+94771234567';
-    const BANK_DETAILS = {
-        bankName: process.env.REACT_APP_BANK_NAME || 'Will Add soon',
-        accountName: process.env.REACT_APP_ACCOUNT_NAME || 'Will Add soon',
-        accountNumber: process.env.REACT_APP_ACCOUNT_NUMBER || 'Will Add soon',
-        branch: process.env.REACT_APP_BRANCH || 'Will Add soon',
-        swiftCode: process.env.REACT_APP_SWIFT_CODE || 'Will Add soon',
+  // ✅ CRITICAL: Calculate prices on confirmation page (matching Packages.jsx)
+  const calculatePrices = () => {
+    const {
+      people,
+      visitorType,
+      guideOption,
+      mealOption,
+      includeBreakfast,
+      includeLunch,
+      selectedBreakfastItems,
+      selectedLunchItems,
+      vegOption,
+      includeEggs,
+      timeSlot,
+      jeepPrice: frontendJeepPrice,
+      ticketPrice: frontendTicketPrice,
+      guidePrice: frontendGuidePrice,
+      mealPrice: frontendMealPrice,
+      totalPrice: frontendTotalPrice,
+    } = bookingData;
+
+    // Use prices already calculated from frontend
+    // These should match exactly what user saw
+    return {
+      ticketPrice: Number(frontendTicketPrice) || 0,
+      jeepPrice: Number(frontendJeepPrice) || 0,
+      guidePrice: Number(frontendGuidePrice) || 0,
+      mealPrice: Number(frontendMealPrice) || 0,
+      totalPrice: Number(frontendTotalPrice) || 0,
     };
+  };
 
-    useEffect(() => {
-        // Redirect if no booking details
-        if (!bookingDetails) {
-            navigate('/');
-        }
-    }, [bookingDetails, navigate]);
+  const prices = calculatePrices();
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
-    };
+  const handleConfirmBooking = async () => {
+    setLoading(true);
+    
+    try {
+      console.log('📤 Submitting booking with prices:', prices);
+      console.log('📤 Full booking data:', bookingData);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
+      // ✅ CRITICAL: Send the EXACT prices user saw on confirmation page
+      const bookingPayload = {
+        // Customer Information
+        customerName: bookingData.customerName,
+        customerEmail: bookingData.customerEmail,
+        customerPhone: bookingData.customerPhone,
+        
+        // Booking Details
+        park: bookingData.park,
+        block: bookingData.block,
+        timeSlot: bookingData.timeSlot,
+        guideOption: bookingData.guideOption,
+        visitorType: bookingData.visitorType,
+        mealOption: bookingData.mealOption,
+        vegOption: bookingData.vegOption,
+        people: bookingData.people,
+        
+        // Date
+        date: bookingData.date,
+        
+        // Meal selections
+        includeBreakfast: bookingData.includeBreakfast || false,
+        includeLunch: bookingData.includeLunch || false,
+        includeEggs: bookingData.includeEggs || false,
+        selectedBreakfastItems: bookingData.selectedBreakfastItems || [],
+        selectedLunchItems: bookingData.selectedLunchItems || [],
+        
+        // Additional info
+        pickupLocation: bookingData.pickupLocation || "",
+        hotelWhatsapp: bookingData.hotelWhatsapp || "",
+        accommodation: bookingData.accommodation || "",
+        passportNumber: bookingData.passportNumber || "",
+        nicNumber: bookingData.nicNumber || "",
+        localContact: bookingData.localContact || "",
+        localAccommodation: bookingData.localAccommodation || "",
+        
+        // Package info
+        packageId: bookingData.packageId,
+        packageName: bookingData.packageName,
+        
+        // ✅ CRITICAL: Include ALL calculated prices
+        ticketPrice: prices.ticketPrice,
+        jeepPrice: prices.jeepPrice,
+        guidePrice: prices.guidePrice,
+        mealPrice: prices.mealPrice,
+        totalPrice: prices.totalPrice,
+      };
 
-        try {
-            // Validate form
-            if (!formData.customerName || !formData.customerEmail || !formData.customerPhone) {
-                throw new Error('Please fill in all required fields');
-            }
+      console.log('📤 Final payload being sent:', bookingPayload);
 
-            // Email validation
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(formData.customerEmail)) {
-                throw new Error('Please enter a valid email address');
-            }
+      const response = await publicFetch(apiEndpoints.bookings.create, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bookingPayload),
+      });
 
-            // Combine booking details with customer info
-            const completeBookingData = {
-                ...bookingDetails,
-                ...formData,
-            };
+      const data = await response.json();
 
-            // Submit booking
-            const response = await bookingAPI.create(completeBookingData);
-
-            if (response.success) {
-                setBookingId(response.booking.bookingId);
-                setShowSuccess(true);
-
-                // Scroll to success message
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } else {
-                throw new Error(response.message || 'Failed to create booking');
-            }
-        } catch (err) {
-            setError(err.message);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const openWhatsApp = () => {
-        const message = `Hi, I have a question about my booking (ID: ${bookingId || 'Pending'})`;
-        const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
-    };
-
-    if (!bookingDetails) {
-        return null;
+      if (data.success) {
+        setBookingConfirmed(true);
+        setConfirmedBookingId(data.booking.bookingId);
+        toast.success("Booking confirmed successfully!");
+        console.log('✅ Booking created:', data.booking);
+      } else {
+        toast.error(data.message || "Failed to create booking");
+      }
+    } catch (error) {
+      console.error("❌ Booking error:", error);
+      toast.error("Failed to create booking. Please try again.");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (showSuccess) {
-        return (
-            <div className="booking-confirmation-container">
-                <div className="success-message">
-                    <div className="success-icon">✓</div>
-                    <h1>Booking Confirmed!</h1>
-                    <p className="booking-id">Booking ID: <strong>{bookingId}</strong></p>
-                    <p>Thank you for your booking! We have sent a confirmation email to <strong>{formData.customerEmail}</strong></p>
-
-                    <div className="payment-info-box">
-                        <h2>Payment Information</h2>
-                        <div className="bank-details">
-                            <h3>Bank Transfer Details</h3>
-                            <div className="detail-row">
-                                <span className="label">Bank Name:</span>
-                                <span className="value">{BANK_DETAILS.bankName}</span>
-                            </div>
-                            <div className="detail-row">
-                                <span className="label">Account Name:</span>
-                                <span className="value">{BANK_DETAILS.accountName}</span>
-                            </div>
-                            <div className="detail-row">
-                                <span className="label">Account Number:</span>
-                                <span className="value">{BANK_DETAILS.accountNumber}</span>
-                            </div>
-                            <div className="detail-row">
-                                <span className="label">Branch:</span>
-                                <span className="value">{BANK_DETAILS.branch}</span>
-                            </div>
-                            <div className="detail-row">
-                                <span className="label">SWIFT Code:</span>
-                                <span className="value">{BANK_DETAILS.swiftCode}</span>
-                            </div>
-                            <div className="total-amount">
-                                <span className="label">Total Amount:</span>
-                                <span className="value">${bookingDetails.totalPrice?.toFixed(2)}</span>
-                            </div>
-                        </div>
-
-                        <div className="payment-instructions">
-                            <h4>📌 Payment Instructions:</h4>
-                            <ul>
-                                <li>Please complete the bank transfer within 24 hours to confirm your booking</li>
-                                <li>Use your Booking ID (<strong>{bookingId}</strong>) as the payment reference</li>
-                                <li>Send the payment receipt via WhatsApp or Email</li>
-                                <li>Our team will confirm your payment and finalize your booking</li>
-                            </ul>
-                        </div>
-
-                        <button className="whatsapp-button" onClick={openWhatsApp}>
-                            <img
-                                src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
-                                alt="WhatsApp"
-                                className="whatsapp-icon"
-                            />
-                            Contact Us on WhatsApp
-                        </button>
-                    </div>
-
-                    <div className="action-buttons">
-                        <button onClick={() => navigate('/')} className="btn-primary">
-                            Back to Home
-                        </button>
-                        <button onClick={() => window.print()} className="btn-secondary">
-                            Print Booking Details
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
+  if (bookingConfirmed) {
     return (
-        <div className="booking-confirmation-container">
-            <div className="booking-card">
-                <h1>Confirm Your Booking</h1>
-
-                {error && (
-                    <div className="error-message">
-                        <span>⚠️</span> {error}
-                    </div>
-                )}
-
-                <div className="booking-summary">
-                    <h2>Booking Summary</h2>
-                    <div className="summary-grid">
-                        <div className="summary-item">
-                            <span className="label">Reservation Type:</span>
-                            <span className="value">{bookingDetails.reservationType === 'private' ? 'Private' : 'Shared'}</span>
-                        </div>
-                        <div className="summary-item">
-                            <span className="label">Date:</span>
-                            <span className="value">
-                                {bookingDetails.date ? new Date(bookingDetails.date).toLocaleDateString('en-US', {
-                                    weekday: 'long',
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                }) : 'Invalid Date'}
-                            </span>
-                        </div>
-                        <div className="summary-item">
-                            <span className="label">Time Slot:</span>
-                            <span className="value">{bookingDetails.timeSlot === 'morning' ? 'Morning Safari' : 'Evening Safari'}</span>
-                        </div>
-                        {bookingDetails.reservationType === 'private' ? (
-                            <>
-                                <div className="summary-item">
-                                    <span className="label">Jeep Type:</span>
-                                    <span className="value">{bookingDetails.jeepType}</span>
-                                </div>
-                                <div className="summary-item">
-                                    <span className="label">Number of People:</span>
-                                    <span className="value">{bookingDetails.people}</span>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="summary-item">
-                                <span className="label">Seats Booked:</span>
-                                <span className="value">{bookingDetails.selectedSeats || bookingDetails.people}</span>
-                            </div>
-                        )}
-                        <div className="summary-item">
-                            <span className="label">Guide:</span>
-                            <span className="value">
-                                {bookingDetails.guideOption === 'driver' ? 'Driver Only' :
-                                    bookingDetails.guideOption === 'driverGuide' ? 'Driver Guide' :
-                                        bookingDetails.guideOption === 'Driver+Guide' ? 'Driver + Guide' :
-                                            'No Guide'}
-                            </span>
-                        </div>
-                        {bookingDetails.mealOption === 'with' && (
-                            <div className="summary-item">
-                                <span className="label">Meals:</span>
-                                <span className="value">
-                                    {bookingDetails.includeBreakfast && 'Breakfast'}
-                                    {bookingDetails.includeBreakfast && bookingDetails.includeLunch && ' + '}
-                                    {bookingDetails.includeLunch && 'Lunch'}
-                                </span>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="price-breakdown">
-                        <h3>Price Breakdown</h3>
-                        <div className="price-item">
-                            <span>Ticket Price:</span>
-                            <span>${bookingDetails.ticketPrice?.toFixed(2) || '0.00'}</span>
-                        </div>
-                        <div className="price-item">
-                            <span>Jeep Price:</span>
-                            <span>${bookingDetails.jeepPrice?.toFixed(2) || '0.00'}</span>
-                        </div>
-                        <div className="price-item">
-                            <span>Guide Price:</span>
-                            <span>${bookingDetails.guidePrice?.toFixed(2) || '0.00'}</span>
-                        </div>
-                        <div className="price-item">
-                            <span>Meal Price:</span>
-                            <span>${bookingDetails.mealPrice?.toFixed(2) || '0.00'}</span>
-                        </div>
-                        <div className="price-total">
-                            <span>Total Amount:</span>
-                            <span>${bookingDetails.totalPrice?.toFixed(2) || '0.00'}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <form onSubmit={handleSubmit} className="booking-form">
-                    <h2>Your Information</h2>
-
-                    <div className="form-group">
-                        <label htmlFor="customerName">Full Name *</label>
-                        <input
-                            type="text"
-                            id="customerName"
-                            name="customerName"
-                            value={formData.customerName}
-                            onChange={handleInputChange}
-                            placeholder="Enter your full name"
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="customerEmail">Email Address *</label>
-                        <input
-                            type="email"
-                            id="customerEmail"
-                            name="customerEmail"
-                            value={formData.customerEmail}
-                            onChange={handleInputChange}
-                            placeholder="your.email@example.com"
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="customerPhone">Phone Number *</label>
-                        <input
-                            type="tel"
-                            id="customerPhone"
-                            name="customerPhone"
-                            value={formData.customerPhone}
-                            onChange={handleInputChange}
-                            placeholder="+94 77 123 4567"
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="specialRequests">Special Requests (Optional)</label>
-                        <textarea
-                            id="specialRequests"
-                            name="specialRequests"
-                            value={formData.specialRequests}
-                            onChange={handleInputChange}
-                            placeholder="Any special requirements or requests..."
-                            rows="4"
-                        />
-                    </div>
-
-                    <div className="form-actions">
-                        <button
-                            type="button"
-                            onClick={() => navigate(-1)}
-                            className="btn-secondary"
-                            disabled={loading}
-                        >
-                            Back
-                        </button>
-                        <button
-                            type="submit"
-                            className="btn-primary"
-                            disabled={loading}
-                        >
-                            {loading ? 'Processing...' : 'Confirm Booking'}
-                        </button>
-                    </div>
-                </form>
-
-                <div className="help-section">
-                    <p>Need help? Contact us on WhatsApp</p>
-                    <button className="whatsapp-button-small" onClick={openWhatsApp}>
-                        <img
-                            src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
-                            alt="WhatsApp"
-                            className="whatsapp-icon-small"
-                        />
-                        WhatsApp Support
-                    </button>
-                </div>
+      <div className="min-h-screen bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8">
+          <div className="text-center mb-8">
+            <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+              <svg
+                className="w-12 h-12 text-green-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
             </div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              Booking Confirmed!
+            </h1>
+            <p className="text-gray-600">
+              Booking ID: <span className="font-mono font-bold">{confirmedBookingId}</span>
+            </p>
+            <p className="text-gray-600 mt-2">
+              Thank you for your booking! We have sent a confirmation email to{" "}
+              <span className="font-semibold">{bookingData.customerEmail}</span>
+            </p>
+          </div>
+
+          {/* Payment Information Card */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">
+              Payment Information
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold text-gray-700 mb-3">
+                  Bank Transfer Details
+                </h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="text-gray-600">Bank Name:</div>
+                  <div className="font-medium text-right">Will Add soon</div>
+                  <div className="text-gray-600">Account Name:</div>
+                  <div className="font-medium text-right">Will Add soon</div>
+                  <div className="text-gray-600">Account Number:</div>
+                  <div className="font-medium text-right">Will Add soon</div>
+                  <div className="text-gray-600">Branch:</div>
+                  <div className="font-medium text-right">Will Add soon</div>
+                  <div className="text-gray-600">SWIFT Code:</div>
+                  <div className="font-medium text-right">Will Add soon</div>
+                </div>
+              </div>
+
+              <div className="bg-purple-100 border border-purple-200 rounded-lg p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-bold text-purple-900">
+                    Total Amount:
+                  </span>
+                  <span className="text-2xl font-bold text-purple-700">
+                    ${prices.totalPrice.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                <div className="flex items-start">
+                  <span className="text-yellow-600 mr-2">📌</span>
+                  <div className="text-sm text-yellow-800">
+                    <p className="font-semibold mb-2">Payment Instructions:</p>
+                    <ul className="space-y-1">
+                      <li>
+                        • Please complete the bank transfer within 24 hours to
+                        confirm your booking
+                      </li>
+                      <li>
+                        • Use your Booking ID{" "}
+                        <span className="font-mono font-bold">
+                          ({confirmedBookingId})
+                        </span>{" "}
+                        as the payment reference
+                      </li>
+                      <li>
+                        • Send the payment receipt via WhatsApp or Email
+                      </li>
+                      <li>
+                        • Our team will confirm your payment and finalize your
+                        booking
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-4">
+            <button
+              onClick={() =>
+                window.open(
+                  `https://wa.me/+94773742700?text=Hi! I've completed my booking. Booking ID: ${confirmedBookingId}`,
+                  "_blank"
+                )
+              }
+              className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+              </svg>
+              CONTACT US ON WHATSAPP
+            </button>
+          </div>
+
+          <div className="mt-6 flex gap-4">
+            <button
+              onClick={() => navigate("/")}
+              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-lg transition-colors"
+            >
+              BACK TO HOME
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="flex-1 bg-white border-2 border-purple-600 text-purple-600 hover:bg-purple-50 font-semibold py-3 rounded-lg transition-colors"
+            >
+              PRINT BOOKING DETAILS
+            </button>
+          </div>
         </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6">
+            <h1 className="text-3xl font-bold text-center">
+              Confirm Your Booking
+            </h1>
+          </div>
+
+          {/* Content */}
+          <div className="p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Booking Summary */}
+              <div>
+                <h2 className="text-xl font-bold text-gray-800 mb-6 pb-2 border-b-2 border-purple-600">
+                  Booking Summary
+                </h2>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    <span className="text-gray-600">Reservation Type:</span>
+                    <span className="font-medium">Private Safari</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <span className="text-gray-600">Date:</span>
+                    <span className="font-medium">
+                      {new Date(bookingData.date).toLocaleDateString("en-US", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <span className="text-gray-600">Time Slot:</span>
+                    <span className="font-medium capitalize">
+                      {bookingData.timeSlot} Safari
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <span className="text-gray-600">Number of People:</span>
+                    <span className="font-medium">{bookingData.people}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <span className="text-gray-600">Jeep Type:</span>
+                    <span className="font-medium">Luxury Jeep</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <span className="text-gray-600">Guide:</span>
+                    <span className="font-medium capitalize">
+                      {bookingData.guideOption.replace(/([A-Z])/g, " $1").trim()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Price Breakdown */}
+              <div>
+                <h2 className="text-xl font-bold text-gray-800 mb-6 pb-2 border-b-2 border-purple-600">
+                  Price Breakdown
+                </h2>
+                <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+                  <div className="flex justify-between text-gray-700">
+                    <span>Ticket Price:</span>
+                    <span className="font-semibold">
+                      ${prices.ticketPrice.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-gray-700">
+                    <span>Jeep Price:</span>
+                    <span className="font-semibold">
+                      ${prices.jeepPrice.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-gray-700">
+                    <span>Guide Price:</span>
+                    <span className="font-semibold">
+                      ${prices.guidePrice.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-gray-700">
+                    <span>Meal Price:</span>
+                    <span className="font-semibold">
+                      ${prices.mealPrice.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="border-t-2 border-gray-300 pt-4 mt-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xl font-bold text-gray-800">
+                        Total Amount:
+                      </span>
+                      <span className="text-2xl font-bold text-purple-600">
+                        ${prices.totalPrice.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="mt-8 flex gap-4">
+              <button
+                onClick={() => navigate(-1)}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-lg transition-colors"
+              >
+                ← Back
+              </button>
+              <button
+                onClick={handleConfirmBooking}
+                disabled={loading}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Confirm & Book Now
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default BookingConfirmation;
