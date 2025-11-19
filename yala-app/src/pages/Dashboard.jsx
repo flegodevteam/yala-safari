@@ -15,13 +15,15 @@ import {
 import DashboardHome from "../components/DashboardHome";
 import PackagesManager from "../components/PackageManager";
 import AvailabilityCalendar from "../components/AvailabilityCalendar";
-import BookingsManager from "../components/BookingsManager";
+//import BookingsManager from "../components/BookingsManager";
 import BlogContentManager from "../components/BlogContentManager";
 import MediaGallery from "../components/MediaGallery";
 import UserManager from "../components/UserManager";
 import SettingsPanel from "../components/SettingsPanel";
 import ReportsDashboard from "../components/ReportsDashboard";
 import { logout, getAdminInfo } from '../utils/auth';
+import AdminBookingManagement from '../components/AdminBookingManagement'
+import BookingCalendar from '../components/BookingCalendar';
 
 const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
   const navigate = useNavigate();
@@ -90,7 +92,6 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
           <NavItem
             icon={<FiBookmark />}
             text="Bookings"
-            active={activeTab === "bookings"}
             onClick={() => setActiveTab("bookings")}
             sidebarOpen={sidebarOpen}
           />
@@ -190,8 +191,9 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
         <main className="p-6">
           {activeTab === "dashboard" && <DashboardHome />}
           {activeTab === "packages" && <PackagesManager />}
-          {activeTab === "availability" && <AvailabilityCalendar />}
-          {activeTab === "bookings" && <BookingsManager />}
+          {/* {activeTab === "availability" && <AvailabilityCalendar />} */}
+          {activeTab === "availability" && <BookingCalendar />}
+          {activeTab === "bookings" && <AdminBookingManagement />}
           {activeTab === "blog" && (
             <BlogContentManager
               blogPosts={blogPosts}
