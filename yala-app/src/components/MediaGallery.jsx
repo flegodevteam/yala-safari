@@ -148,56 +148,60 @@ const MediaGallery = () => {
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-2xl font-semibold text-gray-800">Media Gallery</h3>
-        <div className="flex space-x-3">
-          <button
-            onClick={() => setUploadModalOpen(true)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center"
-          >
-            <FiImage className="mr-2" /> Upload Image
-          </button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <h3 className="text-3xl lg:text-4xl font-bold text-[#034123] mb-2">Media Gallery</h3>
+          <p className="text-[#6b7280] text-base">Manage your safari images and media</p>
         </div>
+        <button
+          onClick={() => setUploadModalOpen(true)}
+          className="bg-[#f26b21] hover:bg-[#e05a1a] text-white px-5 py-3 rounded-xl hover:shadow-xl transition-all duration-300 shadow-lg flex items-center gap-2 font-semibold whitespace-nowrap"
+        >
+          <FiImage className="w-5 h-5" /> Upload Image
+        </button>
       </div>
 
       {/* Category Filter */}
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        <span className="text-sm font-medium text-gray-700">
-          Filter by category:
-        </span>
-        <select
-          className="border rounded-md px-3 py-1 text-sm"
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          value={selectedCategory}
-        >
-          <option value="all">All Categories</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-
-        <div className="flex items-center ml-4">
-          <input
-            type="text"
-            value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
-            placeholder="New category"
-            className="border rounded-l-md px-3 py-1 text-sm"
-          />
-          <button
-            onClick={addCategory}
-            className="bg-gray-200 px-3 py-1 rounded-r-md text-sm hover:bg-gray-300"
+      <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 p-4 lg:p-6 mb-6">
+        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4">
+          <span className="text-sm font-semibold text-[#034123] whitespace-nowrap">
+            Filter by category:
+          </span>
+          <select
+            className="flex-1 sm:flex-initial px-4 py-2.5 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-sm text-[#1f2937] shadow-sm"
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            value={selectedCategory}
           >
-            Add
-          </button>
+            <option value="all">All Categories</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+
+          <div className="flex items-center w-full sm:w-auto">
+            <input
+              type="text"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              placeholder="New category"
+              className="flex-1 px-4 py-2.5 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-sm text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
+            />
+            <button
+              onClick={addCategory}
+              className="bg-[#034123] hover:bg-[#026042] text-white px-5 py-2.5 rounded-r-xl text-sm font-semibold hover:shadow-lg transition-all duration-300 shadow-sm"
+            >
+              Add
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Image Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
         {images
           .filter(
             (img) =>
@@ -205,49 +209,51 @@ const MediaGallery = () => {
           )
           .map((image) => (
             <div
-              key={image.id}
-              className="bg-white rounded-lg shadow overflow-hidden relative group"
+              key={image.id || image._id}
+              className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 overflow-hidden relative group hover:shadow-xl transition-all duration-300 hover:scale-105"
             >
-              <div className="aspect-w-16 aspect-h-9 bg-gray-100 overflow-hidden">
+              <div className="aspect-w-16 aspect-h-9 bg-gradient-to-br from-[#e6e6e6] to-[#f5f5f5] overflow-hidden">
                 <img
                   src={apiEndpoints.images.url(image.url)}
                   alt={image.title}
-                  className="object-cover w-full h-48"
+                  className="object-cover w-full h-48 lg:h-56"
                 />
               </div>
-              <div className="p-3">
-                <h4 className="font-medium text-gray-900 truncate">
+              <div className="p-4">
+                <h4 className="font-semibold text-[#034123] truncate mb-2">
                   {image.title}
                 </h4>
-                <span className="inline-block bg-gray-100 rounded-full px-2 py-1 text-xs font-semibold text-gray-700 mr-2">
-                  {image.category}
-                </span>
-                {image.featured && (
-                  <span className="inline-block bg-yellow-100 rounded-full px-2 py-1 text-xs font-semibold text-yellow-800">
-                    Featured
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-block bg-[#034123]/10 text-[#034123] rounded-full px-3 py-1 text-xs font-semibold border border-[#034123]/20">
+                    {image.category}
                   </span>
-                )}
+                  {image.featured && (
+                    <span className="inline-block bg-[#fee000]/20 text-[#856404] rounded-full px-3 py-1 text-xs font-bold border border-[#fee000]/40">
+                      ⭐ Featured
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Hover actions */}
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100 space-x-2">
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 backdrop-blur-sm transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 space-x-3 rounded-2xl">
                 <button
-                  onClick={() => toggleFeatured(image._id)}
-                  className={`p-2 rounded-full ${
+                  onClick={() => toggleFeatured(image._id || image.id)}
+                  className={`p-3 rounded-xl shadow-lg transition-all duration-300 hover:scale-110 ${
                     image.featured
-                      ? "bg-yellow-500 text-white"
-                      : "bg-white text-gray-800"
+                      ? "bg-[#fee000] text-[#034123]"
+                      : "bg-white/95 backdrop-blur-sm text-[#034123]"
                   }`}
                   title={image.featured ? "Remove featured" : "Set as featured"}
                 >
-                  <FiBookmark />
+                  <FiBookmark className="w-5 h-5" />
                 </button>
                 <button
-                  onClick={() => deleteImage(image._id)}
-                  className="p-2 rounded-full bg-white text-red-600"
+                  onClick={() => deleteImage(image._id || image.id)}
+                  className="p-3 rounded-xl bg-white/95 backdrop-blur-sm text-red-600 shadow-lg transition-all duration-300 hover:scale-110"
                   title="Delete image"
                 >
-                  <FiTrash2 />
+                  <FiTrash2 className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -256,36 +262,36 @@ const MediaGallery = () => {
 
       {/* Upload Modal */}
       {uploadModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={() => setUploadModalOpen(false)}>
+          <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 w-full max-w-md" onClick={e => e.stopPropagation()}>
+            <div className="p-6 lg:p-8">
+              <h3 className="text-2xl font-bold text-[#034123] mb-6">
                 Upload New Image
               </h3>
               <form onSubmit={handleUpload}>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="mb-5">
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">
                     Image File
                   </label>
-                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                    <div className="space-y-1 text-center">
+                  <div className="mt-1 flex justify-center px-6 pt-8 pb-8 border-2 border-[#d1d5db]/60 border-dashed rounded-xl bg-[#f9fafb]/50 backdrop-blur-sm hover:border-[#034123]/40 transition-all duration-300">
+                    <div className="space-y-2 text-center">
                       {selectedFile ? (
                         <div>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm font-medium text-[#034123] mb-2">
                             {selectedFile.name}
                           </p>
                           <button
                             type="button"
                             onClick={() => setSelectedFile(null)}
-                            className="mt-2 text-sm text-red-600"
+                            className="text-sm text-red-600 hover:text-red-700 font-semibold"
                           >
                             Remove
                           </button>
                         </div>
                       ) : (
                         <>
-                          <div className="flex text-sm text-gray-600">
-                            <label className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
+                          <div className="flex flex-col sm:flex-row items-center justify-center text-sm text-[#6b7280] gap-1">
+                            <label className="relative cursor-pointer font-semibold text-[#034123] hover:text-[#026042] transition-colors duration-300">
                               <span>Upload a file</span>
                               <input
                                 type="file"
@@ -294,9 +300,9 @@ const MediaGallery = () => {
                                 accept="image/*"
                               />
                             </label>
-                            <p className="pl-1">or drag and drop</p>
+                            <span>or drag and drop</span>
                           </div>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-[#9ca3af]">
                             PNG, JPG, GIF up to 10MB
                           </p>
                         </>
@@ -304,26 +310,27 @@ const MediaGallery = () => {
                     </div>
                   </div>
                 </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="mb-5">
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">
                     Title
                   </label>
                   <input
                     type="text"
                     value={imageTitle}
                     onChange={(e) => setImageTitle(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
                     required
+                    placeholder="Image title"
                   />
                 </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">
                     Category
                   </label>
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
                   >
                     {categories.map((cat) => (
                       <option key={cat} value={cat}>
@@ -332,17 +339,17 @@ const MediaGallery = () => {
                     ))}
                   </select>
                 </div>
-                <div className="flex justify-end space-x-3 mt-6">
+                <div className="flex flex-col sm:flex-row justify-end gap-3">
                   <button
                     type="button"
                     onClick={() => setUploadModalOpen(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="px-5 py-3 border border-[#d1d5db]/60 rounded-xl text-sm font-semibold text-[#4b5563] hover:bg-[#f9fafb] transition-all duration-300"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="px-5 py-3 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-[#034123] hover:bg-[#026042] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#034123]/50 transition-all duration-300 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={!selectedFile}
                   >
                     Upload Image

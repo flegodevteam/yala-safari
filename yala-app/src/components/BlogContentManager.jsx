@@ -95,138 +95,148 @@ export default function BlogContentManager() {
     }
   };
   return (
-    <div className="mt-12 bg-white p-5  rounded-xl shadow-lg flex justify-around gap-5">
-      <div>
-        {" "}
-        <h2 className="text-2xl font-bold text-green-700 mb-6 text-center">
-          Add New Blog Post
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Title
-            </label>
-            <input
-              name="title"
-              value={form.title}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-green-400"
-              placeholder="Blog Title"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Excerpt
-            </label>
-            <textarea
-              name="excerpt"
-              value={form.excerpt}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-green-400"
-              placeholder="Short description"
-            />
-          </div>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-gray-700 font-medium mb-1">
-                Date
-              </label>
-              <input
-                name="date"
-                type="date"
-                value={form.date}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-green-400"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-gray-700 font-medium mb-1">
-                Read Time
-              </label>
-              <input
-                name="readTime"
-                value={form.readTime}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-green-400"
-                placeholder="e.g. 4 min read"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Category
-            </label>
-            <select
-              name="category"
-              value={form.category}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-green-400"
-            >
-              {categories.map((cat) => (
-                <option key={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Image URL
-            </label>
-            <input
-              name="image"
-              value={form.image}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-green-400"
-              placeholder="Optional image URL"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition"
-          >
-            Add Blog Post
-          </button>
-          {success && (
-            <div className="text-green-600 text-center font-medium mt-2">
-              Blog post added successfully!
-            </div>
-          )}
-        </form>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="mb-8">
+        <h2 className="text-3xl lg:text-4xl font-bold text-[#034123] mb-2">Blog Content Manager</h2>
+        <p className="text-[#6b7280] text-base">Create and manage blog posts</p>
       </div>
 
-      <hr className="my-8" />
-      <div>
-        {" "}
-        <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">
-          All Blog Posts
-        </h3>
-        <ul className="space-y-4">
-          {blogPosts.map((post) => (
-            <li
-              key={post._id ? post._id : post.id}
-              className="flex justify-between items-center bg-gray-50 px-4 py-3 rounded-md shadow"
-            >
+      <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
+        {/* Add New Blog Post */}
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8">
+          <h3 className="text-2xl font-bold text-[#034123] mb-6 text-center lg:text-left">
+            Add New Blog Post
+          </h3>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-[#034123] font-semibold mb-2 text-sm">
+                Title
+              </label>
+              <input
+                name="title"
+                value={form.title}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
+                placeholder="Blog Title"
+              />
+            </div>
+            <div>
+              <label className="block text-[#034123] font-semibold mb-2 text-sm">
+                Excerpt
+              </label>
+              <textarea
+                name="excerpt"
+                value={form.excerpt}
+                onChange={handleChange}
+                required
+                rows={4}
+                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm resize-none"
+                placeholder="Short description"
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <div className="font-medium text-gray-900">{post.title}</div>
-                <div className="text-sm text-gray-500">
-                  {post.category} | {post.date}
-                </div>
+                <label className="block text-[#034123] font-semibold mb-2 text-sm">
+                  Date
+                </label>
+                <input
+                  name="date"
+                  type="date"
+                  value={form.date}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
+                />
               </div>
-              <button
-                onClick={() => handleDelete(post._id || post.id)}
-                className="ml-4 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+              <div>
+                <label className="block text-[#034123] font-semibold mb-2 text-sm">
+                  Read Time
+                </label>
+                <input
+                  name="readTime"
+                  value={form.readTime}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
+                  placeholder="e.g. 4 min read"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[#034123] font-semibold mb-2 text-sm">
+                Category
+              </label>
+              <select
+                name="category"
+                value={form.category}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
               >
-                Delete
-              </button>
-            </li>
-          ))}
-          {blogPosts.length === 0 && (
-            <li className="text-gray-500 text-center">No blog posts found.</li>
-          )}
-        </ul>
+                {categories.map((cat) => (
+                  <option key={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[#034123] font-semibold mb-2 text-sm">
+                Image URL
+              </label>
+              <input
+                name="image"
+                value={form.image}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
+                placeholder="Optional image URL"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full py-3.5 bg-[#034123] hover:bg-[#026042] text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              Add Blog Post
+            </button>
+            {success && (
+              <div className="bg-[#034123]/10 border border-[#034123]/30 text-[#034123] text-center font-medium py-3 px-4 rounded-xl">
+                ✓ Blog post added successfully!
+              </div>
+            )}
+          </form>
+        </div>
+
+        {/* All Blog Posts */}
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8">
+          <h3 className="text-2xl font-bold text-[#034123] mb-6 text-center lg:text-left">
+            All Blog Posts
+          </h3>
+          <ul className="space-y-3 max-h-[600px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {blogPosts.map((post) => (
+              <li
+                key={post._id ? post._id : post.id}
+                className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-[#f9fafb]/50 backdrop-blur-sm px-5 py-4 rounded-xl border border-[#e5e7eb]/60 hover:shadow-md transition-all duration-300"
+              >
+                <div className="flex-1">
+                  <div className="font-semibold text-[#034123] mb-1">{post.title}</div>
+                  <div className="text-sm text-[#6b7280]">
+                    {post.category} | {post.date}
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleDelete(post._id || post.id)}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl hover:shadow-lg transition-all duration-300 text-sm font-semibold whitespace-nowrap"
+                >
+                  Delete
+                </button>
+              </li>
+            ))}
+            {blogPosts.length === 0 && (
+              <li className="text-[#6b7280] text-center py-12 bg-[#f9fafb]/50 rounded-xl border border-[#e5e7eb]/60">
+                No blog posts found.
+              </li>
+            )}
+          </ul>
+        </div>
       </div>
     </div>
   );

@@ -88,9 +88,9 @@ const BookingCalendar = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-500';
+        return 'bg-[#fee000]';
       case 'confirmed':
-        return 'bg-green-500';
+        return 'bg-[#034123]';
       default:
         return 'bg-gray-500';
     }
@@ -104,26 +104,29 @@ const BookingCalendar = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Booking Calendar</h2>
-        <p className="text-gray-600 text-sm">View booked and pending dates</p>
+    <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-4 lg:p-6">
+      {/* Header */}
+      <div className="mb-6 pb-4 border-b border-[#e5e7eb]">
+        <h2 className="text-2xl lg:text-3xl font-bold text-[#034123] mb-2">Booking Calendar</h2>
+        <p className="text-[#6b7280] text-sm lg:text-base">View booked and pending dates</p>
       </div>
 
       {/* Calendar Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <button
           onClick={previousMonth}
-          className="p-2 hover:bg-gray-100 rounded-full transition"
+          className="p-2.5 hover:bg-[#034123]/10 rounded-xl transition-all duration-300 text-[#034123] hover:scale-110"
+          aria-label="Previous month"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h3 className="text-xl font-semibold">{monthName}</h3>
+        <h3 className="text-lg lg:text-xl font-bold text-[#034123]">{monthName}</h3>
         <button
           onClick={nextMonth}
-          className="p-2 hover:bg-gray-100 rounded-full transition"
+          className="p-2.5 hover:bg-[#034123]/10 rounded-xl transition-all duration-300 text-[#034123] hover:scale-110"
+          aria-label="Next month"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -132,34 +135,35 @@ const BookingCalendar = () => {
       </div>
 
       {/* Legend */}
-      <div className="flex gap-4 mb-4 text-sm">
+      <div className="flex flex-wrap gap-4 lg:gap-6 mb-6 text-sm bg-[#f9fafb]/50 backdrop-blur-sm p-3 rounded-xl border border-[#e5e7eb]/60">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
-          <span>Pending</span>
+          <div className="w-4 h-4 rounded-full bg-[#fee000] shadow-sm"></div>
+          <span className="font-medium text-[#856404]">Pending</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full bg-green-500"></div>
-          <span>Confirmed</span>
+          <div className="w-4 h-4 rounded-full bg-[#034123] shadow-sm"></div>
+          <span className="font-medium text-[#034123]">Confirmed</span>
         </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500">Loading calendar...</p>
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#034123] mx-auto mb-4"></div>
+          <p className="text-[#6b7280] font-medium">Loading calendar...</p>
         </div>
       ) : (
         <>
           {/* Week Days */}
-          <div className="grid grid-cols-7 gap-2 mb-2">
+          <div className="grid grid-cols-7 gap-1 lg:gap-2 mb-3">
             {weekDays.map(day => (
-              <div key={day} className="text-center font-semibold text-gray-600 text-sm py-2">
+              <div key={day} className="text-center font-bold text-[#034123] text-xs lg:text-sm py-2 bg-[#034123]/5 rounded-lg">
                 {day}
               </div>
             ))}
           </div>
 
           {/* Calendar Days */}
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1 lg:gap-2">
             {days.map((day, index) => {
               if (day === null) {
                 return <div key={`empty-${index}`} className="aspect-square"></div>;
@@ -176,17 +180,19 @@ const BookingCalendar = () => {
                   key={day}
                   onClick={() => booking && setSelectedDate(booking)}
                   className={`
-                    aspect-square flex items-center justify-center rounded-lg relative
-                    ${isToday ? 'ring-2 ring-blue-500' : ''}
-                    ${booking ? 'cursor-pointer hover:opacity-80' : ''}
-                    ${booking ? 'bg-gray-50' : 'hover:bg-gray-100'}
-                    transition-all
+                    aspect-square flex items-center justify-center rounded-xl relative
+                    ${isToday ? 'ring-2 ring-[#f26b21] bg-[#f26b21]/10' : ''}
+                    ${booking ? 'cursor-pointer hover:scale-105' : 'hover:bg-[#f9fafb]'}
+                    ${booking ? booking.status === 'pending' ? 'bg-[#fee000]/20' : 'bg-[#034123]/10' : 'bg-white/50'}
+                    transition-all duration-300 border border-transparent hover:border-[#034123]/20
                   `}
                 >
-                  <span className={`text-sm ${booking ? 'font-semibold' : ''}`}>{day}</span>
+                  <span className={`text-sm lg:text-base font-medium ${booking ? 'font-bold text-[#034123]' : 'text-[#4b5563]'} ${isToday ? 'text-[#f26b21] font-bold' : ''}`}>
+                    {day}
+                  </span>
                   {booking && (
                     <div
-                      className={`absolute bottom-1 w-2 h-2 rounded-full ${getStatusColor(booking.status)}`}
+                      className={`absolute bottom-1.5 w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full ${getStatusColor(booking.status)} shadow-sm`}
                       title={`${booking.status} - ${booking.bookingId}`}
                     />
                   )}
@@ -199,27 +205,38 @@ const BookingCalendar = () => {
 
       {/* Selected Date Details Modal */}
       {selectedDate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setSelectedDate(null)}>
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-xl font-bold mb-4">Booking Details</h3>
-            <div className="space-y-2 mb-4">
-              <p><strong>Booking ID:</strong> {selectedDate.bookingId}</p>
-              <p><strong>Date:</strong> {new Date(selectedDate.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              <p><strong>Time Slot:</strong> {timeSlotDisplay[selectedDate.timeSlot] || selectedDate.timeSlot}</p>
-              <p>
-                <strong>Status:</strong>{' '}
-                <span className={`px-2 py-1 rounded-full text-sm font-semibold ${
-                  selectedDate.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                  selectedDate.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                  'bg-gray-100 text-gray-800'
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedDate(null)}>
+          <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8 max-w-md w-full" onClick={e => e.stopPropagation()}>
+            <h3 className="text-2xl font-bold text-[#034123] mb-6">Booking Details</h3>
+            <div className="space-y-4 mb-6">
+              <div className="bg-[#f9fafb]/50 backdrop-blur-sm p-4 rounded-xl border border-[#e5e7eb]/60">
+                <p className="text-sm font-semibold text-[#6b7280] mb-1">Booking ID</p>
+                <p className="text-base font-bold text-[#034123]">{selectedDate.bookingId}</p>
+              </div>
+              <div className="bg-[#f9fafb]/50 backdrop-blur-sm p-4 rounded-xl border border-[#e5e7eb]/60">
+                <p className="text-sm font-semibold text-[#6b7280] mb-1">Date</p>
+                <p className="text-base text-[#1f2937]">{new Date(selectedDate.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              </div>
+              <div className="bg-[#f9fafb]/50 backdrop-blur-sm p-4 rounded-xl border border-[#e5e7eb]/60">
+                <p className="text-sm font-semibold text-[#6b7280] mb-1">Time Slot</p>
+                <p className="text-base text-[#1f2937]">{timeSlotDisplay[selectedDate.timeSlot] || selectedDate.timeSlot}</p>
+              </div>
+              <div className="bg-[#f9fafb]/50 backdrop-blur-sm p-4 rounded-xl border border-[#e5e7eb]/60">
+                <p className="text-sm font-semibold text-[#6b7280] mb-2">Status</p>
+                <span className={`inline-block px-3 py-1.5 rounded-xl text-xs font-bold ${
+                  selectedDate.status === 'pending' 
+                    ? 'bg-[#fee000]/20 text-[#856404] border border-[#fee000]/40' :
+                  selectedDate.status === 'confirmed' 
+                    ? 'bg-[#034123]/20 text-[#034123] border border-[#034123]/40' :
+                  'bg-gray-100 text-gray-800 border border-gray-300'
                 }`}>
                   {selectedDate.status.toUpperCase()}
                 </span>
-              </p>
+              </div>
             </div>
             <button
               onClick={() => setSelectedDate(null)}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-lg"
+              className="w-full bg-[#f26b21] hover:bg-[#e05a1a] text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               Close
             </button>
@@ -230,9 +247,9 @@ const BookingCalendar = () => {
       {/* Today Button */}
       <button
         onClick={() => setCurrentDate(new Date())}
-        className="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg transition"
+        className="mt-6 w-full bg-[#034123]/10 hover:bg-[#034123]/20 text-[#034123] font-semibold py-3 px-4 rounded-xl transition-all duration-300 border border-[#034123]/20 hover:border-[#034123]/40 shadow-sm hover:shadow-md"
       >
-        Today
+        Go to Today
       </button>
     </div>
   );

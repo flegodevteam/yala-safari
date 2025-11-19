@@ -6,7 +6,7 @@
 export const logout = () => {
   localStorage.removeItem('adminToken');
   localStorage.removeItem('adminInfo');
-  window.location.href = '/admin';
+  window.location.href = '/login';
 };
 
 /**

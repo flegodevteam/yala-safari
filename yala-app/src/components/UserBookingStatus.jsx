@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { publicFetch, apiEndpoints } from '../config/api';
+import { FaSearch } from 'react-icons/fa';
 
 const UserBookingStatus = () => {
   const [searchMethod, setSearchMethod] = useState('email');
@@ -54,31 +55,31 @@ const UserBookingStatus = () => {
     switch (status) {
       case 'pending':
         return {
-          color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+          color: 'bg-[#fee000]/20 backdrop-blur-sm text-[#856404] border-[#fee000]/40',
           icon: '⏳',
           message: 'Your booking is pending admin confirmation. You will receive an email once it\'s confirmed.',
         };
       case 'confirmed':
         return {
-          color: 'bg-green-100 text-green-800 border-green-300',
+          color: 'bg-[#034123]/20 backdrop-blur-sm text-[#034123] border-[#034123]/40',
           icon: '✅',
           message: 'Your booking is confirmed! We look forward to your visit.',
         };
       case 'cancelled':
         return {
-          color: 'bg-red-100 text-red-800 border-red-300',
+          color: 'bg-red-100/80 backdrop-blur-sm text-red-800 border-red-300/60',
           icon: '❌',
           message: 'This booking has been cancelled.',
         };
       case 'completed':
         return {
-          color: 'bg-blue-100 text-blue-800 border-blue-300',
+          color: 'bg-blue-100/80 backdrop-blur-sm text-blue-800 border-blue-300/60',
           icon: '✓',
           message: 'This booking has been completed. Thank you for choosing us!',
         };
       default:
         return {
-          color: 'bg-gray-100 text-gray-800 border-gray-300',
+          color: 'bg-gray-100/80 backdrop-blur-sm text-gray-800 border-gray-300/60',
           icon: '?',
           message: 'Status unknown',
         };
@@ -102,36 +103,42 @@ const UserBookingStatus = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Check Your Booking Status</h1>
-          <p className="text-gray-600">Track your safari booking in real-time</p>
+    <div className="min-h-screen bg-gradient-to-br from-[#e6e6e6] via-white to-[#f5f5f5] py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <div className="inline-block px-4 py-1.5 bg-[#034123]/10 backdrop-blur-md text-[#034123] text-xs font-semibold rounded-full border border-[#034123]/20 shadow-md mb-4">
+            BOOKING TRACKER
+          </div>
+          <h1 className="text-4xl lg:text-5xl font-bold text-[#034123] mb-3">Check Your Booking Status</h1>
+          <p className="text-[#4b5563] text-lg">Track your safari booking in real-time</p>
         </div>
 
         {/* Search Form */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8 mb-8">
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-[#034123] mb-3">
               Search by:
             </label>
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <button
+                type="button"
                 onClick={() => setSearchMethod('email')}
-                className={`flex-1 py-2 px-4 rounded-lg font-semibold transition ${
+                className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 shadow-sm ${
                   searchMethod === 'email'
-                    ? 'bg-orange-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    ? 'bg-[#f26b21] text-white shadow-lg scale-105'
+                    : 'bg-[#e6e6e6] text-[#333333] hover:bg-[#034123]/5 hover:border-[#034123]/20 border border-transparent'
                 }`}
               >
                 📧 Email Address
               </button>
               <button
+                type="button"
                 onClick={() => setSearchMethod('booking')}
-                className={`flex-1 py-2 px-4 rounded-lg font-semibold transition ${
+                className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 shadow-sm ${
                   searchMethod === 'booking'
-                    ? 'bg-orange-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    ? 'bg-[#f26b21] text-white shadow-lg scale-105'
+                    : 'bg-[#e6e6e6] text-[#333333] hover:bg-[#034123]/5 hover:border-[#034123]/20 border border-transparent'
                 }`}
               >
                 🎫 Booking ID
@@ -140,7 +147,7 @@ const UserBookingStatus = () => {
           </div>
 
           <form onSubmit={handleSearch}>
-            <div className="mb-4">
+            <div className="mb-5">
               <input
                 type={searchMethod === 'email' ? 'email' : 'text'}
                 value={searchValue}
@@ -150,7 +157,7 @@ const UserBookingStatus = () => {
                     ? 'Enter your email address'
                     : 'Enter your booking ID (e.g., YALA-xxxxx)'
                 }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-3.5 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 placeholder-[#9ca3af] text-[#1f2937] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f26b21]/50 focus:border-[#f26b21] transition-all duration-300 shadow-sm"
                 required
               />
             </div>
@@ -158,14 +165,23 @@ const UserBookingStatus = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#f26b21] hover:bg-[#e05a1a] text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm flex items-center justify-center gap-2"
             >
-              {loading ? 'Searching...' : '🔍 Check Status'}
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Searching...
+                </>
+              ) : (
+                <>
+                  <FaSearch className="w-5 h-5" /> Check Status
+                </>
+              )}
             </button>
           </form>
 
           {error && (
-            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="mt-5 p-4 bg-red-50/80 backdrop-blur-sm border-2 border-red-300/60 text-red-700 rounded-xl text-sm font-medium shadow-md">
               {error}
             </div>
           )}
@@ -173,10 +189,10 @@ const UserBookingStatus = () => {
 
         {/* Results */}
         {searched && !loading && bookings.length === 0 && !error && (
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">No Bookings Found</h3>
-            <p className="text-gray-600">
+          <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-10 lg:p-12 text-center">
+            <div className="text-6xl mb-6 "><FaSearch className="w-20 h-20 text-center mx-auto" /></div>
+            <h3 className="text-2xl font-bold text-[#034123] mb-3">No Bookings Found</h3>
+            <p className="text-[#4b5563] text-base">
               {searchMethod === 'email'
                 ? 'No bookings found with this email address.'
                 : 'No booking found with this ID.'}
@@ -189,102 +205,126 @@ const UserBookingStatus = () => {
             {bookings.map((booking) => {
               const statusInfo = getStatusInfo(booking.status);
               return (
-                <div key={booking._id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div key={booking._id} className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden transition-all duration-300 hover:shadow-3xl">
                   {/* Status Banner */}
-                  <div className={`p-4 border-l-4 ${statusInfo.color}`}>
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{statusInfo.icon}</span>
+                  <div className={`p-5 lg:p-6 border-l-4 ${statusInfo.color} backdrop-blur-sm`}>
+                    <div className="flex items-center gap-4">
+                      <span className="text-3xl">{statusInfo.icon}</span>
                       <div className="flex-1">
-                        <h3 className="font-bold text-lg">
+                        <h3 className="font-bold text-xl text-[#034123] mb-1">
                           {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                         </h3>
-                        <p className="text-sm">{statusInfo.message}</p>
+                        <p className="text-sm text-[#4b5563]">{statusInfo.message}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Booking Details */}
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-4">
+                  <div className="p-6 lg:p-8">
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 pb-6 border-b border-[#e5e7eb]">
                       <div>
-                        <h4 className="text-2xl font-bold text-gray-800">{booking.bookingId}</h4>
-                        <p className="text-sm text-gray-500">
+                        <h4 className="text-2xl lg:text-3xl font-bold text-[#034123] mb-2">{booking.bookingId}</h4>
+                        <p className="text-sm text-[#6b7280]">
                           Booked on: {new Date(booking.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-3xl font-bold text-orange-600">
+                      <div className="text-right sm:text-left">
+                        <p className="text-3xl lg:text-4xl font-bold text-[#f26b21] mb-1">
                           ${booking.totalPrice.toFixed(2)}
                         </p>
-                        <p className="text-sm text-gray-600">Total Amount</p>
+                        <p className="text-sm text-[#6b7280] font-medium">Total Amount</p>
                       </div>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-6 mb-4">
-                      <div className="space-y-2">
-                        <h5 className="font-semibold text-gray-700 border-b pb-2">Safari Details</h5>
-                        <p className="text-sm">
-                          <span className="font-semibold">Date:</span> {formatDate(booking.date)}
-                        </p>
-                        <p className="text-sm">
-                          <span className="font-semibold">Time:</span> {timeSlotDisplay[booking.timeSlot]}
-                        </p>
-                        <p className="text-sm">
-                          <span className="font-semibold">People:</span> {booking.people}
-                        </p>
-                        <p className="text-sm">
-                          <span className="font-semibold">Park:</span>{' '}
-                          <span className="capitalize">{booking.park || 'N/A'}</span>
-                        </p>
+                    <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-6">
+                      <div className="space-y-3 bg-[#f9fafb]/50 backdrop-blur-sm p-5 rounded-xl border border-[#e5e7eb]/60">
+                        <h5 className="font-bold text-[#034123] text-base border-b border-[#034123]/20 pb-2 mb-3">Safari Details</h5>
+                        <div className="space-y-2.5">
+                          <p className="text-sm">
+                            <span className="font-semibold text-[#1f2937]">Date:</span>{' '}
+                            <span className="text-[#4b5563]">{formatDate(booking.date)}</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-semibold text-[#1f2937]">Time:</span>{' '}
+                            <span className="text-[#4b5563]">{timeSlotDisplay[booking.timeSlot]}</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-semibold text-[#1f2937]">People:</span>{' '}
+                            <span className="text-[#4b5563]">{booking.people}</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-semibold text-[#1f2937]">Park:</span>{' '}
+                            <span className="text-[#4b5563] capitalize">{booking.park || 'N/A'}</span>
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <h5 className="font-semibold text-gray-700 border-b pb-2">Customer Info</h5>
-                        <p className="text-sm">
-                          <span className="font-semibold">Name:</span> {booking.customerName}
-                        </p>
-                        <p className="text-sm">
-                          <span className="font-semibold">Email:</span> {booking.customerEmail}
-                        </p>
-                        <p className="text-sm">
-                          <span className="font-semibold">Phone:</span> {booking.customerPhone}
-                        </p>
-                        <p className="text-sm">
-                          <span className="font-semibold">Payment:</span>{' '}
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                            booking.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
-                            booking.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
-                            {booking.paymentStatus.toUpperCase()}
-                          </span>
-                        </p>
+                      <div className="space-y-3 bg-[#f9fafb]/50 backdrop-blur-sm p-5 rounded-xl border border-[#e5e7eb]/60">
+                        <h5 className="font-bold text-[#034123] text-base border-b border-[#034123]/20 pb-2 mb-3">Customer Info</h5>
+                        <div className="space-y-2.5">
+                          <p className="text-sm">
+                            <span className="font-semibold text-[#1f2937]">Name:</span>{' '}
+                            <span className="text-[#4b5563]">{booking.customerName}</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-semibold text-[#1f2937]">Email:</span>{' '}
+                            <span className="text-[#4b5563]">{booking.customerEmail}</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-semibold text-[#1f2937]">Phone:</span>{' '}
+                            <span className="text-[#4b5563]">{booking.customerPhone}</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-semibold text-[#1f2937]">Payment:</span>{' '}
+                            <span className={`px-3 py-1.5 rounded-lg text-xs font-bold backdrop-blur-sm shadow-sm ${
+                              booking.paymentStatus === 'paid' 
+                                ? 'bg-[#034123]/20 text-[#034123] border border-[#034123]/30' :
+                              booking.paymentStatus === 'pending' 
+                                ? 'bg-[#fee000]/30 text-[#856404] border border-[#fee000]/40' :
+                              'bg-red-100/80 text-red-800 border border-red-300/60'
+                            }`}>
+                              {booking.paymentStatus.toUpperCase()}
+                            </span>
+                          </p>
+                        </div>
                       </div>
                     </div>
 
                     {booking.adminNotes && (
-                      <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-                        <p className="text-sm font-semibold text-gray-700 mb-1">Admin Notes:</p>
-                        <p className="text-sm text-gray-600">{booking.adminNotes}</p>
+                      <div className="mt-5 p-4 bg-[#fee000]/20 backdrop-blur-sm border-l-4 border-[#fee000]/60 rounded-xl">
+                        <p className="text-sm font-bold text-[#856404] mb-2">📝 Admin Notes:</p>
+                        <p className="text-sm text-[#4b5563] leading-relaxed">{booking.adminNotes}</p>
                       </div>
                     )}
 
                     {booking.status === 'pending' && (
-                      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <h5 className="font-semibold text-blue-900 mb-2">📞 What's Next?</h5>
-                        <ul className="text-sm text-blue-800 space-y-1">
-                          <li>• Our team is reviewing your booking request</li>
-                          <li>• You will receive a confirmation email within 24 hours</li>
-                          <li>• Please keep your booking ID for reference</li>
-                          <li>• For urgent queries, contact us via WhatsApp</li>
+                      <div className="mt-6 p-5 bg-[#034123]/5 backdrop-blur-sm border border-[#034123]/20 rounded-xl">
+                        <h5 className="font-bold text-[#034123] mb-3 text-base">📞 What's Next?</h5>
+                        <ul className="text-sm text-[#4b5563] space-y-2">
+                          <li className="flex items-start gap-2">
+                            <span className="text-[#034123] mt-0.5">•</span>
+                            <span>Our team is reviewing your booking request</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-[#034123] mt-0.5">•</span>
+                            <span>You will receive a confirmation email within 24 hours</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-[#034123] mt-0.5">•</span>
+                            <span>Please keep your booking ID for reference</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-[#034123] mt-0.5">•</span>
+                            <span>For urgent queries, contact us via WhatsApp</span>
+                          </li>
                         </ul>
                       </div>
                     )}
 
                     {booking.status === 'confirmed' && booking.paymentStatus === 'pending' && (
-                      <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <h5 className="font-semibold text-green-900 mb-2">💳 Payment Required</h5>
-                        <p className="text-sm text-green-800">
+                      <div className="mt-6 p-5 bg-[#034123]/10 backdrop-blur-sm border border-[#034123]/30 rounded-xl">
+                        <h5 className="font-bold text-[#034123] mb-2 text-base">💳 Payment Required</h5>
+                        <p className="text-sm text-[#4b5563] leading-relaxed">
                           Your booking is confirmed! Our team will contact you shortly with payment details.
                         </p>
                       </div>
@@ -297,16 +337,24 @@ const UserBookingStatus = () => {
         )}
 
         {/* Help Section */}
-        <div className="mt-8 bg-white rounded-lg shadow-md p-6 text-center">
-          <h3 className="font-semibold text-gray-800 mb-2">Need Help?</h3>
-          <p className="text-gray-600 text-sm mb-4">
+        <div className="mt-8 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 lg:p-8 text-center">
+          <h3 className="font-bold text-[#034123] text-xl mb-3">Need Help?</h3>
+          <p className="text-[#4b5563] text-sm mb-6">
             If you have any questions about your booking, please contact us:
           </p>
-          <div className="flex justify-center gap-4 text-sm">
-            <a href="mailto:contact@yalasafari.com" className="text-orange-600 hover:underline">
+          <div className="flex justify-center gap-6 text-sm">
+            <a 
+              href="mailto:contact@yalasafari.com" 
+              className="px-5 py-2.5 bg-[#034123] hover:bg-[#026042] text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2"
+            >
               📧 Email Us
             </a>
-            <a href="https://wa.me/94773742700" className="text-orange-600 hover:underline" target="_blank" rel="noopener noreferrer">
+            <a 
+              href="https://wa.me/94773742700" 
+              className="px-5 py-2.5 bg-[#f26b21] hover:bg-[#e05a1a] text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2" 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
               💬 WhatsApp
             </a>
           </div>

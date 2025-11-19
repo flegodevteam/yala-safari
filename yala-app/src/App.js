@@ -1,9 +1,14 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import React, { useState } from "react";
 import Home from "./pages/Home";
 //import Packages from "./pages/Packages";
 import Packages from "./pages/PackageSet";
-import BookingConfirmation from './pages/BookingConfirmation';
+import BookingConfirmation from "./pages/BookingConfirmation";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
@@ -18,15 +23,15 @@ import TaxiService from "./components/TaxiService";
 import AuthGuard from "./components/AuthGuard";
 
 // Package Management Components
-import PackageList from './pages/PackageList';
-import PackageForm from './pages/PackageForm';
-import PackageBrowser from './pages/PackageBrowser';
-import PackageDetail from './pages/PackageDetail';
+import PackageList from "./pages/PackageList";
+import PackageForm from "./pages/PackageForm";
+import PackageBrowser from "./pages/PackageBrowser";
+import PackageDetail from "./pages/PackageDetail";
 
 // src/App.js - Fix imports
-import AdminBookingManagement from './components/AdminBookingManagement';
-import BookingCalendar from './components/BookingCalendar';
-import UserBookingStatus from './components/UserBookingStatus';
+import AdminBookingManagement from "./components/AdminBookingManagement";
+import BookingCalendar from "./components/BookingCalendar";
+import UserBookingStatus from "./components/UserBookingStatus";
 
 const initialBlogPosts = [
   {
@@ -61,102 +66,124 @@ const initialBlogPosts = [
   },
 ];
 
+function AppContent({ blogPosts, setBlogPosts }) {
+  const location = useLocation();
+
+  // Hide navbar and footer for admin and dashboard routes
+  const isAdminRoute =
+    location.pathname.startsWith("/admin") ||
+    location.pathname.startsWith("/dashboard");
+
+  return (
+    <div className="flex flex-col bg-gray-50">
+      {!isAdminRoute && <Navbar />}
+      <main className="flex-grow">
+        <Routes>
+          {/* ========================================
+              PUBLIC ROUTES
+          ======================================== */}
+
+          {/* Home route */}
+          <Route path="/" element={<Home />} />
+
+          {/* Booking & Packages - Public */}
+          <Route path="/packages" element={<Packages />} />
+          <Route path="/browse-packages" element={<PackageBrowser />} />
+          <Route path="/packages/:id" element={<PackageDetail />} />
+          <Route path="/booking" element={<Booking />} />
+          <Route path="/booking/confirm" element={<BookingConfirmation />} />
+
+          {/* General Pages */}
+          <Route path="/about" element={<About />} />
+          <Route path="/blog" element={<Blog blogPosts={blogPosts} />} />
+          <Route path="/contact" element={<Contact />} />
+
+          {/* Rooms & Services */}
+          <Route path="/rooms" element={<Rooms />} />
+          <Route path="/room/:roomType" element={<RoomDetails />} />
+          <Route path="/taxi-service" element={<TaxiService />} />
+          <Route path="/login" element={<AdminLogin />} />
+
+          {/* ========================================
+              ADMIN ROUTES (Protected)
+          ======================================== */}
+
+          {/* Admin Login */}
+
+          {/* Dashboard - Main */}
+          <Route
+            path="/dashboard"
+            element={
+              <AuthGuard>
+                <Dashboard blogPosts={blogPosts} setBlogPosts={setBlogPosts} />
+              </AuthGuard>
+            }
+          />
+          {/* Admin Routes */}
+
+          <Route
+            path="/admin/bookings"
+            element={
+              <AuthGuard>
+                <AdminBookingManagement />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/admin/calendar"
+            element={
+              <AuthGuard>
+                <BookingCalendar />
+              </AuthGuard>
+            }
+          />
+
+          {/* User Routes */}
+          <Route path="/booking-status" element={<UserBookingStatus />} />
+
+          {/* Package Management - Admin */}
+          <Route
+            path="/dashboard/packages"
+            element={
+              <AuthGuard>
+                <PackageList />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/dashboard/packages/create"
+            element={
+              <AuthGuard>
+                <PackageForm />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/dashboard/packages/edit/:id"
+            element={
+              <AuthGuard>
+                <PackageForm />
+              </AuthGuard>
+            }
+          />
+
+          {/* 404 - Catch all (Optional)
+          <Route path="*" element={<NotFound />} /> */}
+        </Routes>
+      </main>
+      {!isAdminRoute && <Footer />}
+    </div>
+  );
+}
+
 function App() {
   const [blogPosts, setBlogPosts] = useState(initialBlogPosts);
 
   return (
     <Router>
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Navbar />
-        <main className="flex-grow">
-          <Routes>
-            {/* ========================================
-                PUBLIC ROUTES
-            ======================================== */}
-            
-            {/* Home route */}
-            <Route path="/" element={<Home />} />
-            
-            {/* Booking & Packages - Public */}
-            <Route path="/packages" element={<Packages />} />
-            <Route path="/browse-packages" element={<PackageBrowser />} />
-            <Route path="/packages/:id" element={<PackageDetail />} />
-            <Route path="/booking" element={<Booking />} />
-            <Route path="/booking/confirm" element={<BookingConfirmation />} />
-            
-            {/* General Pages */}
-            <Route path="/about" element={<About />} />
-            <Route path="/blog" element={<Blog blogPosts={blogPosts} />} />
-            <Route path="/contact" element={<Contact />} />
-            
-            {/* Rooms & Services */}
-            <Route path="/rooms" element={<Rooms />} />
-            <Route path="/room/:roomType" element={<RoomDetails />} />
-            <Route path="/taxi-service" element={<TaxiService />} />
-            
-            {/* ========================================
-                ADMIN ROUTES (Protected)
-            ======================================== */}
-            
-            {/* Admin Login */}
-            <Route path="/admin" element={<AdminLogin />} />
-            
-            {/* Dashboard - Main */}
-            <Route
-              path="/dashboard"
-              element={
-                <AuthGuard>
-                  <Dashboard
-                    blogPosts={blogPosts}
-                    setBlogPosts={setBlogPosts}
-                  />
-                </AuthGuard>
-              }
-            />
-            {/* Admin Routes */}
-        <Route path="/admin/bookings" element={<AuthGuard><AdminBookingManagement /></AuthGuard>} />
-        <Route path="/admin/calendar" element={<AuthGuard><BookingCalendar /></AuthGuard>} />
-        
-        {/* User Routes */}
-        <Route path="/booking-status" element={<UserBookingStatus />} />
-            
-            {/* Package Management - Admin */}
-            <Route
-              path="/dashboard/packages"
-              element={
-                <AuthGuard>
-                  <PackageList />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/dashboard/packages/create"
-              element={
-                <AuthGuard>
-                  <PackageForm />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/dashboard/packages/edit/:id"
-              element={
-                <AuthGuard>
-                  <PackageForm />
-                </AuthGuard>
-              }
-            />
-            
-            {/* 404 - Catch all (Optional)
-            <Route path="*" element={<NotFound />} /> */}
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+      <AppContent blogPosts={blogPosts} setBlogPosts={setBlogPosts} />
     </Router>
   );
 }
 
-
-
 export default App;
-

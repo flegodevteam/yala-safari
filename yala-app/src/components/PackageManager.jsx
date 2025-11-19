@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { FiArrowLeft, FiSave, FiRotateCcw } from "react-icons/fi";
 import { apiEndpoints, authenticatedFetch } from "../config/api";
 
 const PackageManager = () => {
@@ -170,40 +171,47 @@ const PackageManager = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      <div className="flex flex-col justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#034123] mb-4"></div>
+        <span className="text-[#4b5563] font-medium">Loading pricing data...</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Package Manager</h1>
+    <div className="min-h-screen bg-gradient-to-br from-[#e6e6e6] via-white to-[#f5f5f5] py-6 lg:py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl lg:text-4xl font-bold text-[#034123] mb-2">Package Manager</h1>
+            <p className="text-[#6b7280] text-base">Manage safari package pricing</p>
+          </div>
           <button
-            onClick={() => navigate("/admin/dashboard")}
-            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
+            onClick={() => navigate("/dashboard")}
+            className="flex items-center gap-2 px-5 py-3 bg-white/95 backdrop-blur-xl hover:bg-white text-[#034123] font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20"
           >
-            Back to Dashboard
+            <FiArrowLeft className="w-5 h-5" />
+            <span className="hidden sm:inline">Back to Dashboard</span>
+            <span className="sm:hidden">Back</span>
           </button>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-          <div className="p-6">
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden mb-8">
+          <div className="p-4 lg:p-6 xl:p-8">
             {/* Jeep Pricing Section */}
-            <section className="mb-10">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
-                Jeep Safari Pricing
+            <section className="mb-8 lg:mb-10">
+              <h2 className="text-2xl lg:text-3xl font-bold text-[#034123] mb-4 lg:mb-6 pb-3 border-b border-[#034123]/20">
+                🚙 Jeep Safari Pricing
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
                 {Object.entries(pricing.jeep).map(([jeepType, timeSlots]) => (
                   <div
                     key={jeepType}
-                    className="border rounded-lg p-4 bg-gray-50"
+                    className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-xl p-4 lg:p-5 border border-[#e5e7eb]/60 hover:shadow-md transition-all duration-300"
                   >
-                    <h3 className="text-lg font-semibold mb-4 capitalize">
+                    <h3 className="text-lg font-bold text-[#034123] mb-4 capitalize border-b border-[#034123]/20 pb-2">
                       {jeepType.replace(/([A-Z])/g, " $1").trim()} Jeep
                     </h3>
 
@@ -211,13 +219,13 @@ const PackageManager = () => {
                       {Object.entries(timeSlots).map(([slot, price]) => (
                         <div
                           key={slot}
-                          className="flex items-center justify-between"
+                          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2"
                         >
-                          <label className="capitalize">
+                          <label className="text-sm font-semibold text-[#1f2937] capitalize">
                             {slot.replace(/([A-Z])/g, " $1").trim()}:
                           </label>
-                          <div className="flex items-center">
-                            <span className="mr-2">$</span>
+                          <div className="flex items-center w-full sm:w-auto">
+                            <span className="mr-2 text-[#034123] font-semibold">$</span>
                             <input
                               type="number"
                               min="0"
@@ -229,7 +237,7 @@ const PackageManager = () => {
                                   e.target.value
                                 )
                               }
-                              className="w-20 border rounded px-2 py-1"
+                              className="flex-1 sm:w-24 px-3 py-2 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
                             />
                           </div>
                         </div>
@@ -241,22 +249,22 @@ const PackageManager = () => {
             </section>
 
             {/* Shared Safari Pricing */}
-            <section className="mb-10">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
-                Shared Safari Pricing (Per Person)
+            <section className="mb-8 lg:mb-10">
+              <h2 className="text-2xl lg:text-3xl font-bold text-[#034123] mb-4 lg:mb-6 pb-3 border-b border-[#034123]/20">
+                👥 Shared Safari Pricing (Per Person)
               </h2>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4">
                 {Object.entries(pricing.shared).map(([people, price]) => (
                   <div
                     key={people}
-                    className="border rounded-lg p-4 bg-gray-50 text-center"
+                    className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-xl p-4 border border-[#e5e7eb]/60 hover:shadow-md transition-all duration-300 text-center"
                   >
-                    <div className="font-medium mb-2">
+                    <div className="font-semibold text-[#034123] mb-3 text-sm lg:text-base">
                       {people} {people === "1" ? "Person" : "People"}
                     </div>
-                    <div className="flex items-center justify-center">
-                      <span className="mr-1">$</span>
+                    <div className="flex items-center justify-center gap-1">
+                      <span className="text-[#034123] font-semibold">$</span>
                       <input
                         type="number"
                         min="0"
@@ -265,7 +273,7 @@ const PackageManager = () => {
                         onChange={(e) =>
                           handlePriceChange(`shared.${people}`, e.target.value)
                         }
-                        className="w-20 border rounded px-2 py-1 text-center"
+                        className="w-full sm:w-20 px-2 py-2 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-center text-[#1f2937] shadow-sm text-sm"
                       />
                     </div>
                   </div>
@@ -274,22 +282,22 @@ const PackageManager = () => {
             </section>
 
             {/* Guide Pricing */}
-            <section className="mb-10">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
-                Guide Options Pricing
+            <section className="mb-8 lg:mb-10">
+              <h2 className="text-2xl lg:text-3xl font-bold text-[#034123] mb-4 lg:mb-6 pb-3 border-b border-[#034123]/20">
+                👨‍✈️ Guide Options Pricing
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
                 {Object.entries(pricing.guide).map(([guideType, price]) => (
                   <div
                     key={guideType}
-                    className="border rounded-lg p-4 bg-gray-50"
+                    className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-xl p-4 lg:p-5 border border-[#e5e7eb]/60 hover:shadow-md transition-all duration-300"
                   >
-                    <h3 className="text-lg font-semibold mb-2 capitalize">
+                    <h3 className="text-base lg:text-lg font-bold text-[#034123] mb-3 capitalize border-b border-[#034123]/20 pb-2">
                       {guideType.replace(/([A-Z])/g, " $1").trim()}
                     </h3>
-                    <div className="flex items-center">
-                      <span className="mr-2">$</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#034123] font-semibold">$</span>
                       <input
                         type="number"
                         min="0"
@@ -301,7 +309,7 @@ const PackageManager = () => {
                             e.target.value
                           )
                         }
-                        className="w-20 border rounded px-2 py-1"
+                        className="flex-1 px-3 py-2 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
                       />
                     </div>
                   </div>
@@ -310,22 +318,22 @@ const PackageManager = () => {
             </section>
 
             {/* Meal Pricing */}
-            <section className="mb-10">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
-                Meal Options Pricing
+            <section className="mb-8 lg:mb-10">
+              <h2 className="text-2xl lg:text-3xl font-bold text-[#034123] mb-4 lg:mb-6 pb-3 border-b border-[#034123]/20">
+                🍽️ Meal Options Pricing
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                 {Object.entries(pricing.meals).map(([mealType, price]) => (
                   <div
                     key={mealType}
-                    className="border rounded-lg p-4 bg-gray-50"
+                    className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-xl p-4 lg:p-5 border border-[#e5e7eb]/60 hover:shadow-md transition-all duration-300"
                   >
-                    <h3 className="text-lg font-semibold mb-2 capitalize">
+                    <h3 className="text-base lg:text-lg font-bold text-[#034123] mb-3 capitalize border-b border-[#034123]/20 pb-2">
                       {mealType}
                     </h3>
-                    <div className="flex items-center">
-                      <span className="mr-2">$</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#034123] font-semibold">$</span>
                       <input
                         type="number"
                         min="0"
@@ -334,7 +342,7 @@ const PackageManager = () => {
                         onChange={(e) =>
                           handlePriceChange(`meals.${mealType}`, e.target.value)
                         }
-                        className="w-20 border rounded px-2 py-1"
+                        className="flex-1 px-3 py-2 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
                       />
                     </div>
                   </div>
@@ -343,45 +351,30 @@ const PackageManager = () => {
             </section>
 
             {/* Action Buttons */}
-            <div className="flex justify-end gap-4 mt-8 pt-6 border-t">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 lg:gap-4 mt-8 pt-6 border-t border-[#e5e7eb]">
               <button
                 onClick={resetToDefaults}
-                className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-[#f9fafb] hover:bg-[#e5e7eb] text-[#4b5563] font-semibold rounded-xl transition-all duration-300 border border-[#d1d5db]/60 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={saving}
               >
+                <FiRotateCcw className="w-5 h-5" />
                 Reset Defaults
               </button>
               <button
                 onClick={savePricing}
-                className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-[#034123] hover:bg-[#026042] text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={saving}
               >
                 {saving ? (
                   <>
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                     Saving...
                   </>
                 ) : (
-                  "Save Changes"
+                  <>
+                    <FiSave className="w-5 h-5" />
+                    Save Changes
+                  </>
                 )}
               </button>
             </div>
