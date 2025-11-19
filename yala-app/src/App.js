@@ -23,6 +23,11 @@ import PackageForm from './pages/PackageForm';
 import PackageBrowser from './pages/PackageBrowser';
 import PackageDetail from './pages/PackageDetail';
 
+// src/App.js - Fix imports
+import AdminBookingManagement from './components/AdminBookingManagement';
+import BookingCalendar from './components/BookingCalendar';
+import UserBookingStatus from './components/UserBookingStatus';
+
 const initialBlogPosts = [
   {
     id: "1",
@@ -108,6 +113,12 @@ function App() {
                 </AuthGuard>
               }
             />
+            {/* Admin Routes */}
+        <Route path="/admin/bookings" element={<AuthGuard><AdminBookingManagement /></AuthGuard>} />
+        <Route path="/admin/calendar" element={<AuthGuard><BookingCalendar /></AuthGuard>} />
+        
+        {/* User Routes */}
+        <Route path="/booking-status" element={<UserBookingStatus />} />
             
             {/* Package Management - Admin */}
             <Route

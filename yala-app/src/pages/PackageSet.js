@@ -10,6 +10,7 @@ import Modal from "react-modal";
 import lunugamweheraImage from "../assets/lunu.jpg";
 import { apiEndpoints, publicFetch } from "../config/api";
 import { toast } from "react-toastify";
+import DateAvailabilityChecker from '../components/DateAvailabilityChecker';
 
 const Packages = () => {
   const navigate = useNavigate();
@@ -1179,41 +1180,43 @@ useEffect(() => {
 
                       {/* Calendar for private safari */}
                       {reservationType === "private" && (
-                        <div className="mt-6">
-                          <label className="block font-semibold mb-2">
-                            Select Date
-                          </label>
-                          <Calendar
-                            value={privateDate}
-                            onChange={setPrivateDate}
-                            minDate={new Date()}
-                            maxDate={
-                              new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
-                            }
-                            tileDisabled={({ date, view }) =>
-                              view === "month" &&
-                              privateAvailableDates.length > 0 &&
-                              !privateAvailableDates.includes(
-                                date.toISOString().slice(0, 10)
-                              )
-                            }
-                            tileClassName={({ date, view }) =>
-                              view === "month" &&
-                              privateDate &&
-                              date.toDateString() ===
-                                new Date(privateDate).toDateString()
-                                ? "react-calendar__tile--active bg-green-600 text-white rounded-full shadow font-bold"
-                                : "rounded-full"
-                            }
-                          />
-                          <div className="mt-2 text-sm text-gray-600">
-                            Selected:{" "}
-                            {privateDate
-                              ? moment(privateDate).format("MMMM D, YYYY")
-                              : "None"}
-                          </div>
-                        </div>
-                      )}
+  <div className="mt-6">
+    <label className="block font-semibold mb-2">
+      Select Date
+    </label>
+    <Calendar
+      value={privateDate}
+      onChange={setPrivateDate}
+      minDate={new Date()}
+      maxDate={
+        new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+      }
+      tileClassName={({ date, view }) =>
+        view === "month" &&
+        privateDate &&
+        date.toDateString() ===
+          new Date(privateDate).toDateString()
+          ? "react-calendar__tile--active bg-green-600 text-white rounded-full shadow font-bold"
+          : "rounded-full"
+      }
+    />
+    <div className="mt-2 text-sm text-gray-600">
+      Selected:{" "}
+      {privateDate
+        ? moment(privateDate).format("MMMM D, YYYY")
+        : "None"}
+    </div>
+    
+    {/* ✅ ADD DATE AVAILABILITY CHECKER */}
+    <DateAvailabilityChecker
+      selectedDate={privateDate}
+      onAvailabilityCheck={(available) => {
+        // Optionally handle availability status
+        console.log('Date available:', available);
+      }}
+    />
+  </div>
+)}
                     </div>
                   )}
 
