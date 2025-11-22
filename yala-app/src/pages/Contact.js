@@ -6,6 +6,8 @@ import {
   FaTwitter,
   FaTripadvisor,
 } from "react-icons/fa";
+import contactUs from '../assets/y (7).jpg';
+import formImg from '../assets/y (9).jpg';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -48,174 +50,169 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gray-100 flex flex-col">
-      <div className="relative w-full h-screen overflow-hidden">
-        {/* Elephant Background Image */}
+    <div className="min-h-screen w-full bg-gradient-to-b from-[#e6e6e6] to-white flex flex-col">
+      {/* Hero Section */}
+      <div className="relative w-full h-[60vh] md:h-[70vh] overflow-hidden">
+        {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80"
+            src={contactUs}
             alt="Elephant in the wild"
-            className="w-full h-full object-cover brightness-75"
+            className="w-full h-full object-cover"
           />
+          <div className="absolute inset-0 bg-[#034123]/70"></div>
         </div>
 
         {/* Overlay Content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-4 tracking-wider">
-            WELCOME TO YALA SAFRI
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 tracking-wider">
+            Contact Yala Safari
           </h1>
-
-          {/* Subtitle */}
-          <p className="text-2xl md:text-3xl text-white font-light mb-8">
-            YALA SAFARI Contact
+          <p className="text-xl md:text-2xl text-white/90 font-light mb-8">
+            Get in touch with us for your perfect safari adventure
           </p>
-
-          {/* Decorative Elements */}
           <div className="flex space-x-4">
-            <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-            <div className="w-3 h-3 rounded-full bg-green-400"></div>
-            <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-          </div>
-        </div>
-      </div>
-      <div className="font-sans text-gray-800 max-w-md mx-auto p-6">
-        {/* Main Heading */}
-        <h1 className="text-3xl font-bold mb-8">Contact.</h1>
-
-        {/* Address Section */}
-
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">Address</h2>
-          <p className="text-base">Tissamaharama, Yala, Sri Lanka</p>
-        </div>
-
-        {/* Contact Section */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">Contact</h2>
-          <p className="text-base">yalagihan@gmail.com</p>
-          <p className="text-base">+94 773 742 700</p>
-        </div>
-
-        {/* Follow Us Section */}
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Follow Us</h2>
-          <p className="text-base mb-3">Connect with me on</p>
-          <div className="flex space-x-4">
-            <a href="#" className="text-blue-600 hover:text-blue-800">
-              <FaFacebook size={24} />
-            </a>
-            <a href="#" className="text-pink-600 hover:text-pink-800">
-              <FaInstagram size={24} />
-            </a>
-            <a href="#" className="text-blue-400 hover:text-blue-600">
-              <FaTwitter size={24} />
-            </a>
-            <a href="#" className="text-green-600 hover:text-green-800">
-              <FaTripadvisor size={24} />
-            </a>
+            <div className="w-3 h-3 rounded-full bg-[#fee000]"></div>
+            <div className="w-3 h-3 rounded-full bg-[#f26b21]"></div>
+            <div className="w-3 h-3 rounded-full bg-[#fee000]"></div>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col">
-        <div className="mt-12 bg-white shadow overflow-hidden rounded-lg w-full mx-auto">
-          <div className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Find Us on the Map
-            </h2>
-            <div
-              className="w-screen relative left-1/2 right-1/2 -mx-[50vw] px-0"
-              style={{ maxWidth: "100vw" }}
-            >
-              <div className="aspect-w-16 aspect-h-9">
-                <iframe
-                  src="https://www.google.com/maps?q=6.4281,81.5186&z=15&output=embed"
-                  width="100%"
-                  height="450"
-                  style={{ border: 0 }}
-                  allowFullScreen=""
-                  loading="lazy"
-                  title="Yala Safari Location"
-                ></iframe>
-              </div>
+      {/* Contact Information Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-[#034123]/10">
+            <h2 className="text-2xl font-bold text-[#034123] mb-4">Address</h2>
+            <p className="text-base text-[#333333]">Tissamaharama, Yala, Sri Lanka</p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-[#034123]/10">
+            <h2 className="text-2xl font-bold text-[#034123] mb-4">Contact</h2>
+            <p className="text-base text-[#333333] mb-2">yalagihan@gmail.com</p>
+            <p className="text-base text-[#333333]">+94 773 742 700</p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-[#034123]/10">
+            <h2 className="text-2xl font-bold text-[#034123] mb-4">Follow Us</h2>
+            <p className="text-base text-[#333333] mb-4">Connect with us on</p>
+            <div className="flex space-x-4">
+              <a href="#" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Facebook">
+                <FaFacebook size={24} />
+              </a>
+              <a href="#" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Instagram">
+                <FaInstagram size={24} />
+              </a>
+              <a href="#" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Twitter">
+                <FaTwitter size={24} />
+              </a>
+              <a href="#" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="TripAdvisor">
+                <FaTripadvisor size={24} />
+              </a>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-stretch justify-center flex-1">
-          {/* Contact Form Section */}
-          <div className="w-full md:w-1/2 max-w-2xl bg-white rounded-l-lg rounded-r-none shadow-md p-8 flex flex-col justify-center">
-            <h1 className="text-3xl font-bold mb-6 text-gray-800">
+        {/* Map Section */}
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-[#034123]/10 mb-16">
+          <div className="p-8">
+            <h2 className="text-3xl font-bold text-[#034123] mb-6">
+              Find Us on the Map
+            </h2>
+            <div className="w-full rounded-lg overflow-hidden">
+              <iframe
+                src="https://www.google.com/maps?q=6.4281,81.5186&z=15&output=embed"
+                width="100%"
+                height="450"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                title="Yala Safari Location"
+                className="rounded-lg"
+              ></iframe>
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Form Section */}
+        <div className="flex flex-col md:flex-row items-stretch justify-center gap-8 mb-16">
+          {/* Contact Form */}
+          <div className="w-full md:w-1/2 bg-white rounded-2xl shadow-lg p-10 border border-[#034123]/10">
+            <h1 className="text-4xl font-bold mb-6 text-[#034123]">
               Contact Us
             </h1>
-            <p className="text-lg mb-8 text-gray-600 italic">
+            <p className="text-lg mb-8 text-[#333333] italic">
               "Planning your dream safari or a serene escape at Yala? Contact us
               today! Whether it's about our exclusive offers, bookings, or any
               other inquiries, we're just a message away."
             </p>
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-lg font-medium text-gray-700 mb-2">
+                <label htmlFor="name" className="block text-base font-semibold text-[#034123] mb-2">
                   Name
                 </label>
                 <input
+                  id="name"
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter your name"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-3 bg-[#e6e6e6] border border-[#034123]/20 rounded-lg text-[#034123] placeholder-[#034123]/50 focus:outline-none focus:ring-2 focus:ring-[#f26b21] focus:border-[#f26b21] focus:bg-white transition-all duration-300"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-lg font-medium text-gray-700 mb-2">
+                <label htmlFor="email" className="block text-base font-semibold text-[#034123] mb-2">
                   Email
                 </label>
                 <input
+                  id="email"
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Enter your email"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-3 bg-[#e6e6e6] border border-[#034123]/20 rounded-lg text-[#034123] placeholder-[#034123]/50 focus:outline-none focus:ring-2 focus:ring-[#f26b21] focus:border-[#f26b21] focus:bg-white transition-all duration-300"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-lg font-medium text-gray-700 mb-2">
+                <label htmlFor="phone" className="block text-base font-semibold text-[#034123] mb-2">
                   Phone
                 </label>
                 <input
+                  id="phone"
                   type="tel"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="Enter your phone"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-3 bg-[#e6e6e6] border border-[#034123]/20 rounded-lg text-[#034123] placeholder-[#034123]/50 focus:outline-none focus:ring-2 focus:ring-[#f26b21] focus:border-[#f26b21] focus:bg-white transition-all duration-300"
                 />
               </div>
 
               <div>
-                <label className="block text-lg font-medium text-gray-700 mb-2">
+                <label htmlFor="message" className="block text-base font-semibold text-[#034123] mb-2">
                   Message
                 </label>
                 <textarea
+                  id="message"
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
                   placeholder="Your message"
                   rows="4"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-3 bg-[#e6e6e6] border border-[#034123]/20 rounded-lg text-[#034123] placeholder-[#034123]/50 focus:outline-none focus:ring-2 focus:ring-[#f26b21] focus:border-[#f26b21] focus:bg-white transition-all duration-300 resize-none"
                   required
                 ></textarea>
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-full transition duration-200"
+                className="w-full bg-[#f26b21] hover:bg-[#034123] text-white font-bold py-4 px-8 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
               >
                 Submit
               </button>
@@ -223,19 +220,23 @@ export default function Contact() {
 
             {/* Show success message */}
             {submitted && (
-              <div className="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-                Thank you! Your message has been sent successfully.
+              <div className="mt-6 p-4 bg-[#fee000]/20 border-2 border-[#fee000] text-[#034123] rounded-lg">
+                <p className="font-semibold">Thank you! Your message has been sent successfully.</p>
               </div>
             )}
           </div>
+
           {/* Image Section */}
-          <div className="w-full md:w-1/2 max-w-2xl flex">
-            <img
-              src="https://monkeysandmountains.com/wp-content/uploads/2015/01/rsz_leopard.jpg"
-              alt="Wild Breeze Safari"
-              className="w-full h-full object-cover rounded-r-lg rounded-l-none shadow-md"
-              style={{ minHeight: 600, height: "100%" }}
-            />
+          <div className="w-full md:w-1/2 flex">
+            <div className="relative w-full rounded-2xl overflow-hidden shadow-lg border border-[#034123]/10">
+              <img
+                src={formImg}
+                alt="Wildlife in Yala National Park"
+                className="w-full h-full object-cover"
+                style={{ minHeight: 600 }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#034123]/40 to-transparent"></div>
+            </div>
           </div>
         </div>
       </div>

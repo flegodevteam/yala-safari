@@ -67,36 +67,44 @@ const DashboardHome = () => {
   }, []);
 
   return (
-    <div>
-      <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-        Dashboard Overview
-      </h3>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="mb-8">
+        <h3 className="text-3xl lg:text-4xl font-bold text-[#034123] mb-2">
+          Dashboard Overview
+        </h3>
+        <p className="text-[#6b7280] text-base">Monitor your safari operations at a glance</p>
+      </div>
+
       {/* Loading State */}
       {loading && (
-        <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-          <span className="ml-2 text-gray-600">Loading ...</span>
+        <div className="flex flex-col justify-center items-center py-16">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#034123] mb-4"></div>
+          <span className="text-[#4b5563] font-medium">Loading dashboard data...</span>
         </div>
       )}
 
       {!loading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
           {stats.map((stat) => (
-            <div key={stat.name} className="bg-white p-6 rounded-lg shadow">
-              <div className="flex justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
+            <div 
+              key={stat.name} 
+              className="bg-white/95 backdrop-blur-xl p-6 rounded-2xl shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300 hover:scale-105"
+            >
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-[#6b7280] mb-2 uppercase tracking-wide">
                     {stat.name}
                   </p>
-                  <p className="mt-1 text-3xl font-semibold text-gray-900">
+                  <p className="text-3xl lg:text-4xl font-bold text-[#034123]">
                     {stat.value}
                   </p>
                 </div>
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  className={`inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm ${
                     stat.changeType === "positive"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
+                      ? "bg-[#034123]/10 text-[#034123] border border-[#034123]/20"
+                      : "bg-red-100/80 text-red-800 border border-red-300/60"
                   }`}
                 >
                   {stat.change}

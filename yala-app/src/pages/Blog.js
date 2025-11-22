@@ -89,138 +89,138 @@ export default function Blog() {
       : blogPosts.filter((post) => post.category === activeCategory);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
-          Safari Blog & Tips
-        </h1>
-        <p className="mt-5 max-w-xl mx-auto text-xl text-gray-500">
-          Expert advice, wildlife insights, and travel tips for your perfect
-          safari experience.
-        </p>
-        <button
-          onClick={fetchBlogs}
-          className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
-        >
-          Refresh Blogs
-        </button>
-      </div>
-
-      <div className="mb-8">
-        <div className="flex flex-wrap justify-center gap-2">
-          {categories.map((category) => (
-            <button
-              key={category.name}
-              onClick={() => setActiveCategory(category.name)}
-              className={`px-4 py-2 rounded-full text-sm ${
-                activeCategory === category.name
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              {category.name} ({category.count})
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredPosts.map((post) => (
-          <div
-            key={post.id}
-            className="flex flex-col rounded-lg shadow-lg overflow-hidden"
-          >
-            <div className="flex-shrink-0">
-              <img
-                className="h-48 w-full object-cover"
-                src={post.image}
-                alt=""
-              />
-            </div>
-            <div className="flex-1 bg-white p-6 flex flex-col justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-green-600">
-                  {post.category}
-                </p>
-                <Link to={`/blog/${post.id}`} className="block mt-2">
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    {post.title}
-                  </h3>
-                  <p className="mt-3 text-base text-gray-500">{post.excerpt}</p>
-                </Link>
-              </div>
-              <div className="mt-6 flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                    <span className="text-gray-600 text-sm font-medium">
-                      YL
-                    </span>
-                  </div>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900">
-                    Yala Safari Team
-                  </p>
-                  <div className="flex space-x-1 text-sm text-gray-500">
-                    <time dateTime="2020-03-16">{post.date}</time>
-                    <span aria-hidden="true">&middot;</span>
-                    <span>{post.readTime}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {filteredPosts.length === 0 && (
-        <div className="text-center py-12">
-          <h3 className="text-lg font-medium text-gray-900">
-            No posts found in this category
-          </h3>
-          <p className="mt-2 text-gray-600">
-            We don't have any posts in the {activeCategory} category yet. Check
-            back soon!
+    <div className="bg-gradient-to-b from-[#e6e6e6] to-white min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl font-extrabold text-[#034123] sm:text-5xl sm:tracking-tight lg:text-6xl">
+            Safari Blog & Tips
+          </h1>
+          <p className="mt-5 max-w-xl mx-auto text-lg text-[#333333]">
+            Expert advice, wildlife insights, and travel tips for your perfect
+            safari experience.
           </p>
           <button
-            onClick={() => setActiveCategory("All")}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700"
+            onClick={fetchBlogs}
+            className="mt-6 px-8 py-4 bg-[#f26b21] text-white rounded-lg hover:bg-[#034123] transition-all duration-300 font-semibold"
           >
-            View All Posts
+            Refresh Blogs
           </button>
         </div>
-      )}
 
-      <div className="mt-12 bg-green-50 rounded-lg p-8 text-center">
-        <h3 className="text-2xl font-bold text-gray-900">
-          Want more safari tips?
-        </h3>
-        <p className="mt-4 text-gray-600">
-          Subscribe to our newsletter for monthly updates on wildlife sightings,
-          conservation news, and exclusive offers.
-        </p>
-        <form className="mt-6 sm:flex max-w-md mx-auto">
-          <label htmlFor="email-address" className="sr-only">
-            Email address
-          </label>
-          <input
-            id="email-address"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            className="w-full px-5 py-3 border border-gray-300 shadow-sm placeholder-gray-400 focus:ring-green-500 focus:border-green-500 sm:max-w-xs rounded-md"
-            placeholder="Enter your email"
-          />
-          <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3 sm:flex-shrink-0">
+        <div className="mb-12">
+          <div className="flex flex-wrap justify-center gap-3">
+            {categories.map((category) => (
+              <button
+                key={category.name}
+                onClick={() => setActiveCategory(category.name)}
+                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-300 ${
+                  activeCategory === category.name
+                    ? "bg-[#f26b21] text-white shadow-lg"
+                    : "bg-white text-[#034123] border border-[#034123]/20 hover:border-[#f26b21] hover:text-[#f26b21]"
+                }`}
+              >
+                {category.name} ({category.count})
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredPosts.map((post) => (
+            <div
+              key={post.id}
+              className="flex flex-col rounded-2xl shadow-lg overflow-hidden bg-white border border-[#034123]/10 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
+            >
+              <div className="flex-shrink-0">
+                <img
+                  className="h-48 w-full object-cover"
+                  src={post.image}
+                  alt={post.title}
+                />
+              </div>
+              <div className="flex-1 bg-white p-8 flex flex-col justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-[#f26b21] uppercase tracking-wide mb-3">
+                    {post.category}
+                  </p>
+                  <Link to={`/blog/${post.id}`} className="block mt-2 group">
+                    <h3 className="text-xl font-bold text-[#034123] group-hover:text-[#f26b21] transition-colors duration-300">
+                      {post.title}
+                    </h3>
+                    <p className="mt-3 text-base text-[#333333] leading-relaxed">{post.excerpt}</p>
+                  </Link>
+                </div>
+                <div className="mt-8 flex items-center pt-6 border-t border-[#e6e6e6]">
+                  <div className="flex-shrink-0">
+                    <div className="h-12 w-12 rounded-full bg-[#034123] flex items-center justify-center">
+                      <span className="text-white text-sm font-bold">
+                        YL
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-semibold text-[#034123]">
+                      Yala Safari Team
+                    </p>
+                    <div className="flex space-x-1 text-sm text-[#333333]/70">
+                      <time dateTime={post.date}>{post.date}</time>
+                      <span aria-hidden="true">&middot;</span>
+                      <span>{post.readTime}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredPosts.length === 0 && (
+          <div className="text-center py-16 bg-white rounded-2xl border border-[#034123]/10">
+            <h3 className="text-2xl font-bold text-[#034123]">
+              No posts found in this category
+            </h3>
+            <p className="mt-4 text-[#333333]">
+              We don't have any posts in the {activeCategory} category yet. Check
+              back soon!
+            </p>
+            <button
+              onClick={() => setActiveCategory("All")}
+              className="mt-6 inline-flex items-center px-8 py-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-[#f26b21] hover:bg-[#034123] transition-all duration-300"
+            >
+              View All Posts
+            </button>
+          </div>
+        )}
+
+        <div className="mt-16 bg-white rounded-2xl p-10 text-center border border-[#034123]/10 shadow-lg">
+          <h3 className="text-3xl font-bold text-[#034123]">
+            Want more safari tips?
+          </h3>
+          <p className="mt-4 text-lg text-[#333333]">
+            Subscribe to our newsletter for monthly updates on wildlife sightings,
+            conservation news, and exclusive offers.
+          </p>
+          <form className="mt-8 sm:flex max-w-md mx-auto gap-3">
+            <label htmlFor="email-address" className="sr-only">
+              Email address
+            </label>
+            <input
+              id="email-address"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              className="flex-1 px-5 py-3 bg-[#e6e6e6] border border-[#034123]/20 rounded-lg text-[#034123] placeholder-[#034123]/50 focus:outline-none focus:ring-2 focus:ring-[#f26b21] focus:border-[#f26b21] focus:bg-white transition-all duration-300"
+              placeholder="Enter your email"
+            />
             <button
               type="submit"
-              className="w-full flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              className="mt-3 sm:mt-0 w-full sm:w-auto flex items-center justify-center px-8 py-3 border border-transparent text-base font-semibold rounded-lg text-white bg-[#f26b21] hover:bg-[#034123] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26b21] transition-all duration-300"
             >
               Subscribe
             </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -40,7 +40,7 @@ const AuthGuard = ({ children }) => {
       if (!token) {
         // No token found, redirect to admin login
         console.log("AuthGuard: No token, redirecting to /admin");
-        navigate("/admin", {
+        navigate("/login", {
           state: { from: location.pathname },
         });
         setIsLoading(false);

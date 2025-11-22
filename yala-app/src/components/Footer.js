@@ -2,29 +2,29 @@ import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-800">
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+    <footer className="bg-[#034123] text-white" role="contentinfo">
+      <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
           <div>
-            <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
+            <h3 className="text-sm font-semibold text-white/80 tracking-wider uppercase mb-6">
               Explore
             </h3>
-            <div className="mt-4 space-y-4 flex flex-col">
+            <div className="space-y-4 flex flex-col">
               <Link
                 to="/packages"
-                className="text-base text-gray-300 hover:text-white"
+                className="text-base text-white/70 hover:text-[#fee000] transition-colors duration-300"
               >
                 Safari Packages
               </Link>
               <Link
                 to="/about"
-                className="text-base text-gray-300 hover:text-white"
+                className="text-base text-white/70 hover:text-[#fee000] transition-colors duration-300"
               >
                 About Us
               </Link>
               <Link
                 to="/blog"
-                className="text-base text-gray-300 hover:text-white"
+                className="text-base text-white/70 hover:text-[#fee000] transition-colors duration-300"
               >
                 Blog & Tips
               </Link>
@@ -32,25 +32,25 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
+            <h3 className="text-sm font-semibold text-white/80 tracking-wider uppercase mb-6">
               Support
             </h3>
-            <div className="mt-4 space-y-4 flex flex-col">
+            <div className="space-y-4 flex flex-col">
               <Link
                 to="/contact"
-                className="text-base text-gray-300 hover:text-white"
+                className="text-base text-white/70 hover:text-[#fee000] transition-colors duration-300"
               >
                 Contact Us
               </Link>
               <Link
                 to="/faq"
-                className="text-base text-gray-300 hover:text-white"
+                className="text-base text-white/70 hover:text-[#fee000] transition-colors duration-300"
               >
                 FAQs
               </Link>
               <Link
                 to="/terms"
-                className="text-base text-gray-300 hover:text-white"
+                className="text-base text-white/70 hover:text-[#fee000] transition-colors duration-300"
               >
                 Terms & Conditions
               </Link>
@@ -58,19 +58,19 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
+            <h3 className="text-sm font-semibold text-white/80 tracking-wider uppercase mb-6">
               Legal
             </h3>
-            <div className="mt-4 space-y-4 flex flex-col">
+            <div className="space-y-4 flex flex-col">
               <Link
                 to="/privacy"
-                className="text-base text-gray-300 hover:text-white"
+                className="text-base text-white/70 hover:text-[#fee000] transition-colors duration-300"
               >
                 Privacy Policy
               </Link>
               <Link
                 to="/cookies"
-                className="text-base text-gray-300 hover:text-white"
+                className="text-base text-white/70 hover:text-[#fee000] transition-colors duration-300"
               >
                 Cookie Policy
               </Link>
@@ -78,16 +78,21 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
+            <h3 className="text-sm font-semibold text-white/80 tracking-wider uppercase mb-6">
               Connect
             </h3>
             <div className="mt-4 flex space-x-6">
-              <a href="#" className="text-gray-400 hover:text-white">
+              <a 
+                href="#" 
+                className="text-[#fee000] hover:text-white transition-colors duration-300"
+                aria-label="Facebook"
+              >
                 <span className="sr-only">Facebook</span>
                 <svg
                   className="h-6 w-6"
                   fill="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     fillRule="evenodd"
@@ -96,12 +101,17 @@ export default function Footer() {
                   />
                 </svg>
               </a>
-              <a href="#" className="text-gray-400 hover:text-white">
+              <a 
+                href="#" 
+                className="text-[#fee000] hover:text-white transition-colors duration-300"
+                aria-label="Instagram"
+              >
                 <span className="sr-only">Instagram</span>
                 <svg
                   className="h-6 w-6"
                   fill="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     fillRule="evenodd"
@@ -110,12 +120,17 @@ export default function Footer() {
                   />
                 </svg>
               </a>
-              <a href="#" className="text-gray-400 hover:text-white">
+              <a 
+                href="#" 
+                className="text-[#fee000] hover:text-white transition-colors duration-300"
+                aria-label="WhatsApp"
+              >
                 <span className="sr-only">WhatsApp</span>
                 <svg
                   className="h-6 w-6"
                   fill="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-6.29 3.617c-.545 0-1.08-.152-1.545-.437l-1.677.525.548-1.662c-.362-.55-.553-1.19-.553-1.852 0-2.047 1.658-3.715 3.715-3.715.99 0 1.92.39 2.622 1.1a3.742 3.742 0 011.093 2.622c0 2.047-1.658 3.715-3.715 3.715M12 0C5.373 0 0 5.373 0 12c0 2.126.549 4.126 1.517 5.877L0 24l6.335-1.535A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0" />
                 </svg>
@@ -123,21 +138,21 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        <div className="mt-8 border-t border-gray-700 pt-8 flex justify-between">
-          <p className="text-base text-gray-400">
+        <div className="mt-12 border-t border-white/20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-white/70">
             &copy; {new Date().getFullYear()} Flego Innovations. All rights
             reserved.
           </p>
           <div className="flex space-x-6">
             <Link
               to="/terms"
-              className="text-base text-gray-400 hover:text-white"
+              className="text-sm text-white/70 hover:text-[#fee000] transition-colors duration-300"
             >
               Terms
             </Link>
             <Link
               to="/privacy"
-              className="text-base text-gray-400 hover:text-white"
+              className="text-sm text-white/70 hover:text-[#fee000] transition-colors duration-300"
             >
               Privacy
             </Link>
