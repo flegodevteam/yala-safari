@@ -40,6 +40,7 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [packagesExpanded, setPackagesExpanded] = useState(false);
   const [packagesSubTab, setPackagesSubTab] = useState("list"); // "list" or "pricing"
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Get admin info
   const adminInfo = getAdminInfo();
@@ -66,8 +67,41 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Handle ESC key to close logout confirmation
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape' && showLogoutConfirm) {
+        setShowLogoutConfirm(false);
+      }
+    };
+
+    if (showLogoutConfirm) {
+      document.addEventListener('keydown', handleEscKey);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showLogoutConfirm]);
+
   const handleLogout = () => {
     logout(); // This will clear tokens and redirect to /admin
+  };
+
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const handleConfirmLogout = () => {
+    setShowLogoutConfirm(false);
+    handleLogout();
+  };
+
+  const handleCancelLogout = () => {
+    setShowLogoutConfirm(false);
   };
 
   // Toggle packages submenu
@@ -210,7 +244,7 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
         {/* Logout Button - Fixed to bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-[#034123]/50 backdrop-blur-sm ">
           <button
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
             className="flex items-center justify-center p-3 rounded-xl hover:bg-[#f26b21] w-full transition-all duration-300 text-white font-semibold group"
           >
             <FiLogOut className="text-lg" />
@@ -334,7 +368,7 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
         {/* Mobile Logout Button */}
         <div className="p-4 border-t border-white/10 bg-[#034123]/50 backdrop-blur-sm">
           <button
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
             className="flex items-center justify-center p-3 rounded-xl hover:bg-[#f26b21] w-full transition-all duration-300 text-white font-semibold"
           >
             <FiLogOut className="text-lg mr-3" />
@@ -425,6 +459,74 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
           </div>
         </main>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={handleCancelLogout}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="logout-modal-title"
+          aria-describedby="logout-modal-description"
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all duration-300"
+            onClick={(e) => e.stopPropagation()}
+            style={{ borderColor: 'rgba(3, 65, 35, 0.1)' }}
+          >
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#fee000' }}>
+                <FiLogOut className="text-2xl" style={{ color: '#034123' }} />
+              </div>
+              <h3
+                id="logout-modal-title"
+                className="ml-4 text-2xl font-bold"
+                style={{ color: '#034123' }}
+              >
+                Confirm Logout
+              </h3>
+            </div>
+            <p
+              id="logout-modal-description"
+              className="mb-6 text-base"
+              style={{ color: '#333333' }}
+            >
+              Are you sure you want to logout? You will need to login again to access the dashboard.
+            </p>
+            <div className="flex gap-4 justify-end">
+              <button
+                onClick={handleCancelLogout}
+                className="px-6 py-3 border text-base font-medium rounded-lg transition-colors duration-200"
+                style={{
+                  borderColor: '#034123',
+                  color: '#034123',
+                  backgroundColor: 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#034123';
+                  e.target.style.color = '#ffffff';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#034123';
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmLogout}
+                className="px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white transition-colors duration-200"
+                style={{ backgroundColor: '#f26b21' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#034123'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#f26b21'}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

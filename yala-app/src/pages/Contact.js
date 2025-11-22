@@ -6,6 +6,8 @@ import {
   FaTwitter,
   FaTripadvisor,
 } from "react-icons/fa";
+import contactUs from '../assets/y (7).jpg';
+import formImg from '../assets/y (9).jpg';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -54,7 +56,7 @@ export default function Contact() {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80"
+            src={contactUs}
             alt="Elephant in the wild"
             className="w-full h-full object-cover"
           />
@@ -228,7 +230,7 @@ export default function Contact() {
           <div className="w-full md:w-1/2 flex">
             <div className="relative w-full rounded-2xl overflow-hidden shadow-lg border border-[#034123]/10">
               <img
-                src="https://monkeysandmountains.com/wp-content/uploads/2015/01/rsz_leopard.jpg"
+                src={formImg}
                 alt="Wildlife in Yala National Park"
                 className="w-full h-full object-cover"
                 style={{ minHeight: 600 }}

@@ -1,4 +1,5 @@
 import guides from "../assets/guides.jpg"; 
+import aboutImg from '../assets/y (3).JPG';
 
 
 
@@ -31,7 +32,7 @@ export default function About() {
               <div className="mt-8 md:mt-0 md:ml-8 md:w-1/2">
                 <img
                   className="rounded-3xl shadow-xl transition-transform duration-300 hover:scale-105"
-                  src="/about-story.jpg"
+                  src={aboutImg}
                   alt="Our founder in Yala National Park"
                 />
               </div>
@@ -72,16 +73,16 @@ export default function About() {
                   ),
                 },
               ].map((item, index) => (
-                <div key={index} className="pt-6">
-                  <div className="flow-root bg-white rounded-lg px-6 pb-8 border transition-transform duration-300 hover:scale-105 hover:shadow-lg" style={{ borderColor: 'rgba(3, 65, 35, 0.1)', backgroundColor: '#e6e6e6' }}>
-                    <div className="-mt-6">
+                <div key={index} className="pt-6 h-full">
+                  <div className="flow-root bg-white rounded-lg px-6 pb-8 border transition-transform duration-300 hover:scale-105 hover:shadow-lg h-full flex flex-col" style={{ borderColor: 'rgba(3, 65, 35, 0.1)', backgroundColor: '#e6e6e6', minHeight: '280px' }}>
+                    <div className="-mt-6 flex flex-col h-full">
                       <div>
                         <span className="inline-flex items-center justify-center p-3 rounded-md shadow-lg transition-transform duration-300 hover:scale-110" style={{ backgroundColor: '#fee000' }}>
                           {item.icon}
                         </span>
                       </div>
                       <h3 className="mt-8 text-lg font-medium tracking-tight" style={{ color: '#034123' }}>{item.title}</h3>
-                      <p className="mt-5 text-base" style={{ color: '#333333' }}>{item.description}</p>
+                      <p className="mt-5 text-base flex-grow" style={{ color: '#333333' }}>{item.description}</p>
                     </div>
                   </div>
                 </div>

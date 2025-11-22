@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import hero from '../assets/hero.jpg';
+import safariTeam from '../assets/y (1).jpg';
 
 export default function Home() {
   useEffect(() => {
@@ -26,14 +27,14 @@ export default function Home() {
             className="w-full h-full object-cover"
             src={hero}
             alt="Wildlife in Yala National Park"
-            style={{ opacity: 0.3 }}
+            style={{ opacity: 0.7 }}
           />
         </div>
         <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl" style={{ color: '#034123' }}>
+          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-white" >
             Discover the Wild Beauty of Yala
           </h1>
-          <p className="mt-6 text-xl max-w-3xl" style={{ color: '#333333' }}>
+          <p className="mt-6 text-xl max-w-3xl text-gray-200">
             Experience unforgettable wildlife encounters with our expert-guided safari tours in Sri Lanka's most famous national parks.
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
@@ -72,25 +73,22 @@ export default function Home() {
         <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {[
             {
-              name: "Yala Morning Safari",
+              name: "Yala Morning Safari (Most Popular)" ,
               description: "Spot leopards and other wildlife at their most active time",
-              price: "$50 per person",
               duration: "4 hours",
-              link: "/booking?package=morning",
+              link: "/packages",
             },
             {
-              name: "Full Day Yala Experience",
+              name: "Evening Safari Yala Experience",
               description: "Comprehensive exploration with lunch included",
-              price: "$120 per person",
               duration: "8 hours",
-              link: "/booking?package=fullday",
+              link: "/packages",
             },
             {
-              name: "Bundala Bird Watching",
+              name: "Extended Safari",
               description: "Specialized tour for bird enthusiasts",
-              price: "$45 per person",
               duration: "5 hours",
-              link: "/booking?package=birdwatching",
+              link: "/packages",
             },
           ].map((pkg, index) => (
             <div key={index} className="pt-6 pb-8 px-6 bg-white rounded-lg shadow-lg flex flex-col border transition-transform duration-300 hover:scale-105 hover:shadow-xl" style={{ borderColor: 'rgba(3, 65, 35, 0.1)' }}>
@@ -98,8 +96,7 @@ export default function Home() {
                 <h3 className="text-xl font-bold" style={{ color: '#034123' }}>{pkg.name}</h3>
                 <p className="mt-3 text-base" style={{ color: '#333333' }}>{pkg.description}</p>
                 <div className="mt-4 flex items-center">
-                  <span className="font-medium" style={{ color: '#f26b21' }}>{pkg.price}</span>
-                  <span className="ml-4 text-sm" style={{ color: '#333333' }}>{pkg.duration}</span>
+                  <span className="font-medium" style={{ color: '#f26b21' }}>{pkg.duration}</span>
                 </div>
               </div>
               <div className="mt-6">
@@ -130,36 +127,100 @@ export default function Home() {
       </div>
 
       {/* About Section */}
-      <div style={{ backgroundColor: '#034123' }}>
-        <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8 lg:flex lg:items-center">
-          <div className="lg:w-0 lg:flex-1">
-            <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              About Yala Safari
-            </h2>
-            <p className="mt-5 max-w-xl text-lg" style={{ color: '#e6e6e6' }}>
-              We are a team of passionate wildlife experts dedicated to providing authentic and responsible safari experiences in Sri Lanka's most beautiful national parks.
-            </p>
-            <div className="mt-8 sm:flex">
-              <div className="rounded-md shadow">
+      <div style={{ backgroundColor: '#034123', position: 'relative', overflow: 'hidden' }}>
+        {/* Decorative background elements */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 left-0 w-96 h-96 rounded-full" style={{ background: 'radial-gradient(circle, #f26b21 0%, transparent 70%)', transform: 'translate(-50%, -50%)' }}></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full" style={{ background: 'radial-gradient(circle, #f26b21 0%, transparent 70%)', transform: 'translate(50%, 50%)' }}></div>
+        </div>
+        
+        <div className="relative max-w-7xl mx-auto py-20 px-4 sm:py-28 sm:px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-16 lg:items-center">
+            {/* Content Section */}
+            <div className="mb-12 lg:mb-0">
+              <div className="inline-block mb-4">
+                <span className="text-sm font-semibold uppercase tracking-wider" style={{ color: '#f26b21' }}>
+                  Our Story
+                </span>
+              </div>
+              <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl mb-6">
+                About Yala Safari
+              </h2>
+              <p className="mt-6 max-w-xl text-lg leading-relaxed" style={{ color: '#e6e6e6' }}>
+                We are a team of passionate wildlife experts dedicated to providing authentic and responsible safari experiences in Sri Lanka's most beautiful national parks.
+              </p>
+              <p className="mt-4 max-w-xl text-base leading-relaxed" style={{ color: '#d1d5db' }}>
+                With years of experience and deep knowledge of the region's diverse ecosystems, we create unforgettable adventures that connect you with nature while promoting conservation and sustainable tourism.
+              </p>
+              
+              {/* Key Features */}
+              <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-2">
+                <div className="flex flex-col">
+                  <div className="flex items-center mb-2">
+                    <svg className="h-6 w-6 mr-2" style={{ color: '#f26b21' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-white font-semibold text-sm">Expert Guides</span>
+                  </div>
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center mb-2">
+                    <svg className="h-6 w-6 mr-2" style={{ color: '#f26b21' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span className="text-white font-semibold text-sm">Trusted Team</span>
+                  </div>
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center mb-2">
+                    <svg className="h-6 w-6 mr-2" style={{ color: '#f26b21' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-white font-semibold text-sm">Eco-Friendly</span>
+                  </div>
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center mb-2">
+                    <svg className="h-6 w-6 mr-2" style={{ color: '#f26b21' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                    <span className="text-white font-semibold text-sm">Premium Experience</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA Button */}
+              <div className="mt-10">
                 <Link
                   to="/about"
-                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md bg-white transition-colors duration-200 md:py-4 md:text-lg md:px-10"
+                  className="inline-flex items-center px-8 py-4 border border-transparent text-base font-semibold rounded-lg bg-white transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 md:py-4 md:text-lg md:px-10"
                   style={{ color: '#034123' }}
                   onMouseEnter={(e) => { e.target.style.backgroundColor = '#f26b21'; e.target.style.color = '#ffffff'; }}
                   onMouseLeave={(e) => { e.target.style.backgroundColor = '#ffffff'; e.target.style.color = '#034123'; }}
                 >
-                  Learn More
+                  Learn More About Us
+                  <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
                 </Link>
               </div>
             </div>
-          </div>
-          <div className="lg:mt-0 lg:ml-16 flex items-center justify-center">
-            <img
-              className="w-full rounded-3xl shadow-xl"
-              src="/about-image.jpg"
-              alt="Safari team"
-              width={600}
-            />
+
+            {/* Image Section */}
+            <div className="lg:mt-0 flex items-center justify-center lg:justify-end">
+              <div className="relative w-full max-w-lg">
+                <div className="absolute -inset-4 rounded-3xl" style={{ background: 'linear-gradient(135deg,rgb(255, 255, 255),rgb(0, 102, 53))', opacity: 0.3, transform: 'rotate(-2deg)' }}></div>
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl transform transition-transform duration-300 hover:scale-105">
+                  <img
+                    className="w-full h-auto object-cover"
+                    src={safariTeam}
+                    alt="Safari team at Yala National Park"
+                    style={{ aspectRatio: '4/3' }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -270,17 +331,11 @@ export default function Home() {
       >
         <style>{`
           @keyframes greenSweep {
-            0% {
-              transform: translateX(-120vw) scale(1.1);
-              opacity: 0.2;
-            }
+           
             50% {
-              opacity: 0.35;
+              opacity: 0.5;
             }
-            100% {
-              transform: translateX(120vw) scale(1.1);
-              opacity: 0.2;
-            }
+         
           }
           .green-animation-layer {
             animation: greenSweep 50s linear infinite;
@@ -296,7 +351,7 @@ export default function Home() {
             opacity: 0.7;
           }
           .green-animation-layer dotlottie-wc {
-            width: 1800px;
+            width: 2500px;
             height: 1800px;
             mix-blend-mode: screen;
           }
