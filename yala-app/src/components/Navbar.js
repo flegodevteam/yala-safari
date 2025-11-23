@@ -61,9 +61,15 @@ export default function Navbar() {
             </Link>
             <Link
               to="/rooms"
-              className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+              className="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium transition"
             >
-              Rooms & Taxi
+              🏨 Rooms
+            </Link>
+            <Link
+              to="/taxi-service"
+              className="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium transition"
+            >
+              🚕 Taxi Service
             </Link>
             <Link
               to="/contact"
@@ -190,6 +196,22 @@ export default function Navbar() {
           >
             🔍 Track Booking
           </Link>
+          <Link
+              to="/rooms"
+              className="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium transition"
+            >
+              🏨 Rooms
+            </Link>
+            <Link
+              to="/taxi-service"
+              className="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium transition"
+            >
+              🚕 Taxi Service
+            </Link>
+            <Link
+              to="/about"
+              className="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium transition"
+            ></Link>
           <Link
             to="/booking"
             className="block px-3 py-2 text-base font-medium text-green-600 hover:bg-green-50 transition-colors duration-200"

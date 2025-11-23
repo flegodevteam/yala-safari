@@ -100,6 +100,7 @@ function App() {
             
             {/* Admin Login */}
             <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/blog" element={<Blog />} />
             
             {/* Dashboard - Main */}
             <Route

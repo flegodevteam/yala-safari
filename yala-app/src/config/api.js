@@ -34,7 +34,7 @@ export const apiEndpoints = {
     packages: `${API_BASE_URL}/api/admin/packages`,
     bookings: `${API_BASE_URL}/api/bookings`,
   },
-  // Package endpoints
+   // Package endpoints
   packages: {
     base: `${API_BASE_URL}/api/packages`,
     current: `${API_BASE_URL}/api/packages/current`,
@@ -45,14 +45,9 @@ export const apiEndpoints = {
     admin: `${API_BASE_URL}/api/admin/packages`,
     availability: (type, park) =>
       `${API_BASE_URL}/api/availability?type=${type}&park=${park}`,
-    
-    // 🆕 PRICING MANAGEMENT ENDPOINTS
     pricing: {
-      // Update jeep pricing
       jeep: (id) => `${API_BASE_URL}/api/packages/${id}/jeep-pricing`,
-      // Update guide pricing
       guide: (id) => `${API_BASE_URL}/api/packages/${id}/guide-pricing`,
-      // Meal options management
       mealOptions: {
         add: (id) => `${API_BASE_URL}/api/packages/${id}/meal-options`,
         update: (id, mealType, itemIndex) => 
@@ -60,18 +55,58 @@ export const apiEndpoints = {
         delete: (id, mealType, itemIndex) => 
           `${API_BASE_URL}/api/packages/${id}/meal-options/${mealType}/${itemIndex}`,
       },
-      // Bulk update all pricing
       bulk: (id) => `${API_BASE_URL}/api/packages/${id}/pricing-bulk`,
     },
   },
-  // Blog endpoints
+  
+  // 🆕 ROOM ENDPOINTS
+  rooms: {
+    base: `${API_BASE_URL}/api/rooms`,
+    byId: (id) => `${API_BASE_URL}/api/rooms/${id}`,
+    toggle: (id) => `${API_BASE_URL}/api/rooms/${id}/toggle`,
+    pricing: (id) => `${API_BASE_URL}/api/rooms/${id}/pricing`,
+  },
+  
+  // 🆕 TAXI ENDPOINTS
+  taxis: {
+    base: `${API_BASE_URL}/api/taxis`,
+    byId: (id) => `${API_BASE_URL}/api/taxis/${id}`,
+    toggle: (id) => `${API_BASE_URL}/api/taxis/${id}/toggle`,
+    pricing: (id) => `${API_BASE_URL}/api/taxis/${id}/pricing`,
+  },
+  
+  // 🆕 BLOG ENDPOINTS
   blogs: {
     base: `${API_BASE_URL}/api/blogs`,
     byId: (id) => `${API_BASE_URL}/api/blogs/${id}`,
+    bySlug: (slug) => `${API_BASE_URL}/api/blogs/${slug}`,
+    publish: (id) => `${API_BASE_URL}/api/blogs/${id}/publish`,
+    unpublish: (id) => `${API_BASE_URL}/api/blogs/${id}/unpublish`,
   },
-  // Contact endpoints
-  contact: `${API_BASE_URL}/api/contact`,
-  // Booking endpoints
+  
+  // 🆕 ROOM BOOKING ENDPOINTS
+  roomBookings: {
+    create: `${API_BASE_URL}/api/room-bookings`,
+    getAll: `${API_BASE_URL}/api/room-bookings`,
+    byId: (id) => `${API_BASE_URL}/api/room-bookings/${id}`,
+    byReference: (ref) => `${API_BASE_URL}/api/room-bookings/reference/${ref}`,
+    update: (id) => `${API_BASE_URL}/api/room-bookings/${id}`,
+    updateStatus: (id) => `${API_BASE_URL}/api/room-bookings/${id}/status`,
+    cancel: (id) => `${API_BASE_URL}/api/room-bookings/${id}`,
+  },
+  
+  // 🆕 TAXI BOOKING ENDPOINTS
+  taxiBookings: {
+    create: `${API_BASE_URL}/api/taxi-bookings`,
+    getAll: `${API_BASE_URL}/api/taxi-bookings`,
+    byId: (id) => `${API_BASE_URL}/api/taxi-bookings/${id}`,
+    byReference: (ref) => `${API_BASE_URL}/api/taxi-bookings/reference/${ref}`,
+    update: (id) => `${API_BASE_URL}/api/taxi-bookings/${id}`,
+    updateStatus: (id) => `${API_BASE_URL}/api/taxi-bookings/${id}/status`,
+    cancel: (id) => `${API_BASE_URL}/api/taxi-bookings/${id}`,
+  },
+  
+  // Safari Booking endpoints
   bookings: {
     create: `${API_BASE_URL}/api/bookings`,
     getAll: `${API_BASE_URL}/api/bookings`,
@@ -81,6 +116,11 @@ export const apiEndpoints = {
     dateRange: (startDate, endDate) => 
       `${API_BASE_URL}/api/bookings/date-range?startDate=${startDate}&endDate=${endDate}`,
   },
+  
+  // Contact endpoints
+  contact: `${API_BASE_URL}/api/contact`,
+  // Booking endpoints
+ 
   // Dashboard endpoints
   dashboard: {
     overview: `${API_BASE_URL}/api/dashboard/overview`,

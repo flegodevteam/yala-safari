@@ -24,6 +24,7 @@ import ReportsDashboard from "../components/ReportsDashboard";
 import { logout, getAdminInfo } from '../utils/auth';
 import AdminBookingManagement from '../components/AdminBookingManagement'
 import BookingCalendar from '../components/BookingCalendar';
+import BlogManagement from '../components/BlogManagement';
 
 const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
   const navigate = useNavigate();
@@ -131,6 +132,13 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
             sidebarOpen={sidebarOpen}
           />
         </nav>
+        <NavItem
+  icon={<FiFileText />}
+  text="Blog Management"
+  active={activeTab === "blog-management"}
+  onClick={() => setActiveTab("blog-management")}
+  sidebarOpen={sidebarOpen}
+/>
 
         {/* Logout Button - Fixed to bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-indigo-700">
@@ -200,6 +208,7 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
               setBlogPosts={setBlogPosts}
             />
           )}
+          {activeTab === "blog-management" && <BlogManagement />}
           {activeTab === "media" && <MediaGallery />}
           {activeTab === "users" && <UserManager />}
           {activeTab === "reports" && <ReportsDashboard />}
