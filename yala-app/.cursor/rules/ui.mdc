@@ -1,0 +1,216 @@
+# Yala Safari Website - Cursor Rules
+
+## Project Overview
+Safari tour booking website for Yala National Park in Sri Lanka featuring wildlife tours, booking forms, and testimonials.
+
+## Design System
+
+### Color Palette
+- **Primary Background**: Light gray (#e6e6e6) to white gradient
+- **Primary Color**: Dark green (#034123)
+- **Accent Color**: Orange (#f26b21)
+- **Highlight Color**: Yellow (#fee000)
+- **Text Primary**: Dark green (#034123)
+- **Text Secondary**: Dark gray (#333333)
+- **Card Background**: White with subtle borders
+
+### Typography
+- **Headings**: Sans-serif, bold, large scale
+- **Body Text**: Sans-serif, medium weight
+- **Font Sizes**: 
+  - Hero heading: 72px+
+  - Section headings: 32-36px
+  - Body text: 16-18px
+  - Small text: 14px
+
+### Spacing
+- Section padding: 80-120px vertical
+- Card padding: 40-60px
+- Button padding: 16px 32px
+- Grid gaps: 24-32px
+
+## Component Guidelines
+
+### Navigation Bar
+```
+- Sticky header that starts translucent/white and gains a solid white background + subtle shadow once the user scrolls (~12px)
+- Logo/wordmark on left (icon + brand text) in dark green (#034123)
+- Primary navigation links: Home, Packages, About, Blog, Rooms & Taxi, Contact (dark green #034123 text)
+- Prominent "Book Now" CTA (desktop: right-aligned button in orange #f26b21, mobile: included in menu list)
+- Mobile: accessible hamburger button (`aria-controls`, `aria-expanded`) that locks body scroll while open
+- Provide smooth 0.2s–0.3s transitions for color/background changes to keep motion professional
+```
+
+### Home / Landing Page
+```
+- Full-page light gradient backdrop (#e6e6e6 to white) with clean card layers
+- Hero: immersive photography with light overlay (20–30% opacity), headline in 4–6xl range, accent badge + paired CTAs (`primary` uses #f26b21, `secondary` uses bordered #034123)
+- Featured cards: clean white background with subtle shadows (border-gray/20, bg-white, soft shadows) and hover lift (translate-y)
+- About: accent highlights (#fee000) behind imagery, rounded-3xl photography with conservation-led captions
+- Reviews: dual platform cards with gradient headers, testimonials in 3-column grid using yellow star icons (#fee000) and platform badges
+- Final CTA: gradient band (#034123 to #f26b21), uppercase microcopy, paired buttons (primary #f26b21, secondary outline #034123) aligned for desktop + stacked on mobile
+```
+
+### Hero Section
+```
+- Full viewport height background image (wildlife/safari theme)
+- Light overlay (20–30% white) for text readability
+- Centered content with:
+  - Large heading (brand name) in dark green (#034123)
+  - Subtitle/tagline in dark gray
+  - Primary CTA button (orange #f26b21)
+- Background image: High-quality wildlife photography
+```
+
+### Tour Cards
+```
+- Clean white background with subtle border
+- Rounded corners (12-16px radius)
+- Content layout:
+  - Heading in dark green (#034123)
+  - Description text in dark gray
+  - CTA button (orange #f26b21)
+  - Wildlife/vehicle imagery
+- Hover effects: Subtle scale or brightness change, shadow elevation
+```
+
+### Testimonial Section
+```
+- Centered layout
+- Profile image (circular)
+- Quote text in italics
+- Author name
+- Pagination dots below
+- Background: Subtle wildlife imagery
+```
+
+### Booking Form
+```
+- Clean white card background with subtle shadow
+- Form fields:
+  - Name (text input)
+  - Email (email input)
+  - Tour Date (date picker)
+  - Accessories (text input)
+  - Message (textarea)
+- Submit button: Full width, orange accent (#f26b21)
+- Field styling: Light gray background (#e6e6e6), rounded corners, dark text
+```
+
+### Footer
+```
+- Dark green background (#034123)
+- Copyright text on left (white or light gray)
+- Social media icons on right (Facebook, Twitter, Instagram) in white or yellow (#fee000)
+- Small text size
+```
+
+## Buttons
+```css
+Primary Button:
+- Background: #f26b21 (orange)
+- Color: white
+- Padding: 16px 32px
+- Border radius: 8px
+- Hover: Darken 10% or use #034123 (dark green)
+- No border
+
+Secondary Button:
+- Background: transparent
+- Border: 2px solid #034123 (dark green)
+- Color: #034123 (dark green)
+- Same padding and radius as primary
+- Hover: Background #034123, color white
+
+Accent/Highlight Button:
+- Background: #fee000 (yellow)
+- Color: #034123 (dark green)
+- Same padding and radius as primary
+- Hover: Brighten or darken text
+```
+
+## Forms
+```css
+Input Fields:
+- Background: #e6e6e6 (light gray) or white
+- Border: 1px solid rgba(3, 65, 35, 0.2) (dark green with opacity)
+- Border radius: 6px
+- Padding: 12px 16px
+- Color: #034123 (dark green)
+- Placeholder: rgba(3, 65, 35, 0.5) (dark green with opacity)
+
+Focus State:
+- Border color: #f26b21 (orange)
+- Outline: none
+- Background: white (if using gray background)
+```
+
+## Responsive Breakpoints
+```
+- Mobile: 0-768px
+- Tablet: 769px-1024px
+- Desktop: 1025px+
+
+Mobile Changes:
+- Stack navigation vertically
+- Single column layouts
+- Reduced font sizes (20-30%)
+- Reduced padding (50%)
+```
+
+## Image Guidelines
+```
+- Wildlife photos: High resolution, dramatic lighting
+- Safari vehicles: Show authentic safari jeeps
+- Background images: Light overlays (20–30% white) for text readability on light theme
+- Profile images: Circular crop, 60-80px diameter
+- Optimize for web (WebP format preferred)
+```
+
+## Animation Guidelines
+```
+- Subtle transitions: 0.3s ease
+- Hover effects: Scale(1.05) or brightness adjustments
+- Scroll animations: Fade in on view (optional)
+- Button interactions: Quick feedback (0.2s)
+- No excessive animations - keep it professional
+```
+
+## Content Tone
+```
+- Professional yet adventurous
+- Emphasis on natural beauty and wildlife
+- Safety and expertise highlighted
+- Sri Lankan cultural context
+- Environmental consciousness
+```
+
+## Technical Stack Recommendations
+```
+- HTML5 semantic markup
+- CSS3 with flexbox/grid
+- Vanilla JavaScript or React
+- Date picker library for form
+- Lazy loading for images
+- Mobile-first approach
+```
+
+## Accessibility
+```
+- Alt text for all images
+- ARIA labels for navigation
+- Keyboard navigation support
+- Sufficient color contrast (WCAG AA)
+- Focus indicators visible
+- Form labels properly associated
+```
+
+## SEO Considerations
+```
+- Semantic HTML structure
+- Meta descriptions with keywords
+- Image alt text with context
+- H1-H6 hierarchy maintained
+- Schema markup for tours/reviews
+- Fast loading times
+```
