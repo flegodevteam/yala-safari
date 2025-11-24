@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { apiEndpoints, publicFetch } from "../config/api";
+import { apiEndpoints, publicFetch, API_BASE_URL } from "../config/api";
 
 export default function Blog() {
   const [blogPosts, setBlogPosts] = useState([]);
@@ -20,6 +20,7 @@ export default function Blog() {
         const blogs = Array.isArray(data) ? data : (data.data || []);
         // Filter only published blogs for public view
         const publishedBlogs = blogs.filter(blog => blog.status === 'published');
+        console.log("Published blogs:", publishedBlogs);
         setBlogPosts(publishedBlogs);
       } else {
         console.error("Error fetching blogs:", response.status);
@@ -49,6 +50,19 @@ export default function Blog() {
     activeCategory === "All"
       ? blogPosts
       : blogPosts.filter((post) => post.categories?.includes(activeCategory));
+
+  // Helper function to get full image URL
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return "/default-blog.jpg";
+    
+    // If it's already a full URL, return as is
+    if (imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+    
+    // Otherwise, prepend the backend URL
+    return `${API_BASE_URL}${imageUrl}`;
+  };
 
   if (loading) {
     return (
@@ -97,8 +111,12 @@ export default function Blog() {
             <div className="flex-shrink-0">
               <img
                 className="h-48 w-full object-cover"
-                src={post.featuredImage?.url || "/default-blog.jpg"}
+                src={getImageUrl(post.featuredImage?.url)}
                 alt={post.title}
+                onError={(e) => {
+                  console.error("Image failed to load:", post.featuredImage?.url);
+                  e.target.src = "/default-blog.jpg";
+                }}
               />
             </div>
             <div className="flex-1 bg-white p-6 flex flex-col justify-between">
@@ -106,7 +124,7 @@ export default function Blog() {
                 <p className="text-sm font-medium text-green-600">
                   {post.categories?.[0] || "General"}
                 </p>
-                <Link to={`/blog/${post.slug || post._id}`} className="block mt-2">
+                <Link to={`/blog/${post._id}`} className="block mt-2">
                   <h3 className="text-xl font-semibold text-gray-900 hover:text-green-600">
                     {post.title}
                   </h3>
