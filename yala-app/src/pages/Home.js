@@ -24,10 +24,10 @@ export default function Home() {
       <div className="relative" style={{ background: 'linear-gradient(to bottom, #e6e6e6, #ffffff)' }}>
         <div className="absolute inset-0 overflow-hidden">
           <img
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-center"
             src={hero}
             alt="Wildlife in Yala National Park"
-            style={{ opacity: 0.7 }}
+            style={{ opacity: 0.7, minHeight: '100%', minWidth: '100%' }}
           />
         </div>
         <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
