@@ -101,6 +101,16 @@ export default function Navbar() {
               Blog
             </Link>
             <Link
+              to="/gallery"
+              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${
+                isActive("/gallery")
+                  ? "text-[#034123] bg-[#034123]/10 backdrop-blur-sm"
+                  : "text-[#333333] hover:text-[#034123] hover:bg-[#034123]/5"
+              }`}
+            >
+              Gallery
+            </Link>
+            <Link
               to="/rooms"
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-300 ${
                 isActive("/rooms") || location.pathname.startsWith("/room") || location.pathname.startsWith("/taxi")
@@ -236,6 +246,17 @@ export default function Navbar() {
             onClick={handleLinkClick}
           >
             Blog
+          </Link>
+          <Link
+            to="/gallery"
+            className={`block px-4 py-3 text-base font-semibold rounded-lg transition-all duration-300 ${
+              isActive("/gallery")
+                ? "text-[#034123] bg-[#034123]/10"
+                : "text-[#333333] hover:text-[#034123] hover:bg-[#034123]/5"
+            }`}
+            onClick={handleLinkClick}
+          >
+            Gallery
           </Link>
           <Link
             to="/rooms"

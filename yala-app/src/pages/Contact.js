@@ -14,9 +14,11 @@ export default function Contact() {
     name: "",
     email: "",
     phone: "",
+    subject: "",
     message: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,11 +43,19 @@ export default function Contact() {
       })
       .then((data) => {
         console.log("Form submitted successfully:", data);
-        setSubmitted(true);
-        setFormData({ name: "", email: "", phone: "", message: "" });
+        if (data.success) {
+          setSubmitted(true);
+          setSubmitMessage(data.message || "Thank you! Your message has been sent successfully.");
+          setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+        } else {
+          setSubmitted(false);
+          setSubmitMessage("There was an error sending your message. Please try again.");
+        }
       })
       .catch((error) => {
         console.error("Error submitting form:", error);
+        setSubmitted(false);
+        setSubmitMessage("There was an error sending your message. Please try again.");
       });
   };
 
@@ -195,6 +205,22 @@ export default function Contact() {
               </div>
 
               <div>
+                <label htmlFor="subject" className="block text-base font-semibold text-[#034123] mb-2">
+                  Subject
+                </label>
+                <input
+                  id="subject"
+                  type="text"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  placeholder="Enter subject (e.g., Safari Inquiry)"
+                  className="w-full px-4 py-3 bg-[#e6e6e6] border border-[#034123]/20 rounded-lg text-[#034123] placeholder-[#034123]/50 focus:outline-none focus:ring-2 focus:ring-[#f26b21] focus:border-[#f26b21] focus:bg-white transition-all duration-300"
+                  required
+                />
+              </div>
+
+              <div>
                 <label htmlFor="message" className="block text-base font-semibold text-[#034123] mb-2">
                   Message
                 </label>
@@ -218,10 +244,14 @@ export default function Contact() {
               </button>
             </form>
 
-            {/* Show success message */}
-            {submitted && (
-              <div className="mt-6 p-4 bg-[#fee000]/20 border-2 border-[#fee000] text-[#034123] rounded-lg">
-                <p className="font-semibold">Thank you! Your message has been sent successfully.</p>
+            {/* Show success/error message */}
+            {submitMessage && (
+              <div className={`mt-6 p-4 rounded-lg ${
+                submitted 
+                  ? "bg-[#fee000]/20 border-2 border-[#fee000] text-[#034123]" 
+                  : "bg-red-100 border-2 border-red-300 text-red-800"
+              }`}>
+                <p className="font-semibold">{submitMessage}</p>
               </div>
             )}
           </div>

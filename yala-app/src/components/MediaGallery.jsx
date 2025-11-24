@@ -1,149 +1,147 @@
 import React, { useState, useEffect } from "react";
-import { FiImage, FiBookmark, FiTrash2 } from "react-icons/fi";
-import { format } from "date-fns";
-import { apiEndpoints, authenticatedFetch } from "../config/api";
+import { FiImage, FiTrash2 } from "react-icons/fi";
+import { apiEndpoints, authenticatedFetch, API_BASE_URL } from "../config/api";
 
 const MediaGallery = () => {
-  const [images, setImages] = useState([
-    {
-      id: 1,
-      url: "https://example.com/image1.jpg",
-      title: "Leopard in Yala",
-      category: "wildlife",
-      featured: true,
-    },
-    {
-      id: 2,
-      url: "https://example.com/image2.jpg",
-      title: "Elephant herd",
-      category: "wildlife",
-      featured: false,
-    },
-    {
-      id: 3,
-      url: "https://example.com/image3.jpg",
-      title: "Safari jeep",
-      category: "equipment",
-      featured: false,
-    },
-  ]);
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [categories, setCategories] = useState([
-    "wildlife",
-    "landscape",
-    "equipment",
-    "people",
-  ]);
-  const [newCategory, setNewCategory] = useState("");
+  const categories = ["package", "blog", "gallery"];
+  const [filterCategory, setFilterCategory] = useState("all");
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [imageTitle, setImageTitle] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("wildlife");
+  const [imageAlt, setImageAlt] = useState("");
+  const [imageCaption, setImageCaption] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("gallery");
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
   };
 
+  // Helper function to get full image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "/default-image.jpg";
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      return imagePath;
+    }
+    return `${API_BASE_URL}${imagePath}`;
+  };
+
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const response = await authenticatedFetch(apiEndpoints.images.base);
+        setLoading(true);
+        setError("");
+        
+        // Build URL with optional category filter
+        let url = apiEndpoints.images.base;
+        if (filterCategory !== "all") {
+          url += `?category=${filterCategory}`;
+        }
+
+        const response = await authenticatedFetch(url);
         if (response.ok) {
-          const data = await response.json();
-          setImages(data);
+          const result = await response.json();
+          
+          // Handle new API response structure: { success, data, count }
+          if (result.success && Array.isArray(result.data)) {
+            setImages(result.data);
+          } else if (Array.isArray(result)) {
+            // Fallback for old API structure (direct array)
+            setImages(result);
+          } else {
+            console.error("Unexpected API response structure:", result);
+            setImages([]);
+          }
+        } else {
+          setError("Failed to fetch images");
         }
       } catch (err) {
-        alert("Failed to fetch images");
+        console.error("Error fetching images:", err);
+        setError("Failed to fetch images");
+        setImages([]);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchImages();
-  }, []);
+  }, [filterCategory]);
 
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!selectedFile) return;
 
-    const formData = new FormData();
-    formData.append("image", selectedFile);
-    formData.append("title", imageTitle);
-    formData.append("category", selectedCategory);
-
-    // In a real app, you would upload to your server here
-    const newImage = {
-      id: images.length + 1,
-      url: URL.createObjectURL(selectedFile),
-      title: imageTitle,
-      category: selectedCategory,
-      featured: false,
-    };
+    setError("");
 
     try {
+      const formData = new FormData();
+      formData.append("image", selectedFile);
+      formData.append("category", selectedCategory);
+      
+      if (imageAlt) {
+        formData.append("alt", imageAlt);
+      }
+      
+      if (imageCaption) {
+        formData.append("caption", imageCaption);
+      }
+
       const response = await authenticatedFetch(apiEndpoints.images.base, {
         method: "POST",
         body: formData,
       });
-      if (response.ok) {
-        const newImage = await response.json();
-        setImages([...images, newImage]);
-        setUploadModalOpen(false);
-        setSelectedFile(null);
-        setImageTitle("");
-      } else {
-        alert("Upload failed");
-      }
-    } catch (err) {
-      alert("Network error: " + err.message);
-    }
-  };
 
-  const toggleFeatured = async (id) => {
-    if (!id) return;
-    try {
-      const response = await authenticatedFetch(
-        apiEndpoints.images.featured(id),
-        {
-          method: "PATCH",
-        }
-      );
       if (response.ok) {
-        const updated = await response.json();
-        setImages(
-          images.map((img) =>
-            (img._id || img.id) === id
-              ? updated
-              : img.featured
-              ? { ...img, featured: false }
-              : img
-          )
-        );
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          setImages([result.data, ...images]);
+          setUploadModalOpen(false);
+          setSelectedFile(null);
+          setImageAlt("");
+          setImageCaption("");
+          setSelectedCategory("gallery");
+        } else {
+          setError(result.message || "Upload failed");
+        }
       } else {
-        alert("Failed to update featured status");
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.message || "Upload failed");
       }
     } catch (err) {
-      alert("Network error: " + err.message);
+      console.error("Error uploading image:", err);
+      setError(err.message || "Network error occurred");
     }
   };
 
   const deleteImage = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this image?")) {
+      return;
+    }
+
     try {
+      setError("");
       const response = await authenticatedFetch(apiEndpoints.images.byId(id), {
         method: "DELETE",
       });
+
       if (response.ok) {
-        setImages(images.filter((img) => img.id !== id && img._id !== id));
+        const result = await response.json();
+        
+        if (result.success) {
+          setImages(images.filter((img) => (img._id || img.id) !== id));
+        } else {
+          setError(result.message || "Delete failed");
+        }
       } else {
-        alert("Delete failed");
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.message || "Delete failed");
       }
     } catch (err) {
-      alert("Network error: " + err.message);
-    }
-  };
-
-  const addCategory = () => {
-    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
-      setCategories([...categories, newCategory.trim()]);
-      setNewCategory("");
+      console.error("Error deleting image:", err);
+      setError(err.message || "Network error occurred");
     }
   };
 
@@ -165,100 +163,101 @@ const MediaGallery = () => {
 
       {/* Category Filter */}
       <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 p-4 lg:p-6 mb-6">
-        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <span className="text-sm font-semibold text-[#034123] whitespace-nowrap">
             Filter by category:
           </span>
           <select
             className="flex-1 sm:flex-initial px-4 py-2.5 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-sm text-[#1f2937] shadow-sm"
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            value={selectedCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            value={filterCategory}
           >
             <option value="all">All Categories</option>
             {categories.map((cat) => (
               <option key={cat} value={cat}>
-                {cat}
+                {cat.charAt(0).toUpperCase() + cat.slice(1)}
               </option>
             ))}
           </select>
-
-          <div className="flex items-center w-full sm:w-auto">
-            <input
-              type="text"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              placeholder="New category"
-              className="flex-1 px-4 py-2.5 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-sm text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
-            />
-            <button
-              onClick={addCategory}
-              className="bg-[#034123] hover:bg-[#026042] text-white px-5 py-2.5 rounded-r-xl text-sm font-semibold hover:shadow-lg transition-all duration-300 shadow-sm"
-            >
-              Add
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* Image Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-        {images
-          .filter(
-            (img) =>
-              selectedCategory === "all" || img.category === selectedCategory
-          )
-          .map((image) => (
-            <div
-              key={image.id || image._id}
-              className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 overflow-hidden relative group hover:shadow-xl transition-all duration-300 hover:scale-105"
-            >
-              <div className="aspect-w-16 aspect-h-9 bg-gradient-to-br from-[#e6e6e6] to-[#f5f5f5] overflow-hidden">
-                <img
-                  src={apiEndpoints.images.url(image.url)}
-                  alt={image.title}
-                  className="object-cover w-full h-48 lg:h-56"
-                />
-              </div>
-              <div className="p-4">
-                <h4 className="font-semibold text-[#034123] truncate mb-2">
-                  {image.title}
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  <span className="inline-block bg-[#034123]/10 text-[#034123] rounded-full px-3 py-1 text-xs font-semibold border border-[#034123]/20">
-                    {image.category}
-                  </span>
-                  {image.featured && (
-                    <span className="inline-block bg-[#fee000]/20 text-[#856404] rounded-full px-3 py-1 text-xs font-bold border border-[#fee000]/40">
-                      ⭐ Featured
-                    </span>
-                  )}
-                </div>
-              </div>
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded-xl mb-4">
+          {error}
+        </div>
+      )}
 
-              {/* Hover actions */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 backdrop-blur-sm transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 space-x-3 rounded-2xl">
-                <button
-                  onClick={() => toggleFeatured(image._id || image.id)}
-                  className={`p-3 rounded-xl shadow-lg transition-all duration-300 hover:scale-110 ${
-                    image.featured
-                      ? "bg-[#fee000] text-[#034123]"
-                      : "bg-white/95 backdrop-blur-sm text-[#034123]"
-                  }`}
-                  title={image.featured ? "Remove featured" : "Set as featured"}
-                >
-                  <FiBookmark className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => deleteImage(image._id || image.id)}
-                  className="p-3 rounded-xl bg-white/95 backdrop-blur-sm text-red-600 shadow-lg transition-all duration-300 hover:scale-110"
-                  title="Delete image"
-                >
-                  <FiTrash2 className="w-5 h-5" />
-                </button>
-              </div>
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#f26b21]"></div>
+          <p className="mt-4 text-[#6b7280]">Loading images...</p>
+        </div>
+      )}
+
+      {/* Image Grid */}
+      {!loading && (
+        <>
+          {images.length === 0 ? (
+            <div className="text-center py-16 bg-white/95 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20">
+              <p className="text-[#6b7280] text-lg">No images found.</p>
             </div>
-          ))}
-      </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+              {images.map((image) => (
+                <div
+                  key={image._id}
+                  className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 overflow-hidden relative group hover:shadow-xl transition-all duration-300 hover:scale-105"
+                >
+                  <div className="aspect-w-16 aspect-h-9 bg-gradient-to-br from-[#e6e6e6] to-[#f5f5f5] overflow-hidden">
+                    <img
+                      src={getImageUrl(image.url)}
+                      alt={image.alt || "Gallery image"}
+                      className="object-cover w-full h-48 lg:h-56"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="p-4">
+                    {image.caption && (
+                      <h4 className="font-semibold text-[#034123] truncate mb-2">
+                        {image.caption}
+                      </h4>
+                    )}
+                    {image.alt && !image.caption && (
+                      <h4 className="font-semibold text-[#034123] truncate mb-2">
+                        {image.alt}
+                      </h4>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-block bg-[#034123]/10 text-[#034123] rounded-full px-3 py-1 text-xs font-semibold border border-[#034123]/20">
+                        {image.category}
+                      </span>
+                      {image.createdAt && (
+                        <span className="inline-block bg-gray-100 text-gray-600 rounded-full px-3 py-1 text-xs font-semibold">
+                          {new Date(image.createdAt).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Hover actions */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 backdrop-blur-sm transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 space-x-3 rounded-2xl">
+                    <button
+                      onClick={() => deleteImage(image._id)}
+                      className="p-3 rounded-xl bg-white/95 backdrop-blur-sm text-red-600 shadow-lg transition-all duration-300 hover:scale-110"
+                      title="Delete image"
+                    >
+                      <FiTrash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
 
       {/* Upload Modal */}
       {uploadModalOpen && (
@@ -312,32 +311,44 @@ const MediaGallery = () => {
                 </div>
                 <div className="mb-5">
                   <label className="block text-sm font-semibold text-[#034123] mb-2">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    value={imageTitle}
-                    onChange={(e) => setImageTitle(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
-                    required
-                    placeholder="Image title"
-                  />
-                </div>
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-[#034123] mb-2">
-                    Category
+                    Category <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
+                    required
                     className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
                   >
                     {categories.map((cat) => (
                       <option key={cat} value={cat}>
-                        {cat}
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
                       </option>
                     ))}
                   </select>
+                </div>
+                <div className="mb-5">
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">
+                    Alt Text (Image Description)
+                  </label>
+                  <input
+                    type="text"
+                    value={imageAlt}
+                    onChange={(e) => setImageAlt(e.target.value)}
+                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
+                    placeholder="Image description for accessibility"
+                  />
+                </div>
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">
+                    Caption
+                  </label>
+                  <input
+                    type="text"
+                    value={imageCaption}
+                    onChange={(e) => setImageCaption(e.target.value)}
+                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
+                    placeholder="Image caption"
+                  />
                 </div>
                 <div className="flex flex-col sm:flex-row justify-end gap-3">
                   <button
@@ -350,11 +361,16 @@ const MediaGallery = () => {
                   <button
                     type="submit"
                     className="px-5 py-3 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-[#034123] hover:bg-[#026042] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#034123]/50 transition-all duration-300 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={!selectedFile}
+                    disabled={!selectedFile || !selectedCategory}
                   >
                     Upload Image
                   </button>
                 </div>
+                {error && (
+                  <div className="mt-4 bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded-xl text-sm">
+                    {error}
+                  </div>
+                )}
               </form>
             </div>
           </div>

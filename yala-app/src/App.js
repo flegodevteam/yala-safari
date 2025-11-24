@@ -12,6 +12,7 @@ import BookingConfirmation from "./pages/BookingConfirmation";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
+import Gallery from "./pages/Gallery";
 import Booking from "./pages/Booking";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -97,6 +98,7 @@ function AppContent({ blogPosts, setBlogPosts }) {
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog blogPosts={blogPosts} />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/gallery" element={<Gallery />} />
 
           {/* Rooms & Services */}
           <Route path="/rooms" element={<Rooms />} />

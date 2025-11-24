@@ -1,30 +1,89 @@
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { apiEndpoints, publicFetch } from "../config/api";
+import { useState, useEffect, useCallback } from "react";
+import { apiEndpoints, publicFetch, API_BASE_URL } from "../config/api";
+
+// Helper function to format date
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+// Helper function to calculate read time from content
+const calculateReadTime = (content) => {
+  if (!content) return "5 min read";
+  const wordsPerMinute = 200;
+  const wordCount = content.split(/\s+/).length;
+  const minutes = Math.ceil(wordCount / wordsPerMinute);
+  return `${minutes} min read`;
+};
+
+// Helper function to get full image URL
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return "/default-blog.jpg";
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+    return imagePath;
+  }
+  return `${API_BASE_URL}${imagePath}`;
+};
+
+// Transform API response to component format
+const transformBlogPost = (post) => {
+  const publishedDate = post.publishedAt || post.createdAt;
+  return {
+    id: post._id,
+    title: post.title,
+    excerpt: post.excerpt,
+    image: getImageUrl(post.featuredImage?.url),
+    category: post.categories && post.categories.length > 0 ? post.categories[0] : "Uncategorized",
+    date: formatDate(publishedDate),
+    dateTime: publishedDate, // Original ISO date for dateTime attribute
+    readTime: calculateReadTime(post.content),
+    author: post.author?.name || "Yala Safari Team",
+  };
+};
 
 export default function Blog() {
   const [blogPosts, setBlogPosts] = useState([]);
 
-  const fetchBlogs = async () => {
+  const fetchBlogs = useCallback(async () => {
     try {
       console.log("Fetching blogs from API...");
       const response = await publicFetch(apiEndpoints.blogs.base);
 
       if (response.ok) {
-        const data = await response.json();
-        console.log("Received blog data:", data);
-        setBlogPosts(data);
+        const result = await response.json();
+        console.log("Received blog data:", result);
+        
+        // Handle new API response structure: { success, data, count }
+        if (result.success && Array.isArray(result.data)) {
+          const transformedPosts = result.data
+            .filter((post) => post.status === "published" && post.isActive)
+            .map(transformBlogPost);
+          setBlogPosts(transformedPosts);
+        } else if (Array.isArray(result)) {
+          // Fallback for old API structure (direct array)
+          const transformedPosts = result.map(transformBlogPost);
+          setBlogPosts(transformedPosts);
+        } else {
+          console.error("Unexpected API response structure:", result);
+          setBlogPosts([]);
+        }
       } else {
         console.error("Error fetching blogs:", response.status);
       }
     } catch (err) {
       console.error("Error fetching blogs:", err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchBlogs();
-  }, []);
+  }, [fetchBlogs]);
 
   // Listen for blog updates from admin panel
   useEffect(() => {
@@ -48,7 +107,7 @@ export default function Blog() {
       window.removeEventListener("blogUpdated", handleBlogUpdate);
       window.removeEventListener("storage", handleStorageChange);
     };
-  }, []);
+  }, [fetchBlogs]);
 
   const categories = [
     { name: "All", count: blogPosts.length },
@@ -160,10 +219,10 @@ export default function Blog() {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-semibold text-[#034123]">
-                      Yala Safari Team
+                      {post.author}
                     </p>
                     <div className="flex space-x-1 text-sm text-[#333333]/70">
-                      <time dateTime={post.date}>{post.date}</time>
+                      <time dateTime={post.dateTime}>{post.date}</time>
                       <span aria-hidden="true">&middot;</span>
                       <span>{post.readTime}</span>
                     </div>
