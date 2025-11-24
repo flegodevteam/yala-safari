@@ -39,23 +39,14 @@ export default function Home() {
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
             <Link
-              to="/booking"
+              to="/packages"
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white transition-colors duration-200"
               style={{ backgroundColor: '#f26b21' }}
               onMouseEnter={(e) => e.target.style.backgroundColor = '#034123'}
               onMouseLeave={(e) => e.target.style.backgroundColor = '#f26b21'}
             >
-              Book Your Safari
-            </Link>
-            <Link
-              to="/packages"
-              className="inline-flex items-center px-6 py-3 border text-base font-medium rounded-md shadow-sm bg-white transition-colors duration-200"
-              style={{ borderColor: '#034123', color: '#034123' }}
-              onMouseEnter={(e) => { e.target.style.backgroundColor = '#034123'; e.target.style.color = '#ffffff'; }}
-              onMouseLeave={(e) => { e.target.style.backgroundColor = '#ffffff'; e.target.style.color = '#034123'; }}
-            >
               Explore Packages
-            </Link>
+            </Link>      
           </div>
         </div>
       </div>
