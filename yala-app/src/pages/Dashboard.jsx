@@ -32,6 +32,8 @@ import ReportsDashboard from "../components/ReportsDashboard";
 import { logout, getAdminInfo } from "../utils/auth";
 import AdminBookingManagement from "../components/AdminBookingManagement";
 import BookingCalendar from "../components/BookingCalendar";
+import TaxiBookingManagement from "../components/TaxiBookingManagement";
+import ManageRooms from "../components/ManageRooms";
 import logo from "../assets/logo.png";
 
 const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
@@ -167,7 +169,7 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
             onClick={() => handleTabClick("dashboard")}
             sidebarOpen={sidebarOpen}
           />
-          <ExpandableNavItem
+          {/* <ExpandableNavItem
             icon={<FiPackage />}
             text="Packages"
             active={activeTab === "packages"}
@@ -180,15 +182,16 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
                 text: "Package List",
                 onClick: handlePackageListClick,
                 active: activeTab === "packages" && packagesSubTab === "list",
-              },
-              {
-                icon: <FiDollarSign />,
-                text: "Package Pricing",
-                onClick: handlePackagePricingClick,
-                active:
-                  activeTab === "packages" && packagesSubTab === "pricing",
-              },
+              }
+             
             ]}
+          /> */}
+            <NavItem
+            icon={<FiList />}
+            text="Package"
+            active={activeTab === "packages" && packagesSubTab === "list"}
+            onClick={() => handlePackageListClick()}
+            sidebarOpen={sidebarOpen}
           />
           <NavItem
             icon={<FiCalendar />}
@@ -205,10 +208,24 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
             sidebarOpen={sidebarOpen}
           />
           <NavItem
+            icon={<FiBookmark />}
+            text="Taxi Bookings"
+            active={activeTab === "taxi-bookings"}
+            onClick={() => handleTabClick("taxi-bookings")}
+            sidebarOpen={sidebarOpen}
+          />
+          <NavItem
             icon={<FiFileText />}
             text="Blog Content"
             active={activeTab === "blog"}
             onClick={() => handleTabClick("blog")}
+            sidebarOpen={sidebarOpen}
+          />
+          <NavItem
+            icon={<FiFileText />}
+            text="Manage Rooms"
+            active={activeTab === "rooms"}
+            onClick={() => handleTabClick("rooms")}
             sidebarOpen={sidebarOpen}
           />
           <NavItem
@@ -336,10 +353,24 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
             sidebarOpen={true}
           />
           <NavItem
+            icon={<FiFileText />}
+            text="Manage Rooms"
+            active={activeTab === "rooms"}
+            onClick={() => handleTabClick("rooms")}
+            sidebarOpen={true}
+          />
+          <NavItem
             icon={<FiImage />}
             text="Media Gallery"
             active={activeTab === "media"}
             onClick={() => handleTabClick("media")}
+            sidebarOpen={true}
+          />
+          <NavItem
+            icon={<FiBookmark/>}
+            text="Taxi Bookings"
+            active={activeTab === "taxi-bookings"}
+            onClick={() => handleTabClick("taxi-bookings")}
             sidebarOpen={true}
           />
           <NavItem
@@ -446,6 +477,7 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
             {/* {activeTab === "availability" && <AvailabilityCalendar />} */}
             {activeTab === "availability" && <BookingCalendar />}
             {activeTab === "bookings" && <AdminBookingManagement />}
+            {activeTab === "taxi-bookings" && <TaxiBookingManagement />}
             {activeTab === "blog" && (
               <BlogContentManager
                 blogPosts={blogPosts}
@@ -453,6 +485,7 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
               />
             )}
             {activeTab === "media" && <MediaGallery />}
+            {activeTab === "rooms" && <ManageRooms />}
             {activeTab === "users" && <UserManager />}
             {activeTab === "reports" && <ReportsDashboard />}
             {activeTab === "settings" && <SettingsPanel />}
