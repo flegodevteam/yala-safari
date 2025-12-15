@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { apiEndpoints, publicFetch, API_BASE_URL } from "../config/api";
 
@@ -38,17 +37,21 @@ const transformBlogPost = (post) => {
     id: post._id,
     title: post.title,
     excerpt: post.excerpt,
+    content: post.content || post.excerpt, // Store full content for modal
     image: getImageUrl(post.featuredImage?.url),
     category: post.categories && post.categories.length > 0 ? post.categories[0] : "Uncategorized",
     date: formatDate(publishedDate),
     dateTime: publishedDate, // Original ISO date for dateTime attribute
     readTime: calculateReadTime(post.content),
     author: post.author?.name || "Yala Safari Team",
+    tags: post.tags || [],
   };
 };
 
 export default function Blog() {
   const [blogPosts, setBlogPosts] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchBlogs = useCallback(async () => {
     try {
@@ -147,6 +150,34 @@ export default function Blog() {
       ? blogPosts
       : blogPosts.filter((post) => post.category === activeCategory);
 
+  // Modal handlers
+  const openModal = (post) => {
+    setSelectedPost(post);
+    setIsModalOpen(true);
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedPost(null);
+    // Restore body scroll
+    document.body.style.overflow = "unset";
+  };
+
+  // Close modal on ESC key
+  useEffect(() => {
+    if (!isModalOpen) return;
+    
+    const handleEscape = (e) => {
+      if (e.key === "Escape") {
+        closeModal();
+      }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [isModalOpen]);
+
   return (
     <div className="bg-gradient-to-b from-[#e6e6e6] to-white min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24">
@@ -188,7 +219,8 @@ export default function Blog() {
           {filteredPosts.map((post) => (
             <div
               key={post.id}
-              className="flex flex-col rounded-2xl shadow-lg overflow-hidden bg-white border border-[#034123]/10 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
+              onClick={() => openModal(post)}
+              className="flex flex-col rounded-2xl shadow-lg overflow-hidden bg-white border border-[#034123]/10 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"
             >
               <div className="flex-shrink-0">
                 <img
@@ -202,12 +234,12 @@ export default function Blog() {
                   <p className="text-sm font-semibold text-[#f26b21] uppercase tracking-wide mb-3">
                     {post.category}
                   </p>
-                  <Link to={`/blog/${post.id}`} className="block mt-2 group">
+                  <div className="block mt-2 group">
                     <h3 className="text-xl font-bold text-[#034123] group-hover:text-[#f26b21] transition-colors duration-300">
                       {post.title}
                     </h3>
                     <p className="mt-3 text-base text-[#333333] leading-relaxed">{post.excerpt}</p>
-                  </Link>
+                  </div>
                 </div>
                 <div className="mt-8 flex items-center pt-6 border-t border-[#e6e6e6]">
                   <div className="flex-shrink-0">
@@ -281,6 +313,131 @@ export default function Blog() {
           </form>
         </div>
       </div>
+
+      {/* Blog Post Modal */}
+      {isModalOpen && selectedPost && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto"
+          aria-labelledby="modal-title"
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={closeModal}
+          ></div>
+
+          {/* Modal Container */}
+          <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div
+              className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={closeModal}
+                className="absolute right-4 top-4 z-10 rounded-full bg-white p-2 text-[#034123] shadow-lg hover:bg-[#e6e6e6] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#f26b21]"
+                aria-label="Close modal"
+              >
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+
+              {/* Modal Content */}
+              <div className="bg-white">
+                {/* Featured Image */}
+                <div className="relative h-64 sm:h-96 w-full overflow-hidden">
+                  <img
+                    className="h-full w-full object-cover"
+                    src={selectedPost.image}
+                    alt={selectedPost.title}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
+                    <p className="text-sm font-semibold text-white uppercase tracking-wide mb-2">
+                      {selectedPost.category}
+                    </p>
+                    <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+                      {selectedPost.title}
+                    </h2>
+                  </div>
+                </div>
+
+                {/* Content Section */}
+                <div className="px-6 sm:px-8 py-8">
+                  {/* Author and Meta Info */}
+                  <div className="flex items-center justify-between mb-8 pb-6 border-b border-[#e6e6e6]">
+                    <div className="flex items-center space-x-4">
+                      <div className="h-14 w-14 rounded-full bg-[#034123] flex items-center justify-center">
+                        <span className="text-white text-lg font-bold">
+                          YL
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-base font-semibold text-[#034123]">
+                          {selectedPost.author}
+                        </p>
+                        <div className="flex items-center space-x-2 text-sm text-[#333333]/70 mt-1">
+                          <time dateTime={selectedPost.dateTime}>
+                            {selectedPost.date}
+                          </time>
+                          <span aria-hidden="true">&middot;</span>
+                          <span>{selectedPost.readTime}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Blog Content */}
+                  <div className="prose prose-lg max-w-none">
+                    <div
+                      className="text-[#333333] leading-relaxed"
+                      dangerouslySetInnerHTML={{
+                        __html: selectedPost.content
+                          ? (selectedPost.content.includes("<") && selectedPost.content.includes(">")
+                              ? selectedPost.content
+                              : selectedPost.content.replace(/\n/g, "<br />"))
+                          : selectedPost.excerpt,
+                      }}
+                    ></div>
+                  </div>
+
+                  {/* Tags (if available) */}
+                  {selectedPost.tags && selectedPost.tags.length > 0 && (
+                    <div className="mt-8 pt-6 border-t border-[#e6e6e6]">
+                      <p className="text-sm font-semibold text-[#034123] mb-3">
+                        Tags:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedPost.tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1 bg-[#e6e6e6] text-[#034123] rounded-full text-sm font-medium"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

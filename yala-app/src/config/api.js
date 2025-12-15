@@ -100,6 +100,16 @@ export const apiEndpoints = {
     bankDetails: `${API_BASE_URL}/api/settings/bank-details`,
     whatsapp: `${API_BASE_URL}/api/settings/whatsapp`,
   },
+  // Rooms endpoints
+  rooms: {
+    base: `${API_BASE_URL}/api/rooms`,
+    byId: (id) => `${API_BASE_URL}/api/rooms/${id}`,
+  },
+  // Taxis endpoints
+  taxis: {
+    base: `${API_BASE_URL}/api/taxis`,
+    byId: (id) => `${API_BASE_URL}/api/taxis/${id}`,
+  },
 };
 
 // Helper function to get auth token from localStorage

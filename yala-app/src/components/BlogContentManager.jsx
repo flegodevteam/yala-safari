@@ -28,8 +28,6 @@ export default function BlogContentManager() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState("");
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -58,51 +56,11 @@ export default function BlogContentManager() {
     fetchBlogs();
   }, []);
 
-  // Upload image to /api/image endpoint
-  const uploadImage = async (file, category = "blog") => {
-    try {
-      setUploadingImage(true);
-      const formData = new FormData();
-      formData.append("image", file);
-      formData.append("category", category);
-      
-      // Use alt and caption from form if available
-      if (form.featuredImageAlt) {
-        formData.append("alt", form.featuredImageAlt);
-      }
-      if (form.featuredImageCaption) {
-        formData.append("caption", form.featuredImageCaption);
-      }
-
-      // Use /api/image endpoint (not /api/images)
-      const imageEndpoint = apiEndpoints.images.base.replace('/api/images', '/api/image');
-      const response = await authenticatedFetch(imageEndpoint, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          setUploadedImageUrl(result.data.url);
-          return result.data.url;
-        }
-      }
-      throw new Error("Image upload failed");
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      throw error;
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     
     if (type === "file") {
       setForm({ ...form, [name]: files[0] || null });
-      setUploadedImageUrl(""); // Reset uploaded URL when new file is selected
     } else if (name === "categories") {
       // Handle multi-select for categories
       const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
@@ -126,7 +84,6 @@ export default function BlogContentManager() {
       featuredImageCaption: post.featuredImage?.caption || "",
       featuredImageAlt: post.featuredImage?.alt || "",
     });
-    setUploadedImageUrl(post.featuredImage?.url || "");
     setError("");
     setSuccess(false);
   };
@@ -145,7 +102,6 @@ export default function BlogContentManager() {
       featuredImageCaption: "",
       featuredImageAlt: "",
     });
-    setUploadedImageUrl("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -159,20 +115,6 @@ export default function BlogContentManager() {
     setSuccess(false);
 
     try {
-      let imageUrl = uploadedImageUrl;
-
-      // If a new image file is selected, upload it to /api/image first
-      if (form.featuredImage && !uploadedImageUrl) {
-        try {
-          const uploadedImage = await uploadImage(form.featuredImage, "blog");
-          imageUrl = uploadedImage;
-          setUploadedImageUrl(uploadedImage);
-        } catch (uploadError) {
-          setError("Failed to upload image. Please try again.");
-          return;
-        }
-      }
-
       // Create FormData for multipart/form-data
       const formData = new FormData();
       
@@ -181,28 +123,27 @@ export default function BlogContentManager() {
       formData.append("excerpt", form.excerpt);
       formData.append("content", form.content);
       formData.append("status", form.status);
+      
+      // Add author as JSON string
       formData.append("author", JSON.stringify({ name: form.authorName }));
       
-      // Add categories as array
-      form.categories.forEach((category) => {
-        formData.append("categories", category);
-      });
+      // Add categories as JSON string array
+      formData.append("categories", JSON.stringify(form.categories));
       
-      // Add tags - split by comma and trim
+      // Add tags as JSON string array - split by comma and trim
       if (form.tags) {
         const tagsArray = form.tags.split(",").map(tag => tag.trim()).filter(tag => tag);
-        tagsArray.forEach((tag) => {
-          formData.append("tags", tag);
-        });
+        formData.append("tags", JSON.stringify(tagsArray));
+      } else {
+        formData.append("tags", JSON.stringify([]));
       }
       
-      // Add featured image URL (from uploaded image)
-      if (imageUrl) {
-        // Send the URL from the uploaded image
-        formData.append("featuredImageUrl", imageUrl);
+      // Add featured image file if provided (send file directly to blog endpoint)
+      if (form.featuredImage) {
+        formData.append("featuredImage", form.featuredImage);
       }
       
-      // Also send caption and alt if provided
+      // Add image metadata
       if (form.featuredImageCaption) {
         formData.append("featuredImageCaption", form.featuredImageCaption);
       }
@@ -460,20 +401,11 @@ export default function BlogContentManager() {
                 type="file"
                 accept="image/*"
                 onChange={handleChange}
-                disabled={uploadingImage}
-                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm disabled:opacity-50"
+                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
               />
-              {uploadingImage && (
-                <p className="mt-1 text-xs text-[#6b7280]">Uploading image...</p>
-              )}
-              {form.featuredImage && !uploadingImage && (
+              {form.featuredImage && (
                 <p className="mt-1 text-xs text-[#6b7280]">
                   Selected: {form.featuredImage.name}
-                </p>
-              )}
-              {uploadedImageUrl && !form.featuredImage && (
-                <p className="mt-1 text-xs text-green-600">
-                  ✓ Image uploaded: {uploadedImageUrl}
                 </p>
               )}
             </div>
@@ -517,10 +449,9 @@ export default function BlogContentManager() {
               )}
               <button
                 type="submit"
-                disabled={uploadingImage}
-                className={`${editingId ? 'flex-1' : 'w-full'} py-3.5 bg-[#034123] hover:bg-[#026042] text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50`}
+                className={`${editingId ? 'flex-1' : 'w-full'} py-3.5 bg-[#034123] hover:bg-[#026042] text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl`}
               >
-                {uploadingImage ? "Uploading..." : editingId ? "Update Blog Post" : "Add Blog Post"}
+                {editingId ? "Update Blog Post" : "Add Blog Post"}
               </button>
             </div>
             {success && (

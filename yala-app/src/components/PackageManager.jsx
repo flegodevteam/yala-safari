@@ -4,34 +4,60 @@ import { toast } from "react-toastify";
 import { FiArrowLeft, FiSave, FiRotateCcw } from "react-icons/fi";
 import { apiEndpoints, authenticatedFetch } from "../config/api";
 
+// Default pricing structure
+const defaultPricing = {
+  jeep: {
+    basic: { morning: 0, afternoon: 0, extended: 0, fullDay: 0 },
+    luxury: { morning: 0, afternoon: 0, extended: 0, fullDay: 0 },
+    superLuxury: { morning: 0, afternoon: 0, extended: 0, fullDay: 0 },
+  },
+  shared: {
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0,
+    6: 0,
+    7: 0,
+  },
+  meals: {
+    breakfast: 0,
+    lunch: 0,
+  },
+  guide: {
+    driver: 0,
+    driverGuide: 0,
+    separateGuide: 0,
+  },
+};
+
+// Helper function to deep merge pricing data with defaults
+const mergePricingData = (apiData) => {
+  if (!apiData || typeof apiData !== 'object') {
+    return defaultPricing;
+  }
+
+  // Handle wrapped API responses
+  const data = apiData.data || apiData;
+
+  return {
+    jeep: {
+      ...defaultPricing.jeep,
+      ...(data.jeep || {}),
+      basic: { ...defaultPricing.jeep.basic, ...(data.jeep?.basic || {}) },
+      luxury: { ...defaultPricing.jeep.luxury, ...(data.jeep?.luxury || {}) },
+      superLuxury: { ...defaultPricing.jeep.superLuxury, ...(data.jeep?.superLuxury || {}) },
+    },
+    shared: { ...defaultPricing.shared, ...(data.shared || {}) },
+    meals: { ...defaultPricing.meals, ...(data.meals || {}) },
+    guide: { ...defaultPricing.guide, ...(data.guide || {}) },
+  };
+};
+
 const PackageManager = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [pricing, setPricing] = useState({
-    jeep: {
-      basic: { morning: 0, afternoon: 0, extended: 0, fullDay: 0 },
-      luxury: { morning: 0, afternoon: 0, extended: 0, fullDay: 0 },
-      superLuxury: { morning: 0, afternoon: 0, extended: 0, fullDay: 0 },
-    },
-    shared: {
-      1: 0,
-      2: 0,
-      3: 0,
-      4: 0,
-      5: 0,
-      6: 0,
-      7: 0,
-    },
-    meals: {
-      breakfast: 0,
-      lunch: 0,
-    },
-    guide: {
-      driver: 0,
-      driverGuide: 0,
-      separateGuide: 0,
-    },
-  });
+  const [pricing, setPricing] = useState(defaultPricing);
 
   const navigate = useNavigate();
 
@@ -51,9 +77,15 @@ const PackageManager = () => {
         const data = await response.json();
         console.log("PackageManager: Received data from API:", data);
         if (data) {
-          setPricing(data);
+          const mergedPricing = mergePricingData(data);
+          console.log("PackageManager: Merged pricing:", mergedPricing);
+          setPricing(mergedPricing);
           // Save to localStorage as backup
-          localStorage.setItem("currentPricing", JSON.stringify(data));
+          localStorage.setItem("currentPricing", JSON.stringify(mergedPricing));
+        } else {
+          // If data is null/undefined, use default
+          console.warn("PackageManager: API returned null/undefined data, using default");
+          setPricing(defaultPricing);
         }
       } else {
         throw new Error("API response not OK");
@@ -69,13 +101,22 @@ const PackageManager = () => {
         try {
           const data = JSON.parse(savedPricing);
           console.log("PackageManager: Loaded from localStorage:", data);
-          setPricing(data);
+          const mergedPricing = mergePricingData(data);
+          console.log("PackageManager: Merged pricing from localStorage:", mergedPricing);
+          setPricing(mergedPricing);
         } catch (parseError) {
           console.error(
             "PackageManager: Error parsing localStorage data:",
             parseError
           );
+          // Use default pricing if parsing fails
+          console.log("PackageManager: Using default pricing due to parse error");
+          setPricing(defaultPricing);
         }
+      } else {
+        // Use default pricing if no localStorage data
+        console.log("PackageManager: No localStorage data, using default pricing");
+        setPricing(defaultPricing);
       }
       setLoading(false);
     }
@@ -169,7 +210,15 @@ const PackageManager = () => {
     toast.info("Reset to default pricing");
   };
 
-  if (loading) {
+  // Ensure pricing is fully initialized before rendering
+  const isPricingValid = pricing && 
+    typeof pricing === 'object' &&
+    pricing.jeep && typeof pricing.jeep === 'object' &&
+    pricing.shared && typeof pricing.shared === 'object' &&
+    pricing.meals && typeof pricing.meals === 'object' &&
+    pricing.guide && typeof pricing.guide === 'object';
+
+  if (loading || !isPricingValid) {
     return (
       <div className="flex flex-col justify-center items-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#034123] mb-4"></div>
@@ -206,7 +255,7 @@ const PackageManager = () => {
               </h2>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-                {Object.entries(pricing.jeep).map(([jeepType, timeSlots]) => (
+                {pricing?.jeep && typeof pricing.jeep === 'object' && Object.entries(pricing.jeep).map(([jeepType, timeSlots]) => (
                   <div
                     key={jeepType}
                     className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-xl p-4 lg:p-5 border border-[#e5e7eb]/60 hover:shadow-md transition-all duration-300"
@@ -255,7 +304,7 @@ const PackageManager = () => {
               </h2>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4">
-                {Object.entries(pricing.shared).map(([people, price]) => (
+                {pricing?.shared && typeof pricing.shared === 'object' && Object.entries(pricing.shared).map(([people, price]) => (
                   <div
                     key={people}
                     className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-xl p-4 border border-[#e5e7eb]/60 hover:shadow-md transition-all duration-300 text-center"
@@ -288,7 +337,7 @@ const PackageManager = () => {
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
-                {Object.entries(pricing.guide).map(([guideType, price]) => (
+                {pricing.guide && Object.entries(pricing.guide).map(([guideType, price]) => (
                   <div
                     key={guideType}
                     className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-xl p-4 lg:p-5 border border-[#e5e7eb]/60 hover:shadow-md transition-all duration-300"
@@ -324,7 +373,7 @@ const PackageManager = () => {
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-                {Object.entries(pricing.meals).map(([mealType, price]) => (
+                {pricing?.meals && typeof pricing.meals === 'object' && Object.entries(pricing.meals).map(([mealType, price]) => (
                   <div
                     key={mealType}
                     className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-xl p-4 lg:p-5 border border-[#e5e7eb]/60 hover:shadow-md transition-all duration-300"

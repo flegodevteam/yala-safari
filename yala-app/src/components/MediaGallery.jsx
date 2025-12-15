@@ -7,12 +7,11 @@ const MediaGallery = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const categories = ["package", "blog", "gallery"];
+  const categories = ["package", "blog", "gallery", "wildlife"];
   const [filterCategory, setFilterCategory] = useState("all");
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [imageAlt, setImageAlt] = useState("");
-  const [imageCaption, setImageCaption] = useState("");
+  const [imageTitle, setImageTitle] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("gallery");
 
   const handleFileChange = (e) => {
@@ -71,7 +70,10 @@ const MediaGallery = () => {
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!selectedFile) return;
+    if (!selectedFile || !imageTitle.trim()) {
+      setError("Please select an image and provide a title");
+      return;
+    }
 
     setError("");
 
@@ -79,14 +81,7 @@ const MediaGallery = () => {
       const formData = new FormData();
       formData.append("image", selectedFile);
       formData.append("category", selectedCategory);
-      
-      if (imageAlt) {
-        formData.append("alt", imageAlt);
-      }
-      
-      if (imageCaption) {
-        formData.append("caption", imageCaption);
-      }
+      formData.append("title", imageTitle);
 
       const response = await authenticatedFetch(apiEndpoints.images.base, {
         method: "POST",
@@ -96,19 +91,28 @@ const MediaGallery = () => {
       if (response.ok) {
         const result = await response.json();
         
-        if (result.success && result.data) {
+        // API returns image directly: { title, url, category, featured, _id, ... }
+        if (result._id || result.url) {
+          setImages([result, ...images]);
+          setUploadModalOpen(false);
+          setSelectedFile(null);
+          setImageTitle("");
+          setSelectedCategory("gallery");
+          setError("");
+        } else if (result.success && result.data) {
+          // Fallback for wrapped response
           setImages([result.data, ...images]);
           setUploadModalOpen(false);
           setSelectedFile(null);
-          setImageAlt("");
-          setImageCaption("");
+          setImageTitle("");
           setSelectedCategory("gallery");
+          setError("");
         } else {
-          setError(result.message || "Upload failed");
+          setError(result.message || "Upload failed - unexpected response");
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
-        setError(errorData.message || "Upload failed");
+        setError(errorData.message || `Upload failed: ${response.status} ${response.statusText}`);
       }
     } catch (err) {
       console.error("Error uploading image:", err);
@@ -214,29 +218,29 @@ const MediaGallery = () => {
                   <div className="aspect-w-16 aspect-h-9 bg-gradient-to-br from-[#e6e6e6] to-[#f5f5f5] overflow-hidden">
                     <img
                       src={getImageUrl(image.url)}
-                      alt={image.alt || "Gallery image"}
+                      alt={image.title || image.alt || "Gallery image"}
                       className="object-cover w-full h-48 lg:h-56"
                       loading="lazy"
                     />
                   </div>
                   <div className="p-4">
-                    {image.caption && (
+                    {image.title && (
                       <h4 className="font-semibold text-[#034123] truncate mb-2">
-                        {image.caption}
-                      </h4>
-                    )}
-                    {image.alt && !image.caption && (
-                      <h4 className="font-semibold text-[#034123] truncate mb-2">
-                        {image.alt}
+                        {image.title}
                       </h4>
                     )}
                     <div className="flex flex-wrap gap-2">
                       <span className="inline-block bg-[#034123]/10 text-[#034123] rounded-full px-3 py-1 text-xs font-semibold border border-[#034123]/20">
                         {image.category}
                       </span>
-                      {image.createdAt && (
+                      {image.featured && (
+                        <span className="inline-block bg-[#fee000]/20 text-[#856404] rounded-full px-3 py-1 text-xs font-bold border border-[#fee000]/40">
+                          ⭐ Featured
+                        </span>
+                      )}
+                      {(image.createdAt || image.uploadedAt) && (
                         <span className="inline-block bg-gray-100 text-gray-600 rounded-full px-3 py-1 text-xs font-semibold">
-                          {new Date(image.createdAt).toLocaleDateString()}
+                          {new Date(image.createdAt || image.uploadedAt).toLocaleDateString()}
                         </span>
                       )}
                     </div>
@@ -326,28 +330,17 @@ const MediaGallery = () => {
                     ))}
                   </select>
                 </div>
-                <div className="mb-5">
-                  <label className="block text-sm font-semibold text-[#034123] mb-2">
-                    Alt Text (Image Description)
-                  </label>
-                  <input
-                    type="text"
-                    value={imageAlt}
-                    onChange={(e) => setImageAlt(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
-                    placeholder="Image description for accessibility"
-                  />
-                </div>
                 <div className="mb-6">
                   <label className="block text-sm font-semibold text-[#034123] mb-2">
-                    Caption
+                    Title <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    value={imageCaption}
-                    onChange={(e) => setImageCaption(e.target.value)}
+                    value={imageTitle}
+                    onChange={(e) => setImageTitle(e.target.value)}
+                    required
                     className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
-                    placeholder="Image caption"
+                    placeholder="e.g. Yala National Park Elephant"
                   />
                 </div>
                 <div className="flex flex-col sm:flex-row justify-end gap-3">
@@ -361,7 +354,7 @@ const MediaGallery = () => {
                   <button
                     type="submit"
                     className="px-5 py-3 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-[#034123] hover:bg-[#026042] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#034123]/50 transition-all duration-300 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={!selectedFile || !selectedCategory}
+                    disabled={!selectedFile || !selectedCategory || !imageTitle.trim()}
                   >
                     Upload Image
                   </button>

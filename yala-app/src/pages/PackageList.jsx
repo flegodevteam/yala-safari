@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   FiPlus,
   FiEdit,
@@ -16,7 +15,7 @@ const PackageList = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const navigate = useNavigate();
+  const [editingPackageId, setEditingPackageId] = useState(null);
 
   // Use useCallback to memoize fetchPackages
   const fetchPackages = useCallback(async () => {
@@ -255,9 +254,7 @@ const PackageList = () => {
                     {/* Actions */}
                     <div className="flex flex-col gap-2 pt-4 border-t border-[#e5e7eb]/60">
                       <button
-                        onClick={() =>
-                          navigate(`/dashboard/packages/edit/${pkg._id}`)
-                        }
+                        onClick={() => setEditingPackageId(pkg._id)}
                         className="w-full flex items-center justify-center gap-2 bg-[#034123] hover:bg-[#026042] text-white px-4 py-2.5 rounded-lg hover:shadow-lg transition-all duration-300 font-semibold shadow-md hover:scale-[1.02] text-sm"
                       >
                         <FiEdit className="w-4 h-4" />
@@ -336,6 +333,18 @@ const PackageList = () => {
             onClose={() => setShowCreateModal(false)}
             onSuccess={() => {
               setShowCreateModal(false);
+              fetchPackages();
+            }}
+          />
+        )}
+
+        {/* Edit Package Modal */}
+        {editingPackageId && (
+          <PackageFormModal
+            packageId={editingPackageId}
+            onClose={() => setEditingPackageId(null)}
+            onSuccess={() => {
+              setEditingPackageId(null);
               fetchPackages();
             }}
           />

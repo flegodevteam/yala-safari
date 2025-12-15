@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { FiX, FiSave  } from 'react-icons/fi';
 import { adminFetch, apiEndpoints } from '../config/api';
 
-const PackageFormModal = ({ onClose, onSuccess }) => {
+const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
+  const isEditMode = Boolean(packageId);
+  const [loading, setLoading] = useState(isEditMode);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -58,27 +60,69 @@ const PackageFormModal = ({ onClose, onSuccess }) => {
   const [newHighlight, setNewHighlight] = useState('');
   const [saving, setSaving] = useState(false);
 
+  // Fetch package data when in edit mode
+  useEffect(() => {
+    if (isEditMode && packageId) {
+      fetchPackage();
+    }
+  }, [packageId, isEditMode]);
+
+  const fetchPackage = async () => {
+    setLoading(true);
+    try {
+      const response = await adminFetch(`${apiEndpoints.packages.base}/${packageId}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        // Initialize mealOptions if not present
+        const packageData = {
+          ...data.package,
+          mealOptions: data.package.mealOptions || {
+            breakfast: [],
+            lunch: []
+          }
+        };
+        setFormData(packageData);
+      } else {
+        alert('Failed to load package data');
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error fetching package:', error);
+      alert('Failed to load package');
+      onClose();
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
 
     try {
-      const response = await adminFetch(apiEndpoints.packages.base, {
-        method: 'POST',
+      const url = isEditMode
+        ? `${apiEndpoints.packages.base}/${packageId}`
+        : apiEndpoints.packages.base;
+      
+      const method = isEditMode ? 'PUT' : 'POST';
+
+      const response = await adminFetch(url, {
+        method,
         body: JSON.stringify(formData),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        alert('Package created successfully!');
+        alert(`Package ${isEditMode ? 'updated' : 'created'} successfully!`);
         if (onSuccess) onSuccess();
       } else {
-        alert(data.message || 'Failed to save package');
+        alert(data.message || `Failed to ${isEditMode ? 'update' : 'save'} package`);
       }
     } catch (error) {
       console.error('Error saving package:', error);
-      alert('Failed to save package');
+      alert(`Failed to ${isEditMode ? 'update' : 'save'} package`);
     } finally {
       setSaving(false);
     }
@@ -211,6 +255,25 @@ const PackageFormModal = ({ onClose, onSuccess }) => {
     };
   }, []);
 
+  if (loading) {
+    return (
+      <div 
+        className="fixed inset-0 flex items-center justify-center z-50 overflow-y-auto bg-black/10 backdrop-blur-xl"
+        onClick={onClose}
+      >
+        <div 
+          className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-12"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-[#034123] mb-4"></div>
+            <p className="text-[#034123] font-semibold">Loading package data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       className="fixed inset-0 flex items-center justify-center z-50 overflow-y-auto bg-black/10 backdrop-blur-xl r"
@@ -223,8 +286,12 @@ const PackageFormModal = ({ onClose, onSuccess }) => {
         {/* Modal Header */}
         <div className="sticky top-0 bg-white/95 backdrop-blur-xl border-b border-[#e5e7eb] p-4 lg:p-6 flex items-center justify-between z-10">
           <div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-[#034123]">Create New Package</h2>
-            <p className="text-sm text-[#6b7280] mt-1">Add a new safari package with custom pricing</p>
+            <h2 className="text-2xl lg:text-3xl font-bold text-[#034123]">
+              {isEditMode ? 'Edit Package' : 'Create New Package'}
+            </h2>
+            <p className="text-sm text-[#6b7280] mt-1">
+              {isEditMode ? 'Update package details and pricing' : 'Add a new safari package with custom pricing'}
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -659,7 +726,7 @@ const PackageFormModal = ({ onClose, onSuccess }) => {
                 ) : (
                   <>
                     <FiSave className="w-5 h-5" />
-                    Create Package
+                    {isEditMode ? 'Update Package' : 'Create Package'}
                   </>
                 )}
               </button>
