@@ -21,16 +21,16 @@ export default function Home() {
   return (
     <div>
       {/* Hero Section */}
-      <div className="relative" style={{ background: 'linear-gradient(to bottom, #e6e6e6, #ffffff)' }}>
+      <div className="relative min-h-screen flex items-center" style={{ background: 'linear-gradient(to bottom, #e6e6e6, #ffffff)' }}>
         <div className="absolute inset-0 overflow-hidden">
           <img
             className="w-full h-full object-cover object-center"
             src={hero}
             alt="Wildlife in Yala National Park"
-            style={{ opacity: 0.7, minHeight: '100%', minWidth: '100%' }}
+            style={{ opacity: 0.7 }}
           />
         </div>
-        <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
+        <div className="relative max-w-4xl ml-20 w-full py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-white" >
             Discover the Wild Beauty of Yala
           </h1>
@@ -286,7 +286,7 @@ export default function Home() {
           <div className="mt-8 flex lg:mt-0 lg:flex-shrink-0">
             <div className="inline-flex rounded-md shadow">
               <Link
-                to="/booking"
+                to="/packages"
                 className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white transition-colors duration-200"
                 style={{ backgroundColor: '#f26b21' }}
                 onMouseEnter={(e) => e.target.style.backgroundColor = '#034123'}

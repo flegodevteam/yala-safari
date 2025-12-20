@@ -722,7 +722,7 @@ useEffect(() => {
 
             {/* Type Filter Tabs */}
             <div className="flex gap-2 mb-6">
-              {["all", "private", "shared", "both"].map((type) => (
+              {["all", "private"].map((type) => (
                 <button
                   key={type}
                   onClick={() => setFilterType(type)}

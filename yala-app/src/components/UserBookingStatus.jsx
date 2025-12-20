@@ -130,9 +130,9 @@ const UserBookingStatus = () => {
                     : 'bg-[#e6e6e6] text-[#333333] hover:bg-[#034123]/5 hover:border-[#034123]/20 border border-transparent'
                 }`}
               >
-                📧 Email Address
+                 Email Address
               </button>
-              <button
+              {/* <button
                 type="button"
                 onClick={() => setSearchMethod('booking')}
                 className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 shadow-sm ${
@@ -142,7 +142,7 @@ const UserBookingStatus = () => {
                 }`}
               >
                 🎫 Booking ID
-              </button>
+              </button> */}
             </div>
           </div>
 
@@ -344,10 +344,10 @@ const UserBookingStatus = () => {
           </p>
           <div className="flex justify-center gap-6 text-sm">
             <a 
-              href="mailto:contact@yalasafari.com" 
+              href="mailto:info@yalasafari.com" 
               className="px-5 py-2.5 bg-[#034123] hover:bg-[#026042] text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2"
             >
-              📧 Email Us
+               Email Us
             </a>
             <a 
               href="https://wa.me/94773742700" 
@@ -355,7 +355,7 @@ const UserBookingStatus = () => {
               target="_blank" 
               rel="noopener noreferrer"
             >
-              💬 WhatsApp
+              WhatsApp
             </a>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import guides from "../assets/guides.jpg"; 
 import aboutImg from '../assets/y (3).JPG';
+import awardImg from '../assets/award.png';
 
 
 
@@ -151,20 +152,21 @@ export default function About() {
   
         <div className="mt-12 bg-white shadow-lg overflow-hidden rounded-lg border transition-shadow duration-300 hover:shadow-xl" style={{ borderColor: 'rgba(3, 65, 35, 0.1)' }}>
           <div className="px-4 py-5 sm:p-6">
-            <h2 className="text-2xl font-bold" style={{ color: '#034123' }}>Certifications & Affiliations</h2>
+            <h2 className="text-2xl font-bold" style={{ color: '#034123' }}>Awards & Recognition</h2>
             <div className="mt-6 grid grid-cols-2 gap-8 md:grid-cols-4">
               {[
-                { name: "Sri Lanka Tourism", image: "/cert1.png" },
-                { name: "Wildlife Conservation Society", image: "/cert2.png" },
-                { name: "Eco Tourism Certified", image: "/cert3.png" },
-                { name: "Guides Association", image: "/cert4.png" },
-              ].map((cert, index) => (
+                { name: "Best Safari Operator 2023", image: awardImg },
+                { name: "Excellence in Wildlife Tourism", image: awardImg },
+                { name: "Sustainable Tourism Award", image: awardImg },
+                { name: "Customer Choice Award", image: awardImg },
+              ].map((award, index) => (
                 <div key={index} className="flex items-center justify-center p-4 rounded-lg border transition-transform duration-300 hover:scale-110 hover:shadow-md" style={{ borderColor: 'rgba(3, 65, 35, 0.1)', backgroundColor: '#e6e6e6' }}>
                   <img
-                    className="max-h-16"
-                    src={cert.image}
-                    alt={cert.name}
+                    className="max-h-16 w-auto object-contain"
+                    src={award.image}
+                    alt={award.name}
                   />
+                  <p className="mt-2 text-sm text-center" style={{ color: '#333333' }}>{award.name}</p>
                 </div>
               ))}
             </div>
