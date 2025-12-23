@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { FiX, FiSave  } from 'react-icons/fi';
-import { adminFetch, apiEndpoints } from '../config/api';
+import { FiX, FiSave, FiTrash2, FiUpload } from 'react-icons/fi';
+import { adminFetch, apiEndpoints, authenticatedFetch, API_BASE_URL } from '../config/api';
 
 const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
   const isEditMode = Boolean(packageId);
@@ -20,8 +20,8 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
       superLuxury: { morning: 80, afternoon: 80, extended: 90, fullDay: 150 },
     },
     
-    // Legacy Meals Pricing
-    meals: { breakfast: 5, lunch: 6 },
+    // Meals (boolean flags)
+    meals: { breakfast: true, lunch: true },
     
     // DYNAMIC MEAL OPTIONS
     mealOptions: {
@@ -38,6 +38,16 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
     // Features & Highlights
     features: [],
     highlights: [],
+    
+    // Images
+    images: [],
+    featuredImage: '',
+    
+    // Shared pricing
+    shared: { "1": 25, "2": 20, "3": 18, "4": 15, "5": 15, "6": 15, "7": 15 },
+    
+    // Available dates
+    availableDates: { startDate: '', endDate: '' },
     
     isActive: true,
   });
@@ -59,12 +69,17 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
   const [newFeature, setNewFeature] = useState('');
   const [newHighlight, setNewHighlight] = useState('');
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [uploadingFeaturedImage, setUploadingFeaturedImage] = useState(false);
+  const [featuredImageFile, setFeaturedImageFile] = useState(null);
 
   // Fetch package data when in edit mode
   useEffect(() => {
     if (isEditMode && packageId) {
       fetchPackage();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [packageId, isEditMode]);
 
   const fetchPackage = async () => {
@@ -80,7 +95,11 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
           mealOptions: data.package.mealOptions || {
             breakfast: [],
             lunch: []
-          }
+          },
+          images: data.package.images || [],
+          featuredImage: data.package.featuredImage || '',
+          shared: data.package.shared || { "1": 25, "2": 20, "3": 18, "4": 15, "5": 15, "6": 15, "7": 15 },
+          availableDates: data.package.availableDates || { startDate: '', endDate: '' },
         };
         setFormData(packageData);
       } else {
@@ -247,6 +266,139 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
     }));
   };
 
+  const handleImageUpload = async () => {
+    if (!imageFile) {
+      alert('Please select an image file');
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('image', imageFile);
+      uploadFormData.append('category', 'package');
+      uploadFormData.append('title', formData.name || 'Package Image');
+
+      const response = await authenticatedFetch(apiEndpoints.images.base, {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Get the URL from the response
+        let imageUrl = '';
+        if (result.url) {
+          imageUrl = result.url;
+        } else if (result.success && result.data && result.data.url) {
+          imageUrl = result.data.url;
+        } else if (result.data && result.data.url) {
+          imageUrl = result.data.url;
+        }
+
+        if (imageUrl) {
+          // Check if URL needs API_BASE_URL prefix
+          const fullUrl = imageUrl.startsWith('http') 
+            ? imageUrl 
+            : `${API_BASE_URL}${imageUrl}`;
+
+          // Add image to images array
+          setFormData(prev => ({
+            ...prev,
+            images: [...prev.images, fullUrl]
+          }));
+
+          // Reset upload form
+          setImageFile(null);
+          // Reset file input
+          const fileInput = document.getElementById('package-image-upload-input');
+          if (fileInput) fileInput.value = '';
+        } else {
+          alert('Image uploaded but URL not found in response');
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.message || 'Failed to upload image');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleFeaturedImageUpload = async () => {
+    if (!featuredImageFile) {
+      alert('Please select an image file');
+      return;
+    }
+
+    setUploadingFeaturedImage(true);
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('image', featuredImageFile);
+      uploadFormData.append('category', 'package');
+      uploadFormData.append('title', `${formData.name || 'Package'} - Featured`);
+
+      const response = await authenticatedFetch(apiEndpoints.images.base, {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Get the URL from the response
+        let imageUrl = '';
+        if (result.url) {
+          imageUrl = result.url;
+        } else if (result.success && result.data && result.data.url) {
+          imageUrl = result.data.url;
+        } else if (result.data && result.data.url) {
+          imageUrl = result.data.url;
+        }
+
+        if (imageUrl) {
+          // Check if URL needs API_BASE_URL prefix
+          const fullUrl = imageUrl.startsWith('http') 
+            ? imageUrl 
+            : `${API_BASE_URL}${imageUrl}`;
+
+          // Set as featured image
+          setFormData(prev => ({
+            ...prev,
+            featuredImage: fullUrl
+          }));
+
+          // Reset upload form
+          setFeaturedImageFile(null);
+          // Reset file input
+          const fileInput = document.getElementById('featured-image-upload-input');
+          if (fileInput) fileInput.value = '';
+        } else {
+          alert('Image uploaded but URL not found in response');
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.message || 'Failed to upload featured image');
+      }
+    } catch (error) {
+      console.error('Error uploading featured image:', error);
+      alert('Failed to upload featured image');
+    } finally {
+      setUploadingFeaturedImage(false);
+    }
+  };
+
+  const removeImage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
   // Prevent body scroll when modal is open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -353,6 +505,19 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
                     </select>
                   </div>
                 )}
+
+                <div>
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">Package Type *</label>
+                  <select
+                    required
+                    value={formData.packageType}
+                    onChange={(e) => setFormData({...formData, packageType: e.target.value})}
+                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
+                  >
+                    <option value="private">Private</option>
+                    <option value="shared">Shared</option>
+                  </select>
+                </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-[#034123] mb-2">Max Capacity</label>
@@ -708,6 +873,178 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
                     </button>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Images */}
+            <div className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-2xl shadow-lg border border-[#e5e7eb]/60 p-4 lg:p-6">
+              <h3 className="text-xl lg:text-2xl font-bold text-[#034123] mb-4 pb-3 border-b border-[#034123]/20">Package Images</h3>
+              
+              {/* Featured Image Upload */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-[#034123] mb-2">Featured Image</label>
+                <div className="bg-[#f26b21]/5 backdrop-blur-sm rounded-xl p-4 border border-[#f26b21]/20">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      id="featured-image-upload-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setFeaturedImageFile(e.target.files[0])}
+                      className="flex-1 px-3 py-2 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleFeaturedImageUpload}
+                      disabled={uploadingFeaturedImage || !featuredImageFile}
+                      className="px-6 py-2 bg-[#f26b21] hover:bg-[#e05a1a] text-white rounded-xl hover:shadow-lg transition-all duration-300 font-semibold shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
+                    >
+                      {uploadingFeaturedImage ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <FiUpload className="w-4 h-4" />
+                          Upload Featured
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  {formData.featuredImage && (
+                    <div className="mt-3 p-3 bg-white/90 rounded-lg border border-[#e5e7eb]/60">
+                      <p className="text-xs text-[#6b7280] mb-2">Current Featured Image:</p>
+                      <img 
+                        src={formData.featuredImage} 
+                        alt="Featured"
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({...prev, featuredImage: ''}))}
+                        className="mt-2 text-xs text-red-600 hover:text-red-700"
+                      >
+                        Remove Featured Image
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Regular Images Upload */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-[#034123] mb-2">Additional Images</label>
+                <div className="bg-[#034123]/5 backdrop-blur-sm rounded-xl p-4 border border-[#034123]/20">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      id="package-image-upload-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setImageFile(e.target.files[0])}
+                      className="flex-1 px-3 py-2 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleImageUpload}
+                      disabled={uploadingImage || !imageFile}
+                      className="px-6 py-2 bg-[#034123] hover:bg-[#026042] text-white rounded-xl hover:shadow-lg transition-all duration-300 font-semibold shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
+                    >
+                      {uploadingImage ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <FiUpload className="w-4 h-4" />
+                          Upload Image
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Images List */}
+              {formData.images.length > 0 && (
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {formData.images.map((imageUrl, index) => (
+                    <div key={index} className="bg-white/90 backdrop-blur-sm border border-[#e5e7eb]/60 rounded-xl p-3 flex justify-between items-center">
+                      <div className="flex-1 flex items-center gap-3">
+                        <img 
+                          src={imageUrl} 
+                          alt={`Package ${index + 1}`}
+                          className="w-16 h-16 object-cover rounded-lg"
+                        />
+                        <p className="font-semibold text-[#034123] text-sm truncate">{imageUrl}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-300"
+                      >
+                        <FiTrash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Shared Pricing */}
+            {formData.packageType === 'shared' && (
+              <div className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-2xl shadow-lg border border-[#e5e7eb]/60 p-4 lg:p-6">
+                <h3 className="text-xl lg:text-2xl font-bold text-[#034123] mb-4 pb-3 border-b border-[#034123]/20">Shared Package Pricing ($ per person)</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+                    <div key={num}>
+                      <label className="block text-sm font-semibold text-[#034123] mb-2">{num} {num === 1 ? 'Person' : 'People'}</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.shared[num] || 0}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          shared: {...formData.shared, [num]: Number(e.target.value)}
+                        })}
+                        className="w-full px-3 py-2 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Available Dates */}
+            <div className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-2xl shadow-lg border border-[#e5e7eb]/60 p-4 lg:p-6">
+              <h3 className="text-xl lg:text-2xl font-bold text-[#034123] mb-4 pb-3 border-b border-[#034123]/20">Available Dates</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">Start Date</label>
+                  <input
+                    type="date"
+                    value={formData.availableDates.startDate}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      availableDates: {...formData.availableDates, startDate: e.target.value}
+                    })}
+                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">End Date</label>
+                  <input
+                    type="date"
+                    value={formData.availableDates.endDate}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      availableDates: {...formData.availableDates, endDate: e.target.value}
+                    })}
+                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
+                  />
+                </div>
               </div>
             </div>
 
