@@ -488,8 +488,22 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
                     <option value="Lunugamwehera">Lunugamwehera National Park</option>
                   </select>
                 </div>
+                 <div>
+                    <label className="block text-sm font-semibold text-[#034123] mb-2">Block</label>
+                    <select
+                      value={formData.block}
+                      onChange={(e) => setFormData({...formData, block: e.target.value})}
+                      className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
+                    >
+                      {/* <option value="">All Blocks</option> */}
+                      <option value="blockI">Block I</option>
+                      <option value="blockII">Block II</option>
+                      <option value="blockIIIIV">Block III & IV</option>
+                      <option value="blockV">Block V</option>
+                    </select>
+                  </div>
 
-                {formData.park === 'yala' && (
+                {/* {formData.park === 'yala' && (
                   <div>
                     <label className="block text-sm font-semibold text-[#034123] mb-2">Block</label>
                     <select
@@ -504,7 +518,7 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
                       <option value="blockV">Block V</option>
                     </select>
                   </div>
-                )}
+                )} */}
 
                 <div>
                   <label className="block text-sm font-semibold text-[#034123] mb-2">Package Type *</label>
