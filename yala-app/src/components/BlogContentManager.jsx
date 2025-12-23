@@ -1,15 +1,18 @@
 import { useEffect, useState, useRef } from "react";
+import { FiX, FiPlus } from "react-icons/fi";
 import { apiEndpoints, authenticatedFetch } from "../config/api";
 
 const availableCategories = [
-  "Travel Tips",
   "Wildlife",
   "Conservation",
-  "Photography",
-  "Family Travel",
-  "Birdwatching",
   "Destinations",
+  "Safari Tips",
+  "Travel Guide",
+  "News",
+  "Other",
 ];
+
+
 
 export default function BlogContentManager() {
   const [blogPosts, setBlogPosts] = useState([]);
@@ -28,6 +31,7 @@ export default function BlogContentManager() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("");
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -61,13 +65,23 @@ export default function BlogContentManager() {
     
     if (type === "file") {
       setForm({ ...form, [name]: files[0] || null });
-    } else if (name === "categories") {
-      // Handle multi-select for categories
-      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-      setForm({ ...form, categories: selectedOptions });
     } else {
       setForm({ ...form, [name]: value });
     }
+  };
+
+  const addCategory = () => {
+    if (selectedCategory && !form.categories.includes(selectedCategory)) {
+      setForm({ ...form, categories: [...form.categories, selectedCategory] });
+      setSelectedCategory("");
+    }
+  };
+
+  const removeCategory = (index) => {
+    setForm({
+      ...form,
+      categories: form.categories.filter((_, i) => i !== index),
+    });
   };
 
   const handleEdit = (post) => {
@@ -90,6 +104,7 @@ export default function BlogContentManager() {
 
   const handleCancelEdit = () => {
     setEditingId(null);
+    setSelectedCategory("");
     setForm({
       title: "",
       excerpt: "",
@@ -328,26 +343,56 @@ export default function BlogContentManager() {
             </div>
             <div>
               <label className="block text-[#034123] font-semibold mb-2 text-sm">
-                Categories (Hold Ctrl/Cmd to select multiple)
+                Categories *
               </label>
-              <select
-                name="categories"
-                value={form.categories}
-                onChange={handleChange}
-                multiple
-                required
-                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm min-h-[100px]"
-                size={4}
-              >
-                {availableCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1 text-xs text-[#6b7280]">
-                Selected: {form.categories.join(", ") || "None"}
-              </p>
+              <div className="flex flex-col sm:flex-row gap-3 mb-3">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="flex-1 px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
+                >
+                  <option value="">Select a category</option>
+                  {availableCategories
+                    .filter((cat) => !form.categories.includes(cat))
+                    .map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={addCategory}
+                  disabled={!selectedCategory}
+                  className="px-6 py-3 bg-[#034123] hover:bg-[#026042] text-white rounded-xl hover:shadow-lg transition-all duration-300 font-semibold shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center justify-center gap-2"
+                >
+                  <FiPlus className="w-4 h-4" />
+                  Add
+                </button>
+              </div>
+              {form.categories.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {form.categories.map((category, index) => (
+                    <div
+                      key={index}
+                      className="bg-[#034123]/10 text-[#034123] px-4 py-2 rounded-full flex items-center gap-2 border border-[#034123]/20"
+                    >
+                      <span className="font-medium">{category}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeCategory(index)}
+                        className="text-[#034123] hover:text-[#026042] font-bold hover:scale-110 transition-transform duration-300"
+                      >
+                        <FiX className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-[#6b7280] italic">
+                  No categories selected. Please add at least one category.
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-[#034123] font-semibold mb-2 text-sm">

@@ -1,182 +1,87 @@
 import { useState, useEffect } from 'react';
-import { FiX, FiSave, FiPlus, FiTrash2, FiUpload } from 'react-icons/fi';
+import { FiX, FiSave, FiPlus, FiTrash2, FiUpload, FiImage } from 'react-icons/fi';
 import { adminFetch, apiEndpoints, authenticatedFetch, API_BASE_URL } from '../config/api';
 
-const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
-  const isEditMode = Boolean(roomId);
+const TaxiFormModal = ({ onClose, onSuccess, taxiId = null }) => {
+  const isEditMode = Boolean(taxiId);
   const [loading, setLoading] = useState(isEditMode);
   const [formData, setFormData] = useState({
-    name: '',
+    vehicleType: 'Car',
+    vehicleName: '',
     description: '',
-    roomType: 'Standard',
     capacity: {
-      adults: 2,
-      children: 0
+      passengers: 4,
+      luggage: 2
     },
     pricing: {
-      perNight: 100,
+      basePrice: 50,
+      pricePerKm: 2.5,
+      airportTransfer: 75,
+      fullDayRate: 300,
       currency: 'USD'
     },
-    amenities: [],
+    features: [],
     images: [],
-    location: {
-      address: '',
-      city: 'Yala',
-      nearbyAttractions: []
+    driverInfo: {
+      languagesSpoken: [],
+      experience: ''
     },
-    availability: {
-      isAvailable: true,
-      totalRooms: 1
-    },
-    policies: {
-      checkIn: '2:00 PM',
-      checkOut: '11:00 AM',
-      cancellationPolicy: 'Free cancellation up to 48 hours before check-in'
-    },
+    serviceAreas: [],
+    isAvailable: true,
     isActive: true,
   });
 
-  const [newAmenity, setNewAmenity] = useState('');
-  const [newAttraction, setNewAttraction] = useState('');
+  const [newFeature, setNewFeature] = useState('');
+  const [newLanguage, setNewLanguage] = useState('');
+  const [newServiceArea, setNewServiceArea] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [imageCaption, setImageCaption] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Fetch room data when in edit mode
+  // Fetch taxi data when in edit mode
   useEffect(() => {
-    if (isEditMode && roomId) {
-      fetchRoom();
+    if (isEditMode && taxiId) {
+      fetchTaxi();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomId, isEditMode]);
+  }, [taxiId, isEditMode]);
 
-  const fetchRoom = async () => {
+  const fetchTaxi = async () => {
     setLoading(true);
     try {
-      const response = await adminFetch(`${apiEndpoints.rooms.base}/${roomId}`);
+      const response = await adminFetch(`${apiEndpoints.taxis.base}/${taxiId}`);
       const data = await response.json();
       
       if (data.success) {
         setFormData({
           ...data.data,
-          amenities: data.data.amenities || [],
+          capacity: data.data.capacity || { passengers: 4, luggage: 2 },
+          pricing: data.data.pricing || {
+            basePrice: 50,
+            pricePerKm: 2.5,
+            airportTransfer: 75,
+            fullDayRate: 300,
+            currency: 'USD'
+          },
+          features: data.data.features || [],
           images: data.data.images || [],
-          location: data.data.location || {
-            address: '',
-            city: 'Yala',
-            nearbyAttractions: []
+          driverInfo: data.data.driverInfo || {
+            languagesSpoken: [],
+            experience: ''
           },
-          availability: data.data.availability || {
-            isAvailable: true,
-            totalRooms: 1
-          },
-          policies: data.data.policies || {
-            checkIn: '2:00 PM',
-            checkOut: '11:00 AM',
-            cancellationPolicy: 'Free cancellation up to 48 hours before check-in'
-          }
+          serviceAreas: data.data.serviceAreas || [],
         });
       } else {
-        alert('Failed to load room data');
+        alert('Failed to load taxi data');
         onClose();
       }
     } catch (error) {
-      console.error('Error fetching room:', error);
-      alert('Failed to load room');
+      console.error('Error fetching taxi:', error);
+      alert('Failed to load taxi');
       onClose();
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-
-    try {
-      const url = isEditMode
-        ? `${apiEndpoints.rooms.base}/${roomId}`
-        : apiEndpoints.rooms.base;
-      
-      const method = isEditMode ? 'PUT' : 'POST';
-
-      // Prepare data for API - ensure images have relative URLs
-      const submitData = {
-        ...formData,
-        images: formData.images.map(img => ({
-          ...img,
-          // Ensure URL is relative (remove API_BASE_URL if present)
-          url: img.url.startsWith(API_BASE_URL) 
-            ? img.url.replace(API_BASE_URL, '') 
-            : img.url.startsWith('http://') || img.url.startsWith('https://')
-            ? img.url // Keep external URLs as is
-            : img.url // Already relative
-        }))
-      };
-
-      console.log('Submitting room data:', submitData);
-
-      const response = await adminFetch(url, {
-        method,
-        body: JSON.stringify(submitData),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        alert(`Room ${isEditMode ? 'updated' : 'created'} successfully!`);
-        if (onSuccess) onSuccess();
-      } else {
-        console.error('API Error:', data);
-        alert(data.message || `Failed to ${isEditMode ? 'update' : 'save'} room`);
-      }
-    } catch (error) {
-      console.error('Error saving room:', error);
-      alert(`Failed to ${isEditMode ? 'update' : 'save'} room: ${error.message || 'Unknown error'}`);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const addAmenity = () => {
-    if (newAmenity.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        amenities: [...prev.amenities, newAmenity.trim()]
-      }));
-      setNewAmenity('');
-    }
-  };
-
-  const removeAmenity = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      amenities: prev.amenities.filter((_, i) => i !== index)
-    }));
-  };
-
-  const addAttraction = () => {
-    if (newAttraction.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        location: {
-          ...prev.location,
-          nearbyAttractions: [...prev.location.nearbyAttractions, newAttraction.trim()]
-        }
-      }));
-      setNewAttraction('');
-    }
-  };
-
-  const removeAttraction = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      location: {
-        ...prev.location,
-        nearbyAttractions: prev.location.nearbyAttractions.filter((_, i) => i !== index)
-      }
-    }));
   };
 
   const handleImageUpload = async () => {
@@ -189,13 +94,14 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
     try {
       const uploadFormData = new FormData();
       uploadFormData.append('image', imageFile);
-      uploadFormData.append('category', 'rooms');
-      uploadFormData.append('title', imageCaption || formData.name || 'Room Image');
+      uploadFormData.append('category', 'taxi');
+      uploadFormData.append('title', imageCaption || formData.vehicleName || 'Taxi Image');
 
       const response = await authenticatedFetch(apiEndpoints.images.base, {
         method: 'POST',
         body: uploadFormData,
       });
+
 
       if (response.ok) {
         const result = await response.json();
@@ -211,19 +117,14 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
         }
 
         if (imageUrl) {
-          // Store the relative path (API expects relative paths)
-          // Remove API_BASE_URL if present to get relative path
-          let relativeUrl = imageUrl;
-          if (imageUrl.startsWith(API_BASE_URL)) {
-            relativeUrl = imageUrl.replace(API_BASE_URL, '');
-          } else if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-            // If it's a full URL but not from our API, keep it as is
-            relativeUrl = imageUrl;
-          }
+          // Check if URL needs API_BASE_URL prefix
+          const fullUrl = imageUrl.startsWith('http') 
+            ? imageUrl 
+            : `${API_BASE_URL}${imageUrl}`;
 
           // Add image to images array
           const newImage = {
-            url: relativeUrl,
+            url: fullUrl,
             caption: imageCaption || '',
             isFeatured: formData.images.length === 0 // First image is featured by default
           };
@@ -237,7 +138,7 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
           setImageFile(null);
           setImageCaption('');
           // Reset file input
-          const fileInput = document.getElementById('room-image-upload-input');
+          const fileInput = document.getElementById('image-upload-input');
           if (fileInput) fileInput.value = '';
         } else {
           alert('Image uploaded but URL not found in response');
@@ -252,6 +153,95 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
     } finally {
       setUploadingImage(false);
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      const url = isEditMode
+        ? `${apiEndpoints.taxis.base}/${taxiId}`
+        : apiEndpoints.taxis.base;
+      
+      const method = isEditMode ? 'PUT' : 'POST';
+
+      const response = await adminFetch(url, {
+        method,
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert(`Taxi ${isEditMode ? 'updated' : 'created'} successfully!`);
+        if (onSuccess) onSuccess();
+      } else {
+        alert(data.message || `Failed to ${isEditMode ? 'update' : 'save'} taxi`);
+      }
+    } catch (error) {
+      console.error('Error saving taxi:', error);
+      alert(`Failed to ${isEditMode ? 'update' : 'save'} taxi`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addFeature = () => {
+    if (newFeature.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        features: [...prev.features, newFeature.trim()],
+      }));
+      setNewFeature('');
+    }
+  };
+
+  const removeFeature = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      features: prev.features.filter((_, i) => i !== index),
+    }));
+  };
+
+  const addLanguage = () => {
+    if (newLanguage.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        driverInfo: {
+          ...prev.driverInfo,
+          languagesSpoken: [...prev.driverInfo.languagesSpoken, newLanguage.trim()],
+        },
+      }));
+      setNewLanguage('');
+    }
+  };
+
+  const removeLanguage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      driverInfo: {
+        ...prev.driverInfo,
+        languagesSpoken: prev.driverInfo.languagesSpoken.filter((_, i) => i !== index),
+      },
+    }));
+  };
+
+  const addServiceArea = () => {
+    if (newServiceArea.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        serviceAreas: [...prev.serviceAreas, newServiceArea.trim()],
+      }));
+      setNewServiceArea('');
+    }
+  };
+
+  const removeServiceArea = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      serviceAreas: prev.serviceAreas.filter((_, i) => i !== index),
+    }));
   };
 
   const removeImage = (index) => {
@@ -291,7 +281,7 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
         >
           <div className="flex flex-col items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-[#034123] mb-4"></div>
-            <p className="text-[#034123] font-semibold">Loading room data...</p>
+            <p className="text-[#034123] font-semibold">Loading taxi data...</p>
           </div>
         </div>
       </div>
@@ -311,10 +301,10 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
         <div className="sticky top-0 bg-white/95 backdrop-blur-xl border-b border-[#e5e7eb] p-4 lg:p-6 flex items-center justify-between z-10">
           <div>
             <h2 className="text-2xl lg:text-3xl font-bold text-[#034123]">
-              {isEditMode ? 'Edit Room' : 'Create New Room'}
+              {isEditMode ? 'Edit Taxi' : 'Create New Taxi'}
             </h2>
             <p className="text-sm text-[#6b7280] mt-1">
-              {isEditMode ? 'Update room details and information' : 'Add a new accommodation room'}
+              {isEditMode ? 'Update taxi details and information' : 'Add a new taxi to your fleet'}
             </p>
           </div>
           <button
@@ -335,33 +325,32 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-[#034123] mb-2">Room Name *</label>
-                  <input
-                    type="text"
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">Vehicle Type *</label>
+                  <select
                     required
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
-                    placeholder="e.g., Deluxe Ocean View Suite"
-                  />
+                    value={formData.vehicleType}
+                    onChange={(e) => setFormData({...formData, vehicleType: e.target.value})}
+                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
+                  >
+                    <option value="Car">Car</option>
+                    <option value="Jeep">Jeep</option>
+                    <option value="SUV">SUV</option>
+                    <option value="Sedan">Sedan</option>
+                    <option value="Van">Van</option>
+                    <option value="Luxury">Luxury</option>
+                  </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#034123] mb-2">Room Type *</label>
-                  <select
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">Vehicle Name *</label>
+                  <input
+                    type="text"
                     required
-                    value={formData.roomType}
-                    onChange={(e) => setFormData({...formData, roomType: e.target.value})}
-                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
-                  >
-                  
-                    <option value="Single">Single</option>
-                    <option value="Double">Double</option>
-                    <option value="Suite">Suite</option>
-                      <option value="Family">Family</option>
-                      <option value="Deluxe">Deluxe</option>
-
-                  </select>
+                    value={formData.vehicleName}
+                    onChange={(e) => setFormData({...formData, vehicleName: e.target.value})}
+                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
+                    placeholder="e.g., Toyota Land Cruiser 2023"
+                  />
                 </div>
               </div>
 
@@ -373,7 +362,7 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                   className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm resize-none"
-                  placeholder="Describe the room and its features..."
+                  placeholder="Describe the vehicle and its features..."
                 />
               </div>
             </div>
@@ -383,28 +372,29 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
               <h3 className="text-xl lg:text-2xl font-bold text-[#034123] mb-4 pb-3 border-b border-[#034123]/20">Capacity</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#034123] mb-2">Adults *</label>
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">Passengers *</label>
                   <input
                     type="number"
                     min="1"
                     required
-                    value={formData.capacity.adults}
+                    value={formData.capacity.passengers}
                     onChange={(e) => setFormData({
                       ...formData,
-                      capacity: {...formData.capacity, adults: Number(e.target.value)}
+                      capacity: {...formData.capacity, passengers: Number(e.target.value)}
                     })}
                     className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#034123] mb-2">Children</label>
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">Luggage *</label>
                   <input
                     type="number"
                     min="0"
-                    value={formData.capacity.children}
+                    required
+                    value={formData.capacity.luggage}
                     onChange={(e) => setFormData({
                       ...formData,
-                      capacity: {...formData.capacity, children: Number(e.target.value)}
+                      capacity: {...formData.capacity, luggage: Number(e.target.value)}
                     })}
                     className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
                   />
@@ -417,19 +407,67 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
               <h3 className="text-xl lg:text-2xl font-bold text-[#034123] mb-4 pb-3 border-b border-[#034123]/20">Pricing</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#034123] mb-2">Price Per Night ($) *</label>
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">Base Price *</label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     required
-                    value={formData.pricing.perNight}
+                    value={formData.pricing.basePrice}
                     onChange={(e) => setFormData({
                       ...formData,
-                      pricing: {...formData.pricing, perNight: Number(e.target.value)}
+                      pricing: {...formData.pricing, basePrice: Number(e.target.value)}
                     })}
                     className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
-                    placeholder="150.00"
+                    placeholder="50.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">Price Per Km *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    required
+                    value={formData.pricing.pricePerKm}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      pricing: {...formData.pricing, pricePerKm: Number(e.target.value)}
+                    })}
+                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
+                    placeholder="2.50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">Airport Transfer *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    required
+                    value={formData.pricing.airportTransfer}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      pricing: {...formData.pricing, airportTransfer: Number(e.target.value)}
+                    })}
+                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
+                    placeholder="75.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-[#034123] mb-2">Full Day Rate *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    required
+                    value={formData.pricing.fullDayRate}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      pricing: {...formData.pricing, fullDayRate: Number(e.target.value)}
+                    })}
+                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
+                    placeholder="300.00"
                   />
                 </div>
                 <div>
@@ -451,21 +489,21 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
               </div>
             </div>
 
-            {/* Amenities */}
+            {/* Features */}
             <div className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-2xl shadow-lg border border-[#e5e7eb]/60 p-4 lg:p-6">
-              <h3 className="text-xl lg:text-2xl font-bold text-[#034123] mb-4 pb-3 border-b border-[#034123]/20">Amenities</h3>
+              <h3 className="text-xl lg:text-2xl font-bold text-[#034123] mb-4 pb-3 border-b border-[#034123]/20">Features</h3>
               <div className="flex flex-col sm:flex-row gap-3 mb-4">
                 <input
                   type="text"
-                  value={newAmenity}
-                  onChange={(e) => setNewAmenity(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAmenity())}
+                  value={newFeature}
+                  onChange={(e) => setNewFeature(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
                   className="flex-1 px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
-                  placeholder="e.g., Air Conditioning, Wi-Fi, TV"
+                  placeholder="e.g., Air Conditioning, GPS Navigation"
                 />
                 <button
                   type="button"
-                  onClick={addAmenity}
+                  onClick={addFeature}
                   className="px-6 py-3 bg-[#034123] hover:bg-[#026042] text-white rounded-xl hover:shadow-lg transition-all duration-300 font-semibold shadow-md whitespace-nowrap"
                 >
                   <FiPlus className="w-5 h-5 inline mr-2" />
@@ -473,15 +511,15 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
                 </button>
               </div>
               <div className="flex flex-wrap gap-2">
-                {formData.amenities.map((amenity, index) => (
+                {formData.features.map((feature, index) => (
                   <div
                     key={index}
                     className="bg-[#034123]/10 text-[#034123] px-4 py-2 rounded-full flex items-center gap-2 border border-[#034123]/20"
                   >
-                    <span className="font-medium">{amenity}</span>
+                    <span className="font-medium">{feature}</span>
                     <button
                       type="button"
-                      onClick={() => removeAmenity(index)}
+                      onClick={() => removeFeature(index)}
                       className="text-[#034123] hover:text-[#026042] font-bold hover:scale-110 transition-transform duration-300"
                     >
                       <FiX className="w-4 h-4" />
@@ -501,7 +539,7 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
                   <div className="md:col-span-2">
                     <label className="block text-sm font-semibold text-[#034123] mb-2">Upload Image *</label>
                     <input
-                      id="room-image-upload-input"
+                      id="image-upload-input"
                       type="file"
                       accept="image/*"
                       onChange={(e) => setImageFile(e.target.files[0])}
@@ -541,103 +579,75 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
 
               {/* Image List */}
               <div className="space-y-2 max-h-60 overflow-y-auto">
-                {formData.images.map((image, index) => {
-                  // Get display URL for preview (add API_BASE_URL if it's a relative path)
-                  const displayUrl = image.url.startsWith('http') 
-                    ? image.url 
-                    : `${API_BASE_URL}${image.url}`;
-                  
-                  return (
-                    <div key={index} className="bg-white/90 backdrop-blur-sm border border-[#e5e7eb]/60 rounded-xl p-3 flex justify-between items-center">
-                      <div className="flex-1 flex items-center gap-3">
-                        <img 
-                          src={displayUrl} 
-                          alt={image.caption || `Room image ${index + 1}`}
-                          className="w-16 h-16 object-cover rounded-lg"
-                          onError={(e) => {
-                            // Fallback if image fails to load
-                            e.target.src = 'https://via.placeholder.com/64?text=Image';
-                          }}
-                        />
-                        <div className="flex-1">
-                          <p className="font-semibold text-[#034123] text-sm truncate">{image.url}</p>
-                          {image.caption && <p className="text-xs text-[#6b7280]">{image.caption}</p>}
-                          {image.isFeatured && (
-                            <span className="inline-block mt-1 px-2 py-1 bg-[#f26b21] text-white text-xs font-bold rounded">Featured</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {!image.isFeatured && (
-                          <button
-                            type="button"
-                            onClick={() => setFeaturedImage(index)}
-                            className="px-3 py-1 text-xs bg-[#034123] hover:bg-[#026042] text-white rounded-lg transition-all duration-300"
-                          >
-                            Set Featured
-                          </button>
+                {formData.images.map((image, index) => (
+                  <div key={index} className="bg-white/90 backdrop-blur-sm border border-[#e5e7eb]/60 rounded-xl p-3 flex justify-between items-center">
+                    <div className="flex-1 flex items-center gap-3">
+                      <img 
+                        src={image.url} 
+                        alt={image.caption || `Image ${index + 1}`}
+                        className="w-16 h-16 object-cover rounded-lg"
+                      />
+                      <div className="flex-1">
+                        <p className="font-semibold text-[#034123] text-sm truncate">{image.url}</p>
+                        {image.caption && <p className="text-xs text-[#6b7280]">{image.caption}</p>}
+                        {image.isFeatured && (
+                          <span className="inline-block mt-1 px-2 py-1 bg-[#f26b21] text-white text-xs font-bold rounded">Featured</span>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-300"
-                        >
-                          <FiTrash2 className="w-4 h-4" />
-                        </button>
                       </div>
                     </div>
-                  );
-                })}
+                    <div className="flex items-center gap-2">
+                      {!image.isFeatured && (
+                        <button
+                          type="button"
+                          onClick={() => setFeaturedImage(index)}
+                          className="px-3 py-1 text-xs bg-[#034123] hover:bg-[#026042] text-white rounded-lg transition-all duration-300"
+                        >
+                          Set Featured
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-300"
+                      >
+                        <FiTrash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Location */}
+            {/* Driver Info */}
             <div className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-2xl shadow-lg border border-[#e5e7eb]/60 p-4 lg:p-6">
-              <h3 className="text-xl lg:text-2xl font-bold text-[#034123] mb-4 pb-3 border-b border-[#034123]/20">Location</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-semibold text-[#034123] mb-2">Address *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.location.address}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      location: {...formData.location, address: e.target.value}
-                    })}
-                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
-                    placeholder="123 Beach Road, Yala"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-[#034123] mb-2">City *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.location.city}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      location: {...formData.location, city: e.target.value}
-                    })}
-                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
-                    placeholder="Yala"
-                  />
-                </div>
+              <h3 className="text-xl lg:text-2xl font-bold text-[#034123] mb-4 pb-3 border-b border-[#034123]/20">Driver Information</h3>
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-[#034123] mb-2">Experience</label>
+                <textarea
+                  rows="3"
+                  value={formData.driverInfo.experience}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    driverInfo: {...formData.driverInfo, experience: e.target.value}
+                  })}
+                  className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm resize-none"
+                  placeholder="e.g., 10+ years of professional driving experience"
+                />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#034123] mb-2">Nearby Attractions</label>
+                <label className="block text-sm font-semibold text-[#034123] mb-2">Languages Spoken</label>
                 <div className="flex flex-col sm:flex-row gap-3 mb-3">
                   <input
                     type="text"
-                    value={newAttraction}
-                    onChange={(e) => setNewAttraction(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAttraction())}
+                    value={newLanguage}
+                    onChange={(e) => setNewLanguage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addLanguage())}
                     className="flex-1 px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
-                    placeholder="e.g., Yala National Park (5 km)"
+                    placeholder="e.g., English, Sinhala, Tamil"
                   />
                   <button
                     type="button"
-                    onClick={addAttraction}
+                    onClick={addLanguage}
                     className="px-6 py-3 bg-[#f26b21] hover:bg-[#e05a1a] text-white rounded-xl hover:shadow-lg transition-all duration-300 font-semibold shadow-md whitespace-nowrap"
                   >
                     <FiPlus className="w-5 h-5 inline mr-2" />
@@ -645,15 +655,15 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {formData.location.nearbyAttractions.map((attraction, index) => (
+                  {formData.driverInfo.languagesSpoken.map((language, index) => (
                     <div
                       key={index}
                       className="bg-[#f26b21]/10 text-[#f26b21] px-4 py-2 rounded-full flex items-center gap-2 border border-[#f26b21]/20"
                     >
-                      <span className="font-medium">{attraction}</span>
+                      <span className="font-medium">{language}</span>
                       <button
                         type="button"
-                        onClick={() => removeAttraction(index)}
+                        onClick={() => removeLanguage(index)}
                         className="text-[#f26b21] hover:text-[#e05a1a] font-bold hover:scale-110 transition-transform duration-300"
                       >
                         <FiX className="w-4 h-4" />
@@ -664,100 +674,69 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
               </div>
             </div>
 
-            {/* Availability */}
+            {/* Service Areas */}
             <div className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-2xl shadow-lg border border-[#e5e7eb]/60 p-4 lg:p-6">
-              <h3 className="text-xl lg:text-2xl font-bold text-[#034123] mb-4 pb-3 border-b border-[#034123]/20">Availability</h3>
+              <h3 className="text-xl lg:text-2xl font-bold text-[#034123] mb-4 pb-3 border-b border-[#034123]/20">Service Areas</h3>
+              <div className="flex flex-col sm:flex-row gap-3 mb-3">
+                <input
+                  type="text"
+                  value={newServiceArea}
+                  onChange={(e) => setNewServiceArea(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addServiceArea())}
+                  className="flex-1 px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
+                  placeholder="e.g., Colombo, Kandy, Airport Transfers"
+                />
+                <button
+                  type="button"
+                  onClick={addServiceArea}
+                  className="px-6 py-3 bg-[#034123] hover:bg-[#026042] text-white rounded-xl hover:shadow-lg transition-all duration-300 font-semibold shadow-md whitespace-nowrap"
+                >
+                  <FiPlus className="w-5 h-5 inline mr-2" />
+                  Add
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.serviceAreas.map((area, index) => (
+                  <div
+                    key={index}
+                    className="bg-[#034123]/10 text-[#034123] px-4 py-2 rounded-full flex items-center gap-2 border border-[#034123]/20"
+                  >
+                    <span className="font-medium">{area}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeServiceArea(index)}
+                      className="text-[#034123] hover:text-[#026042] font-bold hover:scale-110 transition-transform duration-300"
+                    >
+                      <FiX className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Status */}
+            <div className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-2xl shadow-lg border border-[#e5e7eb]/60 p-4 lg:p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center p-4 bg-white/90 backdrop-blur-sm rounded-xl border border-[#e5e7eb]/60">
                   <input
                     type="checkbox"
                     id="isAvailable"
-                    checked={formData.availability.isAvailable}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      availability: {...formData.availability, isAvailable: e.target.checked}
-                    })}
+                    checked={formData.isAvailable}
+                    onChange={(e) => setFormData({...formData, isAvailable: e.target.checked})}
                     className="mr-3 h-5 w-5 text-[#034123] focus:ring-[#034123] border-[#d1d5db]/60 rounded cursor-pointer bg-white/90 backdrop-blur-sm"
                   />
                   <label htmlFor="isAvailable" className="font-semibold text-[#034123] cursor-pointer">Available</label>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-[#034123] mb-2">Total Rooms *</label>
+                <div className="flex items-center p-4 bg-white/90 backdrop-blur-sm rounded-xl border border-[#e5e7eb]/60">
                   <input
-                    type="number"
-                    min="1"
-                    required
-                    value={formData.availability.totalRooms}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      availability: {...formData.availability, totalRooms: Number(e.target.value)}
-                    })}
-                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] shadow-sm"
+                    type="checkbox"
+                    id="isActive"
+                    checked={formData.isActive}
+                    onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
+                    className="mr-3 h-5 w-5 text-[#034123] focus:ring-[#034123] border-[#d1d5db]/60 rounded cursor-pointer bg-white/90 backdrop-blur-sm"
                   />
+                  <label htmlFor="isActive" className="font-semibold text-[#034123] cursor-pointer">Active</label>
                 </div>
-              </div>
-            </div>
-
-            {/* Policies */}
-            <div className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-2xl shadow-lg border border-[#e5e7eb]/60 p-4 lg:p-6">
-              <h3 className="text-xl lg:text-2xl font-bold text-[#034123] mb-4 pb-3 border-b border-[#034123]/20">Policies</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-semibold text-[#034123] mb-2">Check-In Time *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.policies.checkIn}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      policies: {...formData.policies, checkIn: e.target.value}
-                    })}
-                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
-                    placeholder="2:00 PM"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-[#034123] mb-2">Check-Out Time *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.policies.checkOut}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      policies: {...formData.policies, checkOut: e.target.value}
-                    })}
-                    className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
-                    placeholder="11:00 AM"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-[#034123] mb-2">Cancellation Policy *</label>
-                <textarea
-                  required
-                  rows="3"
-                  value={formData.policies.cancellationPolicy}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    policies: {...formData.policies, cancellationPolicy: e.target.value}
-                  })}
-                  className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm resize-none"
-                  placeholder="Free cancellation up to 48 hours before check-in"
-                />
-              </div>
-            </div>
-
-            {/* Active Status */}
-            <div className="bg-[#f9fafb]/50 backdrop-blur-sm rounded-2xl shadow-lg border border-[#e5e7eb]/60 p-4 lg:p-6">
-              <div className="flex items-center p-4 bg-white/90 backdrop-blur-sm rounded-xl border border-[#e5e7eb]/60">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
-                  className="mr-3 h-5 w-5 text-[#034123] focus:ring-[#034123] border-[#d1d5db]/60 rounded cursor-pointer bg-white/90 backdrop-blur-sm"
-                />
-                <label htmlFor="isActive" className="font-semibold text-[#034123] cursor-pointer">Active Room</label>
               </div>
             </div>
 
@@ -776,7 +755,7 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
                 ) : (
                   <>
                     <FiSave className="w-5 h-5" />
-                    {isEditMode ? 'Update Room' : 'Create Room'}
+                    {isEditMode ? 'Update Taxi' : 'Create Taxi'}
                   </>
                 )}
               </button>
@@ -795,4 +774,5 @@ const RoomFormModal = ({ onClose, onSuccess, roomId = null }) => {
   );
 };
 
-export default RoomFormModal;
+export default TaxiFormModal;
+

@@ -35,6 +35,7 @@ import BookingCalendar from "../components/BookingCalendar";
 import TaxiBookingManagement from "../components/TaxiBookingManagement";
 import ManageRooms from "../components/ManageRooms";
 import logo from "../assets/logo.png";
+import ManageTaxi from "../components/ManageTaxi";
 
 const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -228,6 +229,13 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
             onClick={() => handleTabClick("rooms")}
             sidebarOpen={sidebarOpen}
           />
+             <NavItem
+            icon={<FiFileText />}
+            text="Manage Taxi"
+            active={activeTab === "taxi"}
+            onClick={() => handleTabClick("taxi")}
+            sidebarOpen={sidebarOpen}
+          />
           <NavItem
             icon={<FiImage />}
             text="Media Gallery"
@@ -360,6 +368,14 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
             sidebarOpen={true}
           />
           <NavItem
+            icon={<FiFileText />}
+            text="Manage Taxi"
+            active={activeTab === "taxi"}
+            onClick={() => handleTabClick("taxi")}
+            sidebarOpen={true}
+          />
+
+          <NavItem
             icon={<FiImage />}
             text="Media Gallery"
             active={activeTab === "media"}
@@ -486,6 +502,7 @@ const AdminDashboard = ({ blogPosts, setBlogPosts }) => {
             )}
             {activeTab === "media" && <MediaGallery />}
             {activeTab === "rooms" && <ManageRooms />}
+            {activeTab === "taxi" && <ManageTaxi />}
             {activeTab === "users" && <UserManager />}
             {activeTab === "reports" && <ReportsDashboard />}
             {activeTab === "settings" && <SettingsPanel />}

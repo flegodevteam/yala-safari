@@ -787,7 +787,7 @@ useEffect(() => {
                       {/* Package Image */}
                       <div className="relative h-40 overflow-hidden">
                         <img
-                          src={parkImages[pkg.park] || yalaImage}
+                          src={pkg.featuredImage|| yalaImage}
                           alt={pkg.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />

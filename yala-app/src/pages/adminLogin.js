@@ -77,7 +77,7 @@ const AdminLogin = () => {
           <div>
             {/* YALA VIBE ADMIN Badge */}
             <span className="inline-block px-4 py-1.5 bg-[#4ade80]/20 backdrop-blur-md text-[#4ade80] text-xs font-semibold rounded-full border border-[#4ade80]/40 shadow-lg">
-              YALA VIBE ADMIN
+              YALA SAFARI ADMIN
             </span>
             
             {/* Main Title */}
