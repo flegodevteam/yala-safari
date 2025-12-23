@@ -231,11 +231,11 @@ export default function Gallery() {
                   )}
                   
                   {/* Category Badge */}
-                  <div className="absolute top-3 right-3 z-10">
+                  {/* <div className="absolute top-3 right-3 z-10">
                     <span className="px-3 py-1.5 bg-[#034123]/90 text-white text-xs font-semibold rounded-full backdrop-blur-md shadow-lg border border-white/20">
                       {image.category.charAt(0).toUpperCase() + image.category.slice(1)}
                     </span>
-                  </div>
+                  </div> */}
                   
                   {/* Title/Caption Overlay */}
                   {(image.title || image.caption) && (

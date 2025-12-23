@@ -30,17 +30,17 @@ export default function Home() {
             style={{ opacity: 0.7 }}
           />
         </div>
-        <div className="relative max-w-4xl ml-20 w-full py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-white" >
+        <div className="relative max-w-4xl mx-auto md:ml-20 w-full py-16 px-4 sm:py-24 sm:px-6 md:py-32 lg:px-8">
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-white" >
             Discover the Wild Beauty of Yala
           </h1>
-          <p className="mt-6 text-xl max-w-3xl text-gray-200">
+          <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl max-w-3xl text-gray-200">
             Experience unforgettable wildlife encounters with our expert-guided safari tours in Sri Lanka's most famous national parks.
           </p>
-          <div className="mt-10 flex flex-wrap gap-4">
+          <div className="mt-6 sm:mt-8 md:mt-10 flex flex-wrap gap-4">
             <Link
               to="/packages"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white transition-colors duration-200"
+              className="inline-flex items-center px-5 py-2.5 sm:px-6 sm:py-3 border border-transparent text-sm sm:text-base font-medium rounded-md shadow-sm text-white transition-colors duration-200"
               style={{ backgroundColor: '#f26b21' }}
               onMouseEnter={(e) => e.target.style.backgroundColor = '#034123'}
               onMouseLeave={(e) => e.target.style.backgroundColor = '#f26b21'}

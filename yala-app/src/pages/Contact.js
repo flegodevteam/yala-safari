@@ -94,7 +94,7 @@ export default function Contact() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
           <div className="bg-white rounded-2xl p-8 shadow-lg border border-[#034123]/10">
             <h2 className="text-2xl font-bold text-[#034123] mb-4">Address</h2>
-            <p className="text-base text-[#333333]">Tissamaharama, Yala, Sri Lanka</p>
+            <p className="text-base text-[#333333]">191/6, Mahasenpura, Tissamaharama, <br/> Yala, Sri Lanka</p>
           </div>
 
           <div className="bg-white rounded-2xl p-8 shadow-lg border border-[#034123]/10">
