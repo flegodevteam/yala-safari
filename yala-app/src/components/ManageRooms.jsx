@@ -24,6 +24,7 @@ const ManageRooms = () => {
   const [activeTab, setActiveTab] = useState("rooms"); // "rooms" or "bookings"
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingRoomId, setEditingRoomId] = useState(null);
+  const [confirmingBookingId, setConfirmingBookingId] = useState(null);
 
   // Use useCallback to memoize fetchRooms
   const fetchRooms = useCallback(async () => {
@@ -99,6 +100,36 @@ const ManageRooms = () => {
       } catch (error) {
         console.error("Error deleting room:", error);
       }
+    }
+  };
+
+  const handleConfirmBooking = async (bookingId) => {
+    setConfirmingBookingId(bookingId);
+    try {
+      const response = await adminFetch(
+        `${API_BASE_URL}/api/room-bookings/${bookingId}/status`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            bookingStatus: "confirmed",
+            paymentStatus: "paid",
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert("Booking confirmed successfully!");
+        fetchBookings(); // Refresh the bookings list
+      } else {
+        alert(data.message || "Failed to confirm booking");
+      }
+    } catch (error) {
+      console.error("Error confirming booking:", error);
+      alert("Failed to confirm booking. Please try again.");
+    } finally {
+      setConfirmingBookingId(null);
     }
   };
 
@@ -617,6 +648,22 @@ const ManageRooms = () => {
                             })}
                           </p>
                         </div>
+                        {booking.bookingStatus !== "confirmed" && (
+                          <button
+                            onClick={() => handleConfirmBooking(booking._id)}
+                            disabled={confirmingBookingId === booking._id}
+                            className="mt-2 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#034123] hover:bg-[#026042] text-white rounded-lg hover:shadow-lg transition-all duration-300 font-semibold shadow-md hover:scale-[1.02] text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                          >
+                            {confirmingBookingId === booking._id ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                <span>Confirming...</span>
+                              </>
+                            ) : (
+                              <span>Confirm Booking</span>
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
