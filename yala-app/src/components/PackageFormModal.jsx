@@ -609,7 +609,7 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
                 <h4 className="font-bold text-lg mb-4 text-[#034123] border-b border-[#034123]/20 pb-2">Breakfast Items</h4>
                 
                 <div className="bg-[#034123]/5 backdrop-blur-sm rounded-xl p-4 mb-4 border border-[#034123]/20">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-semibold text-[#034123] mb-2">Item Name *</label>
                       <input
@@ -633,6 +633,18 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
                       />
                     </div>
                     <div className="flex items-end">
+                      <div className="flex items-center p-2 bg-white/90 backdrop-blur-sm rounded-xl border border-[#e5e7eb]/60 w-full h-full">
+                        <input
+                          type="checkbox"
+                          id="breakfast-vegetarian"
+                          checked={newBreakfastItem.isVegetarian}
+                          onChange={(e) => setNewBreakfastItem({...newBreakfastItem, isVegetarian: e.target.checked})}
+                          className="mr-2 h-4 w-4 text-[#034123] focus:ring-[#034123] border-[#d1d5db]/60 rounded cursor-pointer"
+                        />
+                        <label htmlFor="breakfast-vegetarian" className="text-sm font-semibold text-[#034123] cursor-pointer">Vegetarian</label>
+                      </div>
+                    </div>
+                    <div className="flex items-end">
                       <button
                         type="button"
                         onClick={addBreakfastItem}
@@ -642,14 +654,34 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
                       </button>
                     </div>
                   </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-[#034123] mb-2">Description (optional)</label>
+                    <input
+                      type="text"
+                      value={newBreakfastItem.description}
+                      onChange={(e) => setNewBreakfastItem({...newBreakfastItem, description: e.target.value})}
+                      className="w-full px-3 py-2 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
+                      placeholder="e.g., Veg sandwich"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {formData.mealOptions.breakfast.map((item, index) => (
                     <div key={index} className="bg-white/90 backdrop-blur-sm border border-[#e5e7eb]/60 rounded-xl p-3 flex justify-between items-center">
                       <div className="flex-1">
-                        <p className="font-semibold text-[#034123]">{item.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-[#034123]">{item.name}</p>
+                          {item.isVegetarian && (
+                            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full border border-green-300">
+                              Vegetarian
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-[#6b7280]">${item.price}</p>
+                        {item.description && (
+                          <p className="text-xs text-[#9ca3af] mt-1">{item.description}</p>
+                        )}
                       </div>
                       <button
                         type="button"
@@ -668,7 +700,7 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
                 <h4 className="font-bold text-lg mb-4 text-[#f26b21] border-b border-[#f26b21]/20 pb-2">Lunch Items</h4>
                 
                 <div className="bg-[#f26b21]/5 backdrop-blur-sm rounded-xl p-4 mb-4 border border-[#f26b21]/20">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-semibold text-[#034123] mb-2">Item Name *</label>
                       <input
@@ -680,17 +712,50 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-[#034123] mb-2">Price ($) *</label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={newLunchItem.price}
-                        onChange={(e) => setNewLunchItem({...newLunchItem, price: e.target.value})}
-                        className="w-full px-3 py-2 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
-                        placeholder="0.00"
-                      />
-                    </div>
+  <label className="block text-sm font-semibold text-[#034123] mb-2">
+    Price ($) *
+  </label>
+  <input
+    type="number"
+    min="0"
+    step="0.01"
+    value={newLunchItem.price}
+    onChange={(e) =>
+      setNewLunchItem({ ...newLunchItem, price: e.target.value })
+    }
+    className="w-full px-3 py-2 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl
+               focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123]
+               transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
+    placeholder="0.00"
+  />
+</div>
+
+<div>
+  <label className="block text-sm font-semibold text-[#034123] mb-2">
+    &nbsp;
+  </label>
+
+  <div className="w-full px-3 py-2 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60
+                  rounded-xl shadow-sm flex items-center">
+    <input
+      type="checkbox"
+      id="lunch-vegetarian"
+      checked={newLunchItem.isVegetarian}
+      onChange={(e) =>
+        setNewLunchItem({ ...newLunchItem, isVegetarian: e.target.checked })
+      }
+      className="mr-2 h-4 w-4 text-[#f26b21] focus:ring-[#f26b21]
+                 border-[#d1d5db]/60 rounded cursor-pointer"
+    />
+    <label
+      htmlFor="lunch-vegetarian"
+      className="text-sm font-semibold text-[#034123] cursor-pointer"
+    >
+      Vegetarian
+    </label>
+  </div>
+</div>
+
                     <div className="flex items-end">
                       <button
                         type="button"
@@ -701,14 +766,34 @@ const PackageFormModal = ({ onClose, onSuccess, packageId = null }) => {
                       </button>
                     </div>
                   </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-[#034123] mb-2">Description (optional)</label>
+                    <input
+                      type="text"
+                      value={newLunchItem.description}
+                      onChange={(e) => setNewLunchItem({...newLunchItem, description: e.target.value})}
+                      className="w-full px-3 py-2 bg-white/90 backdrop-blur-sm border border-[#d1d5db]/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#034123]/50 focus:border-[#034123] transition-all duration-300 text-[#1f2937] placeholder-[#9ca3af] shadow-sm"
+                      placeholder="e.g., Traditional Sri Lankan curry"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {formData.mealOptions.lunch.map((item, index) => (
                     <div key={index} className="bg-white/90 backdrop-blur-sm border border-[#e5e7eb]/60 rounded-xl p-3 flex justify-between items-center">
                       <div className="flex-1">
-                        <p className="font-semibold text-[#034123]">{item.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-[#034123]">{item.name}</p>
+                          {item.isVegetarian && (
+                            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full border border-green-300">
+                              Vegetarian
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-[#6b7280]">${item.price}</p>
+                        {item.description && (
+                          <p className="text-xs text-[#9ca3af] mt-1">{item.description}</p>
+                        )}
                       </div>
                       <button
                         type="button"
