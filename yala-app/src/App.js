@@ -33,6 +33,7 @@ import PackageDetail from "./pages/PackageDetail";
 import AdminBookingManagement from "./components/AdminBookingManagement";
 import BookingCalendar from "./components/BookingCalendar";
 import UserBookingStatus from "./components/UserBookingStatus";
+import ScrollToTop from "./components/ScrollToTop";
 
 const initialBlogPosts = [
   {
@@ -183,6 +184,7 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop/>
       <AppContent blogPosts={blogPosts} setBlogPosts={setBlogPosts} />
     </Router>
   );
