@@ -132,6 +132,18 @@ const Packages = () => {
   }, [preSelectedPackage]);
 
   // ========================================
+  // FORMAT BLOCK VALUE
+  // ========================================
+  const formatBlock = (blockValue) => {
+    if (!blockValue) return '';
+    // Convert "blockV" to "Block V"
+    // Replace "block" (case-insensitive) at the start with "Block "
+    const formatted = blockValue.replace(/^block/i, 'Block ');
+    // Add space before uppercase letters that follow lowercase (handles edge cases)
+    return formatted.replace(/([a-z])([A-Z])/g, '$1 $2');
+  };
+
+  // ========================================
   // 🆕 HANDLE PACKAGE SELECTION
   // ========================================
   const handlePackageSelect = (pkg) => {
@@ -1458,9 +1470,10 @@ useEffect(() => {
                       </p>
                       {selectedPackage.block && (
                         <p className="text-green-700 font-medium text-sm mt-2">
-                          Block: {selectedPackage.block}
+                          Block: {formatBlock(selectedPackage.block)}
                         </p>
-                      )}
+                      )
+                      }
                     </div>
                   </div>
                 </div>
@@ -2468,7 +2481,7 @@ useEffect(() => {
                           <div className="flex justify-between">
                             <span className="text-gray-600">Block:</span>
                             <span className="font-medium">
-                              {selectedPackage.block}
+                              {formatBlock(selectedPackage.block)}
                             </span>
                           </div>
                         )}

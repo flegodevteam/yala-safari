@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FiLock } from "react-icons/fi";
 import { apiEndpoints } from "../config/api";
+import wmlogo from "../assets/wmLogo.jpg";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -89,6 +90,15 @@ const AdminLogin = () => {
             <p className="mt-6 text-base sm:text-lg text-white/90 leading-relaxed max-w-lg">
               Coordinate field teams, manage guest experiences, and safeguard financial operations — all from a zero-trust secured control hub.
             </p>
+
+            {/* Logo */}
+            <div className="mt-12 flex justify-center">
+              <img 
+                src={wmlogo} 
+                alt="Yala Safari Logo" 
+                className="max-w-full h-auto max-h-32 object-contain"
+              />
+            </div>
           </div>
         </div>
 

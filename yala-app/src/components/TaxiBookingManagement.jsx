@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminFetch, API_BASE_URL } from '../config/api';
-import { FiCalendar, FiMapPin, FiUsers, FiDollarSign, FiClock, FiMail, FiPhone, FiGlobe } from 'react-icons/fi';
+import { FiCalendar, FiMapPin, FiUsers, FiClock, FiMail, FiPhone, FiGlobe, FiCheck } from 'react-icons/fi';
 
 const TaxiBookingManagement = () => {
   const [bookings, setBookings] = useState([]);
@@ -8,6 +8,7 @@ const TaxiBookingManagement = () => {
   const [error, setError] = useState(null);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [confirmingBookingId, setConfirmingBookingId] = useState(null);
 
   useEffect(() => {
     fetchTaxiBookings();
@@ -95,6 +96,46 @@ const TaxiBookingManagement = () => {
     setShowDetailsModal(true);
   };
 
+  const handleConfirmBooking = async (bookingId) => {
+    try {
+      setConfirmingBookingId(bookingId);
+      setError(null);
+
+      const response = await adminFetch(`${API_BASE_URL}/api/taxi-bookings/${bookingId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          bookingStatus: 'confirmed',
+          paymentStatus: 'paid',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        // Update the booking in the list
+        setBookings((prevBookings) =>
+          prevBookings.map((booking) =>
+            booking._id === bookingId ? data.data : booking
+          )
+        );
+
+        // Update selected booking if it's the one being confirmed
+        if (selectedBooking && selectedBooking._id === bookingId) {
+          setSelectedBooking(data.data);
+        }
+
+        console.log('✅ Booking confirmed successfully:', data);
+      } else {
+        setError(data.message || 'Failed to confirm booking');
+      }
+    } catch (err) {
+      console.error('❌ Error confirming booking:', err);
+      setError('Failed to confirm booking. Please try again later.');
+    } finally {
+      setConfirmingBookingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-md p-8">
@@ -158,6 +199,9 @@ const TaxiBookingManagement = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Trip Details
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                  Date & Time
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Passengers
                 </th>
@@ -175,7 +219,7 @@ const TaxiBookingManagement = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {bookings.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan="9" className="px-6 py-8 text-center text-gray-500">
                     No taxi bookings found
                   </td>
                 </tr>
@@ -221,16 +265,28 @@ const TaxiBookingManagement = () => {
                           <FiMapPin className="h-3 w-3 text-gray-400" />
                           <span className="font-medium">To:</span> {booking.tripDetails?.dropoffLocation}
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <div className="flex items-center gap-1 text-xs text-gray-500 md:hidden">
                           <FiCalendar className="h-3 w-3" />
                           {formatDate(booking.tripDetails?.pickupDate)} at {formatTime(booking.tripDetails?.pickupTime)}
                         </div>
                       </div>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                      <div className="text-sm text-gray-900">
+                        <div className="flex items-center gap-1 mb-1">
+                          <FiCalendar className="h-4 w-4 text-gray-400" />
+                          <span className="font-medium">{formatDate(booking.tripDetails?.pickupDate)}</span>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {formatTime(booking.tripDetails?.pickupTime)}
+                        </div>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
+                      <FiUsers className="h-4 w-4" />
                         <div className="flex items-center gap-1">
-                          <FiUsers className="h-4 w-4" />
+                      
                           Adults: {booking.passengers?.adults || 0}
                         </div>
                         <div className="text-xs text-gray-500">
@@ -256,12 +312,24 @@ const TaxiBookingManagement = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => handleViewDetails(booking)}
-                        className="text-amber-600 hover:text-amber-900"
-                      >
-                        View Details
-                      </button>
+                      <div className="flex flex-col items-start gap-2">
+                        <button
+                          onClick={() => handleViewDetails(booking)}
+                          className="text-amber-600 hover:text-amber-900"
+                        >
+                          View Details
+                        </button>
+                        {booking.bookingStatus === 'pending' && (
+                          <button
+                            onClick={() => handleConfirmBooking(booking._id)}
+                            disabled={confirmingBookingId === booking._id}
+                            className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
+                          >
+                 
+                            {confirmingBookingId === booking._id ? 'Confirming...' : 'Confirm'}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -543,7 +611,17 @@ const TaxiBookingManagement = () => {
               </div>
             </div>
 
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex justify-end">
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
+              {selectedBooking.bookingStatus === 'pending' && (
+                <button
+                  onClick={() => handleConfirmBooking(selectedBooking._id)}
+                  disabled={confirmingBookingId === selectedBooking._id}
+                  className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <FiCheck className="h-4 w-4" />
+                  {confirmingBookingId === selectedBooking._id ? 'Confirming...' : 'Confirm Booking'}
+                </button>
+              )}
               <button
                 onClick={() => setShowDetailsModal(false)}
                 className="px-6 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700"
