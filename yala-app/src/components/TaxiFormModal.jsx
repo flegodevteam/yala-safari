@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { FiX, FiSave, FiPlus, FiTrash2, FiUpload, FiImage } from 'react-icons/fi';
+import { useState, useEffect, useCallback } from 'react';
+import { FiX, FiSave, FiPlus, FiTrash2, FiUpload } from 'react-icons/fi';
 import { adminFetch, apiEndpoints, authenticatedFetch, API_BASE_URL } from '../config/api';
 
 const TaxiFormModal = ({ onClose, onSuccess, taxiId = null }) => {
@@ -39,14 +39,7 @@ const TaxiFormModal = ({ onClose, onSuccess, taxiId = null }) => {
   const [imageCaption, setImageCaption] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Fetch taxi data when in edit mode
-  useEffect(() => {
-    if (isEditMode && taxiId) {
-      fetchTaxi();
-    }
-  }, [taxiId, isEditMode]);
-
-  const fetchTaxi = async () => {
+  const fetchTaxi = useCallback(async () => {
     setLoading(true);
     try {
       const response = await adminFetch(`${apiEndpoints.taxis.base}/${taxiId}`);
@@ -82,7 +75,13 @@ const TaxiFormModal = ({ onClose, onSuccess, taxiId = null }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [taxiId, onClose]);
+
+  useEffect(() => {
+    if (isEditMode && taxiId) {
+      fetchTaxi();
+    }
+  }, [isEditMode, taxiId, fetchTaxi]);
 
   const handleImageUpload = async () => {
     if (!imageFile) {

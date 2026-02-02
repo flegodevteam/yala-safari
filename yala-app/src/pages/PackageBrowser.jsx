@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { publicFetch, apiEndpoints } from '../config/api';
 import yalaImage from '../assets/yaala.png';
@@ -19,11 +19,7 @@ const PackageBrowser = () => {
     Lunugamwehera: lunugamweheraImage,
   };
 
-  useEffect(() => {
-    fetchPackages();
-  }, [selectedPark]);
-
-  const fetchPackages = async () => {
+  const fetchPackages = useCallback(async () => {
     try {
       const url = selectedPark === 'all'
         ? `${apiEndpoints.packages.base}?isActive=true`
@@ -40,7 +36,11 @@ const PackageBrowser = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedPark]);
+
+  useEffect(() => {
+    fetchPackages();
+  }, [fetchPackages]);
 
   if (loading) return <div className="p-8">Loading packages...</div>;
 

@@ -102,6 +102,7 @@ const TaxiService = () => {
     fetchTaxis();
   }, []);
 
+  // eslint-disable-next-line no-unused-vars -- reserved for future price display
   const calculateEstimatedPrice = (distance) => {
     if (!selectedVehicle) return 0;
     const price = (distance * selectedVehicle.pricePerKm) + (selectedVehicle.basePrice || 0);

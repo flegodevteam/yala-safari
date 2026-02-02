@@ -181,17 +181,6 @@ const BookingConfirmation = () => {
   // ✅ CRITICAL: Calculate prices on confirmation page (matching Packages.jsx)
   const calculatePrices = () => {
     const {
-      people,
-      visitorType,
-      guideOption,
-      mealOption,
-      includeBreakfast,
-      includeLunch,
-      selectedBreakfastItems,
-      selectedLunchItems,
-      vegOption,
-      includeEggs,
-      timeSlot,
       jeepPrice: frontendJeepPrice,
       ticketPrice: frontendTicketPrice,
       guidePrice: frontendGuidePrice,

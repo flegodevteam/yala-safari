@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { publicFetch, adminFetch, apiEndpoints } from '../config/api';
+import React, { useState, useEffect, useCallback } from 'react';
+import { adminFetch, apiEndpoints } from '../config/api';
 
 const AdminBookingManagement = () => {
   const [pendingBookings, setPendingBookings] = useState([]);
@@ -10,11 +10,7 @@ const AdminBookingManagement = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectModal, setShowRejectModal] = useState(false);
 
-  useEffect(() => {
-    fetchBookings();
-  }, [activeTab]);
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -40,7 +36,11 @@ const AdminBookingManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab]);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
 
   const handleApprove = async (bookingId) => {
     // eslint-disable-next-line no-restricted-globals

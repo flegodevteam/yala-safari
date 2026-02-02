@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { publicFetch, apiEndpoints } from '../config/api';
 import yalaImage from '../assets/yaala.png';
@@ -19,11 +19,7 @@ const PackageDetail = () => {
     Lunugamwehera: lunugamweheraImage,
   };
 
-  useEffect(() => {
-    fetchPackage();
-  }, [id]);
-
-  const fetchPackage = async () => {
+  const fetchPackage = useCallback(async () => {
     try {
       const response = await publicFetch(apiEndpoints.packages.byId(id));
       const data = await response.json();
@@ -36,7 +32,11 @@ const PackageDetail = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchPackage();
+  }, [fetchPackage]);
 
   const handleBookNow = () => {
     // Navigate to booking page with package data

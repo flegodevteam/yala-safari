@@ -41,7 +41,7 @@ export default function Footer() {
           {/* Social Media Icons */}
           <div className="flex items-center gap-4">
             <a 
-              href="#" 
+              href="/" 
               className="text-white/70 hover:text-white transition-colors duration-300"
               aria-label="Facebook"
             >
@@ -50,7 +50,7 @@ export default function Footer() {
               </svg>
             </a>
             <a 
-              href="#" 
+              href="/" 
               className="text-white/70 hover:text-white transition-colors duration-300"
               aria-label="Twitter"
             >
@@ -59,7 +59,7 @@ export default function Footer() {
               </svg>
             </a>
             <a 
-              href="#" 
+              href="/" 
               className="text-white/70 hover:text-white transition-colors duration-300"
               aria-label="LinkedIn"
             >
@@ -68,7 +68,7 @@ export default function Footer() {
               </svg>
             </a>
             <a 
-              href="#" 
+              href="/" 
               className="text-white/70 hover:text-white transition-colors duration-300"
               aria-label="Instagram"
             >
@@ -77,7 +77,7 @@ export default function Footer() {
               </svg>
             </a>
             <a 
-              href="#" 
+              href="/" 
               className="text-white/70 hover:text-white transition-colors duration-300"
               aria-label="Pinterest"
             >
@@ -86,7 +86,7 @@ export default function Footer() {
               </svg>
             </a>
             <a 
-              href="#" 
+              href="/" 
               className="text-white/70 hover:text-white transition-colors duration-300"
               aria-label="YouTube"
             >
@@ -95,7 +95,7 @@ export default function Footer() {
               </svg>
             </a>
             <a 
-              href="#" 
+              href="/" 
               className="text-white/70 hover:text-white transition-colors duration-300"
               aria-label="RSS"
             >
@@ -219,6 +219,12 @@ export default function Footer() {
                 Privacy
               </Link>
             </div>
+          </div>
+               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-white/70">
+              Developed by <a href="https://www.flegoinnovation.com" target="_blank" rel="noreferrer" className="text-white/70 hover:text-white transition-colors duration-300">Flego Innovations</a>
+            </p>
+   
           </div>
         </div>
       </div>

@@ -107,16 +107,16 @@ export default function Contact() {
             <h2 className="text-2xl font-bold text-[#034123] mb-4">Follow Us</h2>
             <p className="text-base text-[#333333] mb-4">Connect with us on</p>
             <div className="flex space-x-4">
-              <a href="#" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Facebook">
+              <a href="/" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Facebook">
                 <FaFacebook size={24} />
               </a>
-              <a href="#" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Instagram">
+              <a href="/" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Instagram">
                 <FaInstagram size={24} />
               </a>
-              <a href="#" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Twitter">
+              <a href="/" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Twitter">
                 <FaTwitter size={24} />
               </a>
-              <a href="#" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="TripAdvisor">
+              <a href="/" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="TripAdvisor">
                 <FaTripadvisor size={24} />
               </a>
             </div>

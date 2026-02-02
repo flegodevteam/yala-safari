@@ -1,21 +1,13 @@
 // src/components/DateAvailabilityChecker.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { publicFetch, apiEndpoints } from '../config/api';
 
 const DateAvailabilityChecker = ({ selectedDate, onAvailabilityCheck }) => {
   const [checking, setChecking] = useState(false);
   const [availabilityStatus, setAvailabilityStatus] = useState(null);
 
-  useEffect(() => {
-    if (selectedDate) {
-      checkAvailability();
-    } else {
-      setAvailabilityStatus(null);
-    }
-  }, [selectedDate]);
-
-  const checkAvailability = async () => {
+  const checkAvailability = useCallback(async () => {
     if (!selectedDate) return;
 
     setChecking(true);
@@ -51,7 +43,15 @@ const DateAvailabilityChecker = ({ selectedDate, onAvailabilityCheck }) => {
     } finally {
       setChecking(false);
     }
-  };
+  }, [selectedDate, onAvailabilityCheck]);
+
+  useEffect(() => {
+    if (selectedDate) {
+      checkAvailability();
+    } else {
+      setAvailabilityStatus(null);
+    }
+  }, [selectedDate, checkAvailability]);
 
   if (!selectedDate) return null;
 

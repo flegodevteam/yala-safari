@@ -17,7 +17,6 @@ const DashboardHome = () => {
   const [recentBookings, setRecentBookings] = useState([]);
   const [popularPackages, setPopularPackages] = useState([]);
   const [error, setError] = useState("");
-  const [rawResponse, setRawResponse] = useState(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -29,9 +28,6 @@ const DashboardHome = () => {
         );
         if (response.ok) {
           const result = await response.json();
-          
-          // Store raw response for debugging
-          setRawResponse(result);
           console.log("Raw API Response:", result);
           
           // Handle API response structure: { stats: {...}, recentBookings: [...] }
@@ -93,8 +89,7 @@ const DashboardHome = () => {
           setError("");
         } else {
           const errorText = await response.text().catch(() => "Unknown error");
-          setError(`Failed to fetch dashboard data: ${response.status} ${response.statusText}`);
-          setRawResponse({ error: errorText, status: response.status });
+          setError(`Failed to fetch dashboard data: ${response.status} ${response.statusText}. ${errorText}`);
         }
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
