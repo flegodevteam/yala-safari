@@ -1,9 +1,22 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import hero from '../assets/hero.jpg';
-import safariTeam from '../assets/y (1).jpg';
+import hero1 from '../assets/hero_1.jpeg';
+import hero2 from '../assets/hero_2.jpeg';
+import hero3 from '../assets/hero_3.jpeg';
+import hero4 from '../assets/hero_4.jpeg';
+import tiger from '../assets/tiger.jpeg';
+
+
+const HERO_IMAGES = [
+  { src: hero1, alt: 'Wildlife in Yala National Park' },
+  { src: hero2, alt: 'Safari at Yala' },
+  { src: hero3, alt: 'Yala safari experience' },
+  { src: hero4, alt: 'Yala National Park wildlife' },
+];
 
 export default function Home() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
   useEffect(() => {
     const existingScript = document.querySelector(
       'script[src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.5/dist/dotlottie-wc.js"]'
@@ -18,23 +31,67 @@ export default function Home() {
     }
   }, []);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <div>
-      {/* Hero Section */}
-      <div className="relative min-h-screen flex items-center" style={{ background: 'linear-gradient(to bottom, #e6e6e6, #ffffff)' }}>
+      {/* Hero Section - 4 image carousel */}
+      <div className="relative min-h-screen flex items-center" style={{ background: 'linear-gradient(to bottom,rgba(230, 230, 230, 0.18),rgba(255, 255, 255, 0.45))' }}>
         <div className="absolute inset-0 overflow-hidden">
-          <img
-            className="w-full h-full object-cover object-center"
-            src={hero}
-            alt="Wildlife in Yala National Park"
-            style={{ opacity: 0.7 }}
-          />
+          {HERO_IMAGES.map((img, index) => (
+            <img
+              key={index}
+              className="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 ease-in-out"
+              src={img.src}
+              alt={img.alt}
+              style={{
+                opacity: index === currentSlide ? 0.1 : 0,
+                zIndex: index === currentSlide ? 1 : 0,
+              }}
+            />
+          ))}
         </div>
-        <div className="relative max-w-4xl mx-auto md:ml-20 w-full py-16 px-4 sm:py-24 sm:px-6 md:py-32 lg:px-8">
-          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-white" >
+        {/* Carousel indicators */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          {HERO_IMAGES.map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              aria-label={`Go to slide ${index + 1}`}
+              onClick={() => setCurrentSlide(index)}
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                index === currentSlide ? 'bg-white scale-125' : 'bg-white/60 hover:bg-white/80'
+              }`}
+            />
+          ))}
+        </div>
+        {/* Prev/Next arrows */}
+        <button
+          type="button"
+          aria-label="Previous slide"
+          onClick={() => setCurrentSlide((prev) => (prev - 1 + HERO_IMAGES.length) % HERO_IMAGES.length)}
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center text-white transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+        </button>
+        <button
+          type="button"
+          aria-label="Next slide"
+          onClick={() => setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length)}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center text-white transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+        </button>
+        <div className="relative z-10 max-w-4xl mx-auto md:ml-20 w-full py-16 px-4 sm:py-24 sm:px-6 md:py-32 lg:px-8">
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" >
             Discover the Wild Beauty of Yala
           </h1>
-          <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl max-w-3xl text-gray-200">
+          <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl max-w-3xl text-gray-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
             Experience unforgettable wildlife encounters with our expert-guided safari tours in Sri Lanka's most famous national parks.
           </p>
           <div className="mt-6 sm:mt-8 md:mt-10 flex flex-wrap gap-4">
@@ -200,11 +257,11 @@ export default function Home() {
             {/* Image Section */}
             <div className="lg:mt-0 flex items-center justify-center lg:justify-end">
               <div className="relative w-full max-w-lg">
-                <div className="absolute -inset-4 rounded-3xl" style={{ background: 'linear-gradient(135deg,rgb(255, 255, 255),rgb(0, 102, 53))', opacity: 0.3, transform: 'rotate(-2deg)' }}></div>
+                <div className="absolute -inset-4 rounded-3xl" style={{ background: 'linear-gradient(135deg,rgb(255, 255, 255),rgb(0, 102, 53))', opacity: 0.1, transform: 'rotate(-2deg)' }}></div>
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl transform transition-transform duration-300 hover:scale-105">
                   <img
                     className="w-full h-auto object-cover"
-                    src={safariTeam}
+                    src={tiger}
                     alt="Safari team at Yala National Park"
                     style={{ aspectRatio: '4/3' }}
                   />
