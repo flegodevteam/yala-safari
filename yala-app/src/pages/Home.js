@@ -41,7 +41,7 @@ export default function Home() {
   return (
     <div>
       {/* Hero Section - 4 image carousel */}
-      <div className="relative min-h-screen flex items-center" style={{ background: 'linear-gradient(to bottom,rgba(230, 230, 230, 0.18),rgba(255, 255, 255, 0.45))' }}>
+      <div className="relative min-h-screen flex items-center" style={{ background: 'linear-gradient(to bottom,rgb(230, 230, 230),rgb(255, 255, 255))' }}>
         <div className="absolute inset-0 overflow-hidden">
           {HERO_IMAGES.map((img, index) => (
             <img
@@ -50,7 +50,7 @@ export default function Home() {
               src={img.src}
               alt={img.alt}
               style={{
-                opacity: index === currentSlide ? 0.1 : 0,
+                opacity: index === currentSlide ? 0.8 : 0,
                 zIndex: index === currentSlide ? 1 : 0,
               }}
             />

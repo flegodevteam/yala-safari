@@ -32,7 +32,7 @@ export default function About() {
               </div>
               <div className="mt-8 md:mt-0 md:ml-8 md:w-1/2">
                 <img
-                  className="rounded-3xl shadow-xl transition-transform duration-300 hover:scale-105"
+                  className="w-full aspect-[3/4] max-h-[420px] md:max-h-[480px] object-cover object-center rounded-3xl shadow-xl transition-transform duration-300 hover:scale-105"
                   src={aboutImg}
                   alt="Our founder in Yala National Park"
                 />

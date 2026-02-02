@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiArrowLeft, FiSave, FiX } from 'react-icons/fi';
 import { adminFetch, apiEndpoints } from '../config/api';
@@ -62,20 +62,12 @@ const PackageForm = () => {
     description: ''
   });
 
-  const [editingMealIndex, setEditingMealIndex] = useState({ type: null, index: null });
-
   const [newFeature, setNewFeature] = useState('');
   const [newHighlight, setNewHighlight] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (isEditMode) {
-      fetchPackage();
-    }
-  }, [id]);
-
-  const fetchPackage = async () => {
+  const fetchPackage = useCallback(async () => {
     setLoading(true);
     try {
       const response = await adminFetch(`${apiEndpoints.packages.base}/${id}`);
@@ -98,7 +90,13 @@ const PackageForm = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (isEditMode) {
+      fetchPackage();
+    }
+  }, [isEditMode, fetchPackage]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

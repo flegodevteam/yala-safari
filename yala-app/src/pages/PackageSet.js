@@ -56,8 +56,10 @@ const Packages = () => {
   const [showSeatPopup, setShowSeatPopup] = useState(false);
   const [sharedSelectedDate, setSharedSelectedDate] = useState(null);
   const [sharedSelectedSeat, setSharedSelectedSeat] = useState(null);
+  // eslint-disable-next-line no-unused-vars -- setter reserved for future shared seat booking
   const [sharedBookedSeats, setSharedBookedSeats] = useState([]);
   const [showBookingSection, setShowBookingSection] = useState(false);
+  // eslint-disable-next-line no-unused-vars -- value set from API for future use
   const [privateAvailableDates, setPrivateAvailableDates] = useState([]);
 
   // 🆕 PACKAGE SELECTION STATES (FROM API)
@@ -95,6 +97,93 @@ const Packages = () => {
   };
 
   // ========================================
+  // FORMAT BLOCK VALUE
+  // ========================================
+  const formatBlock = (blockValue) => {
+    if (!blockValue) return '';
+    // Convert "blockV" to "Block V"
+    // Replace "block" (case-insensitive) at the start with "Block "
+    const formatted = blockValue.replace(/^block/i, 'Block ');
+    // Add space before uppercase letters that follow lowercase (handles edge cases)
+    return formatted.replace(/([a-z])([A-Z])/g, '$1 $2');
+  };
+
+  // ========================================
+  // 🆕 HANDLE PACKAGE SELECTION (defined before fetchPackages for dependency)
+  // ========================================
+  const handlePackageSelect = useCallback((pkg) => {
+    console.log("📦 Package Selected:", pkg);
+
+    setSelectedPackage(pkg);
+
+    // Auto-fill booking form with package data
+    setPark(pkg.park);
+    if (pkg.block) setBlock(pkg.block);
+
+    // 🆕 SET PRICING FROM PACKAGE (FROM API, NOT HARDCODED)
+    setPricing({
+      jeep: pkg.jeep,
+      shared: pkg.shared,
+      meals: pkg.meals || { breakfast: 5, lunch: 6 },
+      guide: pkg.guide,
+      tickets: pkg.tickets, // Ticket prices from API
+    });
+
+    // 🆕 SET MEAL ITEMS FROM PACKAGE (FROM API, NOT HARDCODED)
+    if (pkg.mealOptions) {
+      console.log("🍽️ Loading meal options from API:", pkg.mealOptions);
+
+      // Set breakfast items
+      if (pkg.mealOptions.breakfast && Array.isArray(pkg.mealOptions.breakfast)) {
+        setBreakfastMenuItems(pkg.mealOptions.breakfast);
+        setSelectedBreakfastItems(
+          pkg.mealOptions.breakfast.map((item) => item.name)
+        );
+        console.log("✅ Breakfast items loaded:", pkg.mealOptions.breakfast.length, "items");
+      } else {
+        setBreakfastMenuItems([]);
+        setSelectedBreakfastItems([]);
+        console.log("⚠️ No breakfast items in package");
+      }
+
+      // Set lunch items
+      if (pkg.mealOptions.lunch && Array.isArray(pkg.mealOptions.lunch)) {
+        setLunchMenuItems(pkg.mealOptions.lunch);
+        setSelectedLunchItems(pkg.mealOptions.lunch.map((item) => item.name));
+        console.log("✅ Lunch items loaded:", pkg.mealOptions.lunch.length, "items");
+      } else {
+        setLunchMenuItems([]);
+        setSelectedLunchItems([]);
+        console.log("⚠️ No lunch items in package");
+      }
+    } else {
+      console.log("⚠️ No mealOptions object in package");
+      setBreakfastMenuItems([]);
+      setLunchMenuItems([]);
+      setSelectedBreakfastItems([]);
+      setSelectedLunchItems([]);
+    }
+
+    // Set package type if available
+    if (pkg.packageType) {
+      if (pkg.packageType === "private" || pkg.packageType === "both") {
+        setReservationType("private");
+      } else if (pkg.packageType === "shared") {
+        setReservationType("shared");
+      }
+    }
+
+    // Set max capacity (functional update to avoid dependency on people)
+    if (pkg.maxCapacity) {
+      setPeople((prev) => Math.min(prev, pkg.maxCapacity));
+    }
+
+    // Close package selector and show booking form
+    setShowPackageSelector(false);
+    toast.success(`${pkg.name} selected!`);
+  }, []);
+
+  // ========================================
   // 🆕 FETCH PACKAGES FROM API
   // ========================================
   const fetchPackages = useCallback(async () => {
@@ -129,101 +218,13 @@ const Packages = () => {
       setPackagesLoading(false);
       setLoading(false);
     }
-  }, [preSelectedPackage]);
-
-  // ========================================
-  // FORMAT BLOCK VALUE
-  // ========================================
-  const formatBlock = (blockValue) => {
-    if (!blockValue) return '';
-    // Convert "blockV" to "Block V"
-    // Replace "block" (case-insensitive) at the start with "Block "
-    const formatted = blockValue.replace(/^block/i, 'Block ');
-    // Add space before uppercase letters that follow lowercase (handles edge cases)
-    return formatted.replace(/([a-z])([A-Z])/g, '$1 $2');
-  };
-
-  // ========================================
-  // 🆕 HANDLE PACKAGE SELECTION
-  // ========================================
-  const handlePackageSelect = (pkg) => {
-    console.log("📦 Package Selected:", pkg);
-
-    setSelectedPackage(pkg);
-
-    // Auto-fill booking form with package data
-    setPark(pkg.park);
-    if (pkg.block) setBlock(pkg.block);
-
-    // 🆕 SET PRICING FROM PACKAGE (FROM API, NOT HARDCODED)
-    setPricing({
-      jeep: pkg.jeep,
-      shared: pkg.shared,
-      meals: pkg.meals || { breakfast: 5, lunch: 6 },
-      guide: pkg.guide,
-      tickets: pkg.tickets, // Ticket prices from API
-    });
-
-    // 🆕 SET MEAL ITEMS FROM PACKAGE (FROM API, NOT HARDCODED)
-    // 🆕 SET MEAL ITEMS FROM PACKAGE (FROM API, NOT HARDCODED)
-if (pkg.mealOptions) {
-  console.log("🍽️ Loading meal options from API:", pkg.mealOptions);
-  
-  // Set breakfast items
-  if (pkg.mealOptions.breakfast && Array.isArray(pkg.mealOptions.breakfast)) {
-    setBreakfastMenuItems(pkg.mealOptions.breakfast);
-    setSelectedBreakfastItems(
-      pkg.mealOptions.breakfast.map((item) => item.name)
-    );
-    console.log("✅ Breakfast items loaded:", pkg.mealOptions.breakfast.length, "items");
-  } else {
-    setBreakfastMenuItems([]);
-    setSelectedBreakfastItems([]);
-    console.log("⚠️ No breakfast items in package");
-  }
-  
-  // Set lunch items
-  if (pkg.mealOptions.lunch && Array.isArray(pkg.mealOptions.lunch)) {
-    setLunchMenuItems(pkg.mealOptions.lunch);
-    setSelectedLunchItems(pkg.mealOptions.lunch.map((item) => item.name));
-    console.log("✅ Lunch items loaded:", pkg.mealOptions.lunch.length, "items");
-  } else {
-    setLunchMenuItems([]);
-    setSelectedLunchItems([]);
-    console.log("⚠️ No lunch items in package");
-  }
-} else {
-  console.log("⚠️ No mealOptions object in package");
-  setBreakfastMenuItems([]);
-  setLunchMenuItems([]);
-  setSelectedBreakfastItems([]);
-  setSelectedLunchItems([]);
-}
-
-    // Set package type if available
-    if (pkg.packageType) {
-      if (pkg.packageType === "private" || pkg.packageType === "both") {
-        setReservationType("private");
-      } else if (pkg.packageType === "shared") {
-        setReservationType("shared");
-      }
-    }
-
-    // Set max capacity
-    if (pkg.maxCapacity) {
-      setPeople(Math.min(people, pkg.maxCapacity));
-    }
-
-    // Close package selector and show booking form
-    setShowPackageSelector(false);
-    toast.success(`${pkg.name} selected!`);
-  };
+  }, [preSelectedPackage, handlePackageSelect]);
 
   // ========================================
   // 🆕 HELPER FUNCTIONS - USE DYNAMIC DATA FROM API
   // ========================================
 
-  const getBreakfastMenu = () => {
+  const getBreakfastMenu = useCallback(() => {
   if (!breakfastMenuItems || breakfastMenuItems.length === 0) {
     console.log("⚠️ No breakfast menu items available");
     return [];
@@ -237,14 +238,14 @@ if (pkg.mealOptions) {
     // For non-veg, show all items
     return true;
   });
-};
+}, [breakfastMenuItems, vegOption]);
 
-  const getLunchMenu = () => {
+  const getLunchMenu = useCallback(() => {
   if (!lunchMenuItems || lunchMenuItems.length === 0) {
     console.log("⚠️ No lunch menu items available");
     return [];
   }
-  
+
   return lunchMenuItems.filter((item) => {
     if (vegOption === "veg") {
       // Only show items explicitly marked as vegetarian
@@ -253,7 +254,7 @@ if (pkg.mealOptions) {
     // For non-veg, show all items
     return true;
   });
-};
+}, [lunchMenuItems, vegOption]);
 
   // 🆕 GET TICKET PRICE FROM API (NO HARDCODED PRICES)
   const getTicketPrice = () => {
@@ -412,30 +413,29 @@ if (pkg.mealOptions) {
   }, [searchQuery, filterPark, filterType, sortBy]);
 
   // 🆕 Update meal selections when vegOption changes
-  // 🆕 Update meal selections when vegOption changes
-useEffect(() => {
+  useEffect(() => {
   if (breakfastMenuItems.length > 0) {
     const filteredBreakfast = getBreakfastMenu();
     // Only keep selected items that are still in filtered menu
-    setSelectedBreakfastItems((prev) => 
-      prev.filter((itemName) => 
+    setSelectedBreakfastItems((prev) =>
+      prev.filter((itemName) =>
         filteredBreakfast.some((item) => item.name === itemName)
       )
     );
     console.log("🔄 Updated breakfast selection for", vegOption);
   }
-  
+
   if (lunchMenuItems.length > 0) {
     const filteredLunch = getLunchMenu();
     // Only keep selected items that are still in filtered menu
-    setSelectedLunchItems((prev) => 
-      prev.filter((itemName) => 
+    setSelectedLunchItems((prev) =>
+      prev.filter((itemName) =>
         filteredLunch.some((item) => item.name === itemName)
       )
     );
     console.log("🔄 Updated lunch selection for", vegOption);
   }
-}, [vegOption]);
+}, [vegOption, breakfastMenuItems.length, lunchMenuItems.length, getBreakfastMenu, getLunchMenu]);
 
   // 🆕 Fetch private availability dates when needed
   useEffect(() => {
@@ -469,7 +469,7 @@ useEffect(() => {
         handlePackageSelect(foundPackage);
       }
     }
-  }, [preSelectedPackage, availablePackages]);
+  }, [preSelectedPackage, availablePackages, handlePackageSelect]);
 
 
   // ========================================
