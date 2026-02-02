@@ -81,5 +81,3 @@ REACT_APP_API_BASE_URL=https://staging-api.yalasafari.com
 3. **Consistent URL management** across the application
 4. **Better maintainability** and debugging
 5. **Reduced hardcoded URLs** throughout the codebase
-
-
