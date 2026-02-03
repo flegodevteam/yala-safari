@@ -50,7 +50,7 @@ export default function Home() {
               src={img.src}
               alt={img.alt}
               style={{
-                opacity: index === currentSlide ? 0.8 : 0,
+                opacity: index === currentSlide ? 1 : 0,
                 zIndex: index === currentSlide ? 1 : 0,
               }}
             />
