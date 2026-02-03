@@ -55,7 +55,7 @@ export default function Home() {
               }}
             />
           ))}
-          <div className="absolute inset-0 bg-green-900/20 z-[2]" aria-hidden />
+          // <div className="absolute inset-0 bg-green-900/20 z-[2]" aria-hidden />
         </div>
         {/* Carousel indicators */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
