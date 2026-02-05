@@ -131,7 +131,7 @@ export default function Contact() {
             </h2>
             <div className="w-full rounded-lg overflow-hidden">
               <iframe
-                src="https://www.google.com/maps?q=6.4281,81.5186&z=15&output=embed"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.6869111443325!2d81.3003026!3d6.304803400000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae69d00e28e9c7b%3A0xa31f7dfb5361f3af!2sYala%20Safari%20with%20Tharindu%20Gihan!5e0!3m2!1sen!2slk!4v1770270762897!5m2!1sen!2slk"
                 width="100%"
                 height="450"
                 style={{ border: 0 }}
