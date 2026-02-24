@@ -49,10 +49,10 @@ export default function Footer() {
           <a href="https://www.facebook.com/share/1EDyLRKpvB" target="_blank" rel="noreferrer" className="text-[#ffffff] hover:text-[#f26b21] transition-colors duration-300" aria-label="Facebook">
                 <FaFacebook size={24} />
               </a>
-              <a href="/" target="_blank" rel="noreferrer" className="text-[#ffffff] hover:text-[#f26b21] transition-colors duration-300" aria-label="Instagram">
+              <a href="/"  className="text-[#ffffff] hover:text-[#f26b21] transition-colors duration-300" aria-label="Instagram">
                 <FaInstagram size={24} />
               </a>
-              <a href="/" target="_blank" rel="noreferrer" className="text-[#ffffff] hover:text-[#f26b21] transition-colors duration-300" aria-label="Twitter">
+              <a href="/" className="text-[#ffffff] hover:text-[#f26b21] transition-colors duration-300" aria-label="Twitter">
                 <FaTwitter size={24} />
               </a>
               <a href="https://www.tripadvisor.com/Attraction_Review-g1102395-d9975853-Reviews-Yala_Safari_With_Tharindu_Gihan-Tissamaharama_Southern_Province.html" target="_blank" rel="noreferrer" className="text-[#ffffff] hover:text-[#f26b21] transition-colors duration-300" aria-label="TripAdvisor">
