@@ -107,16 +107,16 @@ export default function Contact() {
             <h2 className="text-2xl font-bold text-[#034123] mb-4">Follow Us</h2>
             <p className="text-base text-[#333333] mb-4">Connect with us on</p>
             <div className="flex space-x-4">
-              <a href="https://www.facebook.com/share/1EDyLRKpvB" target="_blank" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Facebook">
+              <a href="https://www.facebook.com/share/1EDyLRKpvB" target="_blank" rel="noreferrer" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Facebook">
                 <FaFacebook size={24} />
               </a>
-              <a href="/" target="_blank" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Instagram">
+              <a href="/" target="_blank" rel="noreferrer" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Instagram">
                 <FaInstagram size={24} />
               </a>
-              <a href="/" target="_blank" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Twitter">
+              <a href="/" target="_blank" rel="noreferrer" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="Twitter">
                 <FaTwitter size={24} />
               </a>
-              <a href="https://www.tripadvisor.com/Attraction_Review-g1102395-d9975853-Reviews-Yala_Safari_With_Tharindu_Gihan-Tissamaharama_Southern_Province.html" target="_blank" className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="TripAdvisor">
+              <a href="https://www.tripadvisor.com/Attraction_Review-g1102395-d9975853-Reviews-Yala_Safari_With_Tharindu_Gihan-Tissamaharama_Southern_Province.html" target="_blank" rel="noreferrer"   className="text-[#034123] hover:text-[#f26b21] transition-colors duration-300" aria-label="TripAdvisor">
                 <FaTripadvisor size={24} />
               </a>
             </div>
